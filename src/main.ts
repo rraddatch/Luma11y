@@ -40,6 +40,7 @@ import { initTheme, applyTheme } from './theme';
 
 // Import Webcomponents
 import './components/ProgressBar';
+import './components/SvgIcon';
 
 // =============================================================================
 // REDIMENSIONNEMENT AUTOMATIQUE DE LA FENÊTRE
@@ -49,11 +50,13 @@ import './components/ProgressBar';
 
 // Ajuste la taille de la fenêtre Tauri au contenu via PhysicalSize
 // Adjusts Tauri window size to match content using PhysicalSize
+let lastSetHeight = 0;
+
 async function resizeWindow(container: HTMLElement) {
   const currentWindow = getCurrentWindow();
   const rect = container.getBoundingClientRect();
   const factor = window.devicePixelRatio;
-  const currentSize = await currentWindow.outerSize();
+  const currentSize = await currentWindow.innerSize();
   const width = currentSize.width;
   const height = Math.ceil(rect.height * factor);
 
@@ -62,7 +65,14 @@ async function resizeWindow(container: HTMLElement) {
   const isDecorated = await currentWindow.isDecorated();
   const topPadding = isDecorated && osType() === 'macos' ? 55 : 0;
 
-  await currentWindow.setSize(new PhysicalSize(width, height + topPadding));
+  const newHeight = height + topPadding;
+
+  // Évite les boucles de redimensionnement sur Windows
+  // Avoid resize loops on Windows
+  if (Math.abs(newHeight - lastSetHeight) < 2) return;
+  lastSetHeight = newHeight;
+
+  await currentWindow.setSize(new PhysicalSize(width, newHeight));
 }
 
 // Initialise le ResizeObserver sur <main> après le chargement du DOM

@@ -73,6 +73,9 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--background-color);
   color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 strong {
@@ -95,21 +98,11 @@ strong {
   align-items: center;
 
   background-color: var(--background-color-inverted);
-  color: var(--text-color-inverted);
-
-  svg {
-    fill: var(--background-color);
-    height: 24px;
-    width: 24px;
-  }
+  color: var(--background-color);
 
   &.small {
     width: 2rem;
     height: 2rem;
-    svg {
-      height: 20px;
-      width: 20px;
-    }
   }
 
   /* Button hover state*/
@@ -117,9 +110,6 @@ strong {
     background-color: var(--background-color);
     color: var(--text-color);
     border: var(--button-border-size) solid var(--text-color);
-    svg {
-      fill: var(--text-color);
-    }
   }
 
   /* Disabled button state */
@@ -127,9 +117,7 @@ strong {
     background: var(--background-color-disabled);
     cursor: wait;
     border-color: var(--border-color-disabled);
-    svg {
-      fill: var(--text-color-disabled);
-    }
+    color: var(--text-color-disabled);
   }
 }
 
@@ -200,10 +188,10 @@ strong {
       position: relative;
       z-index: 99;
       transform: translateY(-50%);
-      svg {
+      svg-icon {
         transition: transform 0.3s ease;
       }
-      &.rotated svg {
+      &.rotated svg-icon {
         transform: rotate(180deg);
       }
     }
@@ -220,14 +208,12 @@ strong {
   }
 
   .progress {
-    display: flex;
-    flex-wrap: wrap;
     align-items: center;
     padding: 0 1rem;
     .icon {
       display: flex;
       align-items: center;
-      svg.non-active {
+      .non-active {
         opacity: 0.2;
         margin-left: -1.2rem;
       }
@@ -237,7 +223,7 @@ strong {
       display: flex;
       justify-content: center;
       gap: 0.5rem;
-      padding: 1rem;
+      padding: 1rem 0 0 0;
       align-items: center;
       .pass {
         font-weight: bold;
@@ -248,8 +234,17 @@ strong {
         color: var(--text-color-fail);
       }
     }
-    progress-bar {
-      flex: 1;
+    .progress-line {
+      display: flex;
+      align-items: center;
+      .icon {
+        width: 2.5rem;
+      }
+      progress-bar {
+        flex: 1;
+        min-width: 0;
+        padding: 0 0 0;
+      }
     }
   }
 
@@ -261,11 +256,6 @@ strong {
       position: relative;
       z-index: 99;
       transform: translateY(-50%);
-      svg {
-        width: 12px;
-        height: 12px;
-        fill: currentColor;
-      }
     }
   }
 
@@ -281,7 +271,7 @@ strong {
       .icon {
         display: flex;
         align-items: center;
-        svg.non-active {
+        .non-active {
           opacity: 0.2;
           margin-left: -1rem;
         }
@@ -319,11 +309,6 @@ strong {
     color: var(--text-color-light);
     padding: 0;
     margin-left: auto;
-    svg {
-      width: 14px;
-      height: 14px;
-      display: block;
-    }
   }
 
   fieldset {
@@ -357,8 +342,8 @@ strong {
       }
     }
     .rgb-input {
-      width: 4ch;
-      text-align: right;
+      width: 4.5ch;
+      text-align: center;
       font-variant-numeric: tabular-nums;
       font-size: 0.8rem;
       font-weight: 600;

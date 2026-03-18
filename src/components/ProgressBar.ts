@@ -16,17 +16,24 @@ export class ProgressBar extends LitElement {
   static styles = css`
     :host {
       display: block;
+      position: relative;
       width: 100%;
+      min-width: 0;
+      height: 3rem;
+      overflow: hidden;
       margin: 20px 0;
       font-family: system-ui, -apple-system, sans-serif;
     }
 
     .progress-bar {
-      position: relative;
-      width: 100%;
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
       height: 0.5rem;
       border-radius: 0.3rem;
       overflow: visible;
+      transform: translateY(-50%);
     }
 
     /* Les traits de séparation blancs */
@@ -57,8 +64,11 @@ export class ProgressBar extends LitElement {
     }
 
     .labels-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
       display: flex;
-      margin-top: 5px;
       width: 100%;
     }
 
