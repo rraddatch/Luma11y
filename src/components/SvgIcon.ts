@@ -1,4 +1,4 @@
-import { LitElement, html, css, svg, nothing } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 const icons: Record<string, { viewBox: string; path: string }> = {
