@@ -25,6 +25,12 @@ import {
   setThemePreference,
   type ThemePreference,
 } from './theme';
+import {
+  initStyleTheme,
+  getStyleTheme,
+  setStyleTheme,
+  type StyleTheme,
+} from './styleTheme';
 
 // =============================================================================
 // DÉTECTION LOCALE SYSTÈME
@@ -102,6 +108,9 @@ Alpine.store('settings', {
   // Thème light/dark/auto / Theme light/dark/auto
   theme: getThemePreference() as ThemePreference,
 
+  // Thème de style (moderne/classique) / Style theme (modern/classic)
+  styleTheme: getStyleTheme() as StyleTheme,
+
   // Durée du toast en secondes (0 = manuel) / Toast duration in seconds (0 = manual)
   toastDuration: parseInt(localStorage.getItem('cca-toast-duration') ?? '3', 10),
 
@@ -115,6 +124,12 @@ Alpine.store('settings', {
   setTheme(pref: ThemePreference): void {
     (this as any).theme = pref;
     setThemePreference(pref);
+  },
+
+  // Change le thème de style / Change style theme
+  setStyleTheme(theme: StyleTheme): void {
+    (this as any).styleTheme = theme;
+    setStyleTheme(theme);
   },
 
   // Applique un changement de préférence / Apply a preference change
@@ -175,6 +190,10 @@ Alpine.store('settings', {
     const savedTheme = getThemePreference();
     (this as any).theme = savedTheme;
     setThemePreference(savedTheme);
+    // Restaure le thème de style sauvegardé / Restore saved style theme
+    const savedStyleTheme = getStyleTheme();
+    (this as any).styleTheme = savedStyleTheme;
+    setStyleTheme(savedStyleTheme);
     await emit('focus-main');
     getCurrentWindow().close();
   },
@@ -200,6 +219,7 @@ onLocaleChange((locale) => {
 
 Alpine.start();
 initTheme();
+initStyleTheme();
 
 (async () => {
   // Détecte la locale système / Detect system locale

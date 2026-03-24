@@ -19,7 +19,7 @@
     "slider_dynamic": "Dynamic"
   },
   "results": {
-    "contrast_ratio": "Contrast Ratio:",
+    "contrast_ratio": "Contrast Ratio",
     "regular_text": "Regular Text",
     "large_text": "Large Text",
     "non_text": "Non-text",
@@ -55,6 +55,9 @@
     "theme_auto": "Automatic (system)",
     "theme_light": "Light",
     "theme_dark": "Dark",
+    "style_theme": "Style",
+    "style_modern": "Modern",
+    "style_classic": "Classic",
     "toast_duration": "Toast duration",
     "toast_manual": "Manual close",
     "toast_seconds": "Seconds",

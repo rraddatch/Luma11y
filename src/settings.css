@@ -5,6 +5,16 @@
    Uses --color-* variables defined in style.css
    ============================================================================= */
 
+:root {
+  --text-color-recording: var(--color-sky-800);
+  --background-color-recording: var(--color-gray-100);
+}
+
+[data-theme="dark"] {
+  --text-color-recording: var(--color-sky-800);
+  --background-color-recording: var(--color-gray-600);
+}
+
 body {
   font-size: 13px;
   background: var(--background-color-grey);

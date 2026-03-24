@@ -3,51 +3,6 @@
    style.css - Styles for the Color Contrast Analyser
    ============================================================================= */
 
-:root {
-  --button-border-size: 2px;
-
-  --text-color: var(--color-zinc-600);
-  --text-color-light: var(--color-zinc-500);
-  --text-color-strong: var(--color-zinc-700);
-  --text-color-inverted: var(--color-zinc-50);
-  --text-color-disabled: var(--color-zinc-200);
-  --text-color-pass: var(--color-lime-700);
-  --text-color-fail: var(--color-red-800);
-  --text-color-recording: var(--color-sky-800);
-  --background-color: var(--color-zinc-50);
-  --background-color-recording: var(--color-zinc-100);
-  --background-color-grey: var(--color-zinc-100);
-  --background-color-inverted: var(--color-zinc-600);
-  --background-color-disabled: var(--color-zinc-200);
-  --border-color-light: var(--color-zinc-200);
-  --border-color: var(--color-zinc-400);
-  --border-color-strong: var(--color-zinc-700);
-  --border-color-disabled: var(--color-zinc-200);
-  --progress-background: var(--color-zinc-500);
-}
-
-/* Dark theme overrides */
-[data-theme="dark"] {
-  --text-color: var(--color-zinc-200);
-  --text-color-light: var(--color-zinc-100);
-  --text-color-strong: var(--color-zinc-50);
-  --text-color-inverted: var(--color-zinc-600);
-  --text-color-disabled: var(--color-zinc-200);
-  --text-color-pass: var(--color-lime-300);
-  --text-color-fail: var(--color-red-300);
-  --text-color-recording: var(--color-sky-800);
-  --background-color: var(--color-zinc-600);
-  --background-color-recording: var(--color-zinc-100);
-  --background-color-grey: var(--color-zinc-700);
-  --background-color-inverted: var(--color-zinc-100);
-  --background-color-disabled: var(--color-zinc-200);
-  --border-color-light: var(--color-zinc-200);
-  --border-color: var(--color-zinc-400);
-  --border-color-strong: var(--color-zinc-50);
-  --border-color-disabled: var(--color-zinc-200);
-  --progress-background: var(--color-zinc-500);
-}
-
 /* -----------------------------------------------------------------------------
    RESET ET BASE
    RESET AND BASE
@@ -70,9 +25,6 @@ html, body {
 /* Styles du corps de la page - centrage vertical et horizontal */
 /* Body styles - vertical and horizontal centering */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--background-color);
-  color: var(--text-color);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -89,21 +41,10 @@ strong {
 .btn {
   border: none;
   font-size: 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-
-  background-color: var(--background-color-inverted);
-  color: var(--background-color);
-
-  &.small {
-    width: 2rem;
-    height: 2rem;
-  }
 
   /* Button hover state*/
   &:hover {
@@ -114,10 +55,7 @@ strong {
 
   /* Disabled button state */
   &:disabled {
-    background: var(--background-color-disabled);
     cursor: wait;
-    border-color: var(--border-color-disabled);
-    color: var(--text-color-disabled);
   }
 }
 
@@ -128,72 +66,45 @@ strong {
 
 .colors {
   /* Visual color preview */
-  .color-preview {
+  section {
     forced-color-adjust: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    color: #000000;
-    position: relative;
-    &.foreground {
-      border-bottom-left-radius: 2rem;
-      h2 {
-        left: 0.5rem;
-        top: 0.5rem
+    .color-preview {
+      color: #000000;
+      &.isDark {
+        color: #ffffff;
       }
-      .btn {
-        right: 0.5rem;
-        top: 50%;
-        transform: translateY(-50%);
+      p {
+        display: flex;
+        justify-content: center;
+        width: 100%;
       }
     }
-    &.background {
-      border-top-right-radius: 2rem;
-      h2 {
-        right: 0.5rem;
-        bottom: 0.5rem;
-      }
-      .btn {
-        left: 0.5rem;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-    }
-    h2 {
-      font-weight: normal;
-      font-size: 0.8rem;
-      position: absolute;
-    }
-    .btn {
-      position: absolute;
-    }
-    &.isDark {
-      color: #ffffff;
-    }
-    p {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      padding: 1rem;
-    }
-  }
 
-  .buttons {
-    display: flex;
-    justify-content: center;
-    height: 0;
-    gap: 0.5rem;
-    .btn {
-      position: relative;
-      z-index: 99;
-      transform: translateY(-50%);
-      svg-icon {
-        transition: transform 0.3s ease;
-      }
-      &.rotated svg-icon {
-        transform: rotate(180deg);
-      }
+    /* Conteneur nom + hex / Color name + hex container */
+    .color-value {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+
+    /* Nom CSS de la couleur / CSS color name */
+    .color-name {
+      font-weight: 600;
+      font-size: 1.1em;
+      text-transform: capitalize;
+    }
+
+    /* Affichage de la valeur hexadécimale */
+    /* Hexadecimal value display */
+    .hex-value {
+      font-family: 'Monaco', 'Menlo', monospace;
+      letter-spacing: 2px;
+    }
+
+    /* Hex secondaire quand un nom est affiché / Secondary hex when name is shown */
+    .hex-value.hex-secondary {
+      font-size: 0.75em;
+      opacity: 0.7;
     }
   }
 }
@@ -218,22 +129,6 @@ strong {
         margin-left: -1.2rem;
       }
     }
-    .label {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 1rem 0 0 0;
-      align-items: center;
-      .pass {
-        font-weight: bold;
-        color: var(--text-color-pass);
-      }
-      .fail {
-        font-weight: bold;
-        color: var(--text-color-fail);
-      }
-    }
     .progress-line {
       display: flex;
       align-items: center;
@@ -245,17 +140,6 @@ strong {
         min-width: 0;
         padding: 0 0 0;
       }
-    }
-  }
-
-  .buttons {
-    display: flex;
-    justify-content: center;
-    height: 0;
-    .btn {
-      position: relative;
-      z-index: 99;
-      transform: translateY(-50%);
     }
   }
 
@@ -275,16 +159,6 @@ strong {
           opacity: 0.2;
           margin-left: -1rem;
         }
-      }
-      .pass {
-        font-weight: bold;
-        font-size: 0.75rem;
-        color: var(--text-color-pass);
-      }
-      .fail {
-        font-weight: bold;
-        font-size: 0.75rem;
-        color: var(--text-color-fail);
       }
     }
   }
@@ -374,33 +248,6 @@ strong {
       background: linear-gradient(to right, var(--slider-from, #000), var(--slider-to, #fff));
     }
   }
-}
-
-/* Conteneur nom + hex / Color name + hex container */
-.color-value {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-}
-
-/* Nom CSS de la couleur / CSS color name */
-.color-name {
-  font-weight: 600;
-  font-size: 1.1em;
-  text-transform: capitalize;
-}
-
-/* Affichage de la valeur hexadécimale */
-/* Hexadecimal value display */
-.hex-value {
-  font-family: 'Monaco', 'Menlo', monospace;
-  letter-spacing: 2px;
-}
-
-/* Hex secondaire quand un nom est affiché / Secondary hex when name is shown */
-.hex-value.hex-secondary {
-  font-size: 0.75em;
-  opacity: 0.7;
 }
 
 /* -----------------------------------------------------------------------------

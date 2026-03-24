@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/colors.css" />
-    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/common-style.css" />
     <link rel="stylesheet" href="/src/utils.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Colour Contrast Analyser</title>
@@ -15,10 +15,11 @@
       <div class="colors" x-data="{ rotated: false, showControls: false, showBgControls: false, fgSliderMode: 'dynamic', bgSliderMode: 'dynamic' }">
         <!-- Foreground Color -->
         <div class="wrapper" x-bind:style="`background-color: ${showControls ? '#ffffff' : $store.uiStore.backgroundHex}`">
-          <section id="foreground">
+          <section id="foreground"
+            x-bind:style="`background-color: ${$store.uiStore.foregroundHex}`"
+          >
             <div
-              class="color-preview foreground"
-              x-bind:style="`background-color: ${$store.uiStore.foregroundHex}`"
+              class="color-preview"
               x-bind:class="$store.uiStore.foregroundIsDark ? 'isDark' : 'isLight'"
             >
               <h2 x-text="$store.uiStore.t('color.foreground')">Foreground</h2>
@@ -26,34 +27,36 @@
                 <span class="color-name" x-show="$store.uiStore.foregroundName" x-text="$store.uiStore.foregroundName"></span>
                 <span class="hex-value" :class="{ 'hex-secondary': $store.uiStore.foregroundName }" x-text="$store.uiStore.foregroundHex"></span>
               </p>
+            </div>
+            <div class="buttons">
               <button
-                class="btn"
-                @click="$store.uiStore.pickColor(true)"
+                class="btn invert"
+                x-bind:class="{ rotated }"
+                @click="$store.uiStore.switchColor(); rotated = !rotated"
                 x-bind:disabled="$store.uiStore.isPicking"
-                x-bind:aria-label="$store.uiStore.t('color.pick_foreground')"
+                x-bind:aria-label="$store.uiStore.t('color.pick_switch')"
               >
-                <svg-icon name="eyedropper" size="24px"></svg-icon>
+                <svg-icon name="swap"></svg-icon>
               </button>
+              <div class="group">
+                <button
+                  class="btn eyedropper"
+                  @click="$store.uiStore.pickColor(true)"
+                  x-bind:disabled="$store.uiStore.isPicking"
+                  x-bind:aria-label="$store.uiStore.t('color.pick_foreground')"
+                >
+                  <svg-icon name="eyedropper" size="24px"></svg-icon>
+                </button>
+                <button
+                  class="btn"
+                  @click="showControls = !showControls"
+                  x-bind:disabled="$store.uiStore.isPicking"
+                >
+                  <svg-icon name="sliders"></svg-icon>
+                </button>
+              </div>
             </div>
           </section>
-        </div>
-        <div class="buttons">
-          <button
-            class="btn small"
-            x-bind:class="{ rotated }"
-            @click="$store.uiStore.switchColor(); rotated = !rotated"
-            x-bind:disabled="$store.uiStore.isPicking"
-            x-bind:aria-label="$store.uiStore.t('color.pick_switch')"
-          >
-            <svg-icon name="swap"></svg-icon>
-          </button>
-          <button
-            class="btn small"
-            @click="showControls = !showControls"
-            x-bind:disabled="$store.uiStore.isPicking"
-          >
-            <svg-icon name="sliders"></svg-icon>
-          </button>
         </div>
         <!-- Foreground Color controls -->
         <div class="color-controls" x-bind:class="'slider-mode-' + fgSliderMode" x-show="showControls" x-transition>
@@ -127,10 +130,10 @@
         <!-- Background Color -->
          <div class="wrapper"
             x-bind:style="`background-color: ${showControls ? '#ffffff' : $store.uiStore.foregroundHex}`">
-            <section id="background">
+            <section id="background"
+              x-bind:style="`background-color: ${$store.uiStore.backgroundHex}`">
               <div
-                class="color-preview background"
-                x-bind:style="`background-color: ${$store.uiStore.backgroundHex}`"
+                class="color-preview"
                 x-bind:class="$store.uiStore.backgroundIsDark ? 'isDark' : 'isLight'"
               >
                 <h2 x-text="$store.uiStore.t('color.background')">Background</h2>
@@ -138,26 +141,28 @@
                   <span class="color-name" x-show="$store.uiStore.backgroundName" x-text="$store.uiStore.backgroundName"></span>
                   <span class="hex-value" :class="{ 'hex-secondary': $store.uiStore.backgroundName }" x-text="$store.uiStore.backgroundHex"></span>
                 </p>
-                <button
-                  class="btn"
-                  @click="$store.uiStore.pickColor(false)"
-                  x-bind:disabled="$store.uiStore.isPicking"
-                  x-bind:aria-label="$store.uiStore.t('color.pick_background')"
-                >
-                  <svg-icon name="eyedropper" size="24px"></svg-icon>
-                </button>
+              </div>
+              <div class="buttons">
+                <div class="group">
+                  <button
+                    class="btn eyedropper"
+                    @click="$store.uiStore.pickColor(false)"
+                    x-bind:disabled="$store.uiStore.isPicking"
+                    x-bind:aria-label="$store.uiStore.t('color.pick_background')"
+                  >
+                    <svg-icon name="eyedropper" size="24px"></svg-icon>
+                  </button>
+                  <button
+                    class="btn"
+                    @click="showBgControls = !showBgControls"
+                    x-bind:disabled="$store.uiStore.isPicking"
+                  >
+                    <svg-icon name="sliders"></svg-icon>
+                  </button>
+                </div>
               </div>
             </section>
          </div>
-        <div class="buttons">
-          <button
-            class="btn small"
-            @click="showBgControls = !showBgControls"
-            x-bind:disabled="$store.uiStore.isPicking"
-          >
-            <svg-icon name="sliders"></svg-icon>
-          </button>
-        </div>
         <!-- Background Color controls -->
         <div class="color-controls" x-bind:class="'slider-mode-' + bgSliderMode" x-show="showBgControls" x-transition>
           <button class="btn-slider-mode" @click="bgSliderMode = bgSliderMode === 'standard' ? 'static' : bgSliderMode === 'static' ? 'dynamic' : 'standard'">
@@ -228,8 +233,8 @@
       <!-- Contrast Ratio -->
       <section class="results" x-data="{ compact: true }">
         <p class="contrast-ratio">
-          <strong x-text="$store.uiStore.t('results.contrast_ratio')">Contrast Ratio:</strong>
-          <span><span x-text="$store.uiStore.contrastRatio"></span>:1</span>
+          <span x-text="$store.uiStore.t('results.contrast_ratio')">Contrast Ratio</span>
+          <span><strong class="ratio" x-text="$store.uiStore.contrastRatio"></strong>:1</span>
         </p>
         <div class="buttons">
           <button

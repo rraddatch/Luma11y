@@ -38,6 +38,9 @@ import { locale as getSystemLocale } from '@tauri-apps/plugin-os';
 // Import du module thème / Import theme module
 import { initTheme, applyTheme } from './theme';
 
+// Import du module thème de style / Import style theme module
+import { initStyleTheme, applyStyleTheme } from './styleTheme';
+
 // Import Webcomponents
 import './components/ProgressBar';
 import './components/SvgIcon';
@@ -233,6 +236,7 @@ onLocaleChange((locale) => {
 // Initialize Alpine.js and activate reactivity in the DOM
 Alpine.start();
 initTheme();
+initStyleTheme();
 
 // Fonction immédiatement invoquée asynchrone (IIFE) pour la synchronisation avec Tauri
 // Immediately Invoked Async Function Expression (IIFE) for Tauri synchronization
@@ -336,6 +340,7 @@ initTheme();
     // Réapplique le thème en cas de changement dans les settings
     // Re-apply theme in case it changed in settings
     applyTheme();
+    applyStyleTheme();
   });
 
   // Étape 5b : Envoie les modèles de copie au backend pour le menu Édition

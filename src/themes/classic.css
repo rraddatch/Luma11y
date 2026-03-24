@@ -1,0 +1,176 @@
+/* =============================================================================
+   classic.css - Thème classique : coins carrés, bordures marquées, style traditionnel
+   classic.css - Classic theme: square corners, stronger borders, traditional style
+   ============================================================================= */
+
+/* Couleurs plus neutres / More neutral colours */
+:root {
+  --text-color: var(--color-gray-700);
+  --text-color-light: var(--color-gray-500);
+  --text-color-strong: var(--color-gray-900);
+  --text-color-inverted: var(--color-gray-50);
+  --text-color-disabled: var(--color-gray-500);
+  --text-color-pass: var(--color-lime-700);
+  --text-color-fail: var(--color-red-800);
+  --background-color: var(--color-gray-50);
+  --background-color-grey: var(--color-gray-200);
+  --background-color-inverted: var(--color-gray-700);
+  --background-color-disabled: var(--color-gray-300);
+  --border-color-light: var(--color-gray-300);
+  --border-color: var(--color-gray-500);
+  --border-color-strong: var(--color-gray-800);
+  --border-color-disabled: var(--color-gray-300);
+  --progress-background: var(--color-gray-400);
+}
+
+[data-theme="dark"] {
+  --text-color: var(--color-gray-200);
+  --text-color-light: var(--color-gray-300);
+  --text-color-strong: var(--color-gray-50);
+  --text-color-inverted: var(--color-gray-700);
+  --text-color-disabled: var(--color-gray-500);
+  --text-color-pass: var(--color-lime-300);
+  --text-color-fail: var(--color-red-300);
+  --background-color: var(--color-gray-700);
+  --background-color-grey: var(--color-gray-800);
+  --background-color-inverted: var(--color-gray-200);
+  --background-color-disabled: var(--color-gray-500);
+  --border-color-light: var(--color-gray-500);
+  --border-color: var(--color-gray-400);
+  --border-color-strong: var(--color-gray-100);
+  --border-color-disabled: var(--color-gray-500);
+  --progress-background: var(--color-gray-400);
+}
+
+/* Styles du corps / Body styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--background-color);
+  color: var(--text-color);
+}
+
+/* -----------------------------------------------------------------------------
+   Boutons carrés / Square buttons
+   ----------------------------------------------------------------------------- */
+
+.btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.2rem;
+  border: 1px solid var(--border-color);
+
+  background-color: var(--background-color);
+  color: var(--background-color-inverted);
+
+  &:hover {
+    border-width: 2px;
+  }
+
+  &:disabled {
+    background: var(--background-color-disabled);
+    border-color: var(--border-color-disabled);
+    color: var(--text-color-disabled);
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   Aperçu couleurs : coins carrés / Colour preview: square corners
+   ----------------------------------------------------------------------------- */
+
+.colors {
+  section {
+    position: relative;
+    padding: 0.5rem 0.5rem 1rem 0.5rem;
+    p {
+      padding: 2rem 0 0.5rem 0;
+    }
+
+    &#foreground, &#background {
+      .buttons {
+        .group {
+          position: absolute;
+          top: 0.5rem;
+          right: 0.5rem;
+        }
+      }
+      .invert{
+        position: absolute;
+        right: 50%;
+        transform: translateX(50%);
+        z-index: 99;
+      }
+    }
+
+    h2 {
+      font-weight: normal;
+      font-size: 0.8rem;
+      position: absolute;
+    }
+
+    .buttons .group {
+      display: flex;
+      gap: 0.2rem;
+      .btn {
+        svg-icon {
+          transition: transform 0.3s ease;
+        }
+        &.rotated svg-icon {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+}
+
+.results {
+  .contrast-ratio {
+    font-size: 0.8rem;
+    .ratio {
+      font-size: 1.4rem;
+    }
+  }
+  .buttons {
+    display: flex;
+    justify-content: right;
+    height: 0;
+    padding-right: 0.5rem;
+    gap: 0.5rem;
+    .btn {
+      position: relative;
+      z-index: 99;
+      transform: translateY(-50%);
+    }
+  }
+  .progress {
+    .label {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 0 0 0;
+      align-items: center;
+      font-size: 0.8rem;
+      .pass {
+        font-weight: bold;
+        color: var(--text-color-pass);
+        font-size: 1rem;
+      }
+      .fail {
+        font-weight: bold;
+        color: var(--text-color-fail);
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .progress-compact {
+    .pass {
+      font-weight: bold;
+      color: var(--text-color-pass);
+    }
+    .fail {
+      font-weight: bold;
+      color: var(--text-color-fail);
+    }
+  }
+}

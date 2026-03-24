@@ -64,6 +64,19 @@
           </div>
         </div>
 
+        <!-- Thème de style / Style theme -->
+        <div class="section">
+          <label for="settings-style-theme" class="section-label" x-text="$store.settings.t('settings.style_theme')">Style</label>
+          <div class="field">
+            <select id="settings-style-theme"
+                :value="$store.settings.styleTheme"
+                @change="$store.settings.setStyleTheme($event.target.value)">
+              <option value="modern" x-text="$store.settings.t('settings.style_modern')">Modern</option>
+              <option value="classic" x-text="$store.settings.t('settings.style_classic')">Classic</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Toast / Notification -->
         <div class="section">
           <label for="settings-toast-duration" class="section-label" x-text="$store.settings.t('settings.toast_duration')">Toast duration</label>
