@@ -268,6 +268,7 @@
               <svg-icon name="text" size="2.2rem" class="non-active"></svg-icon>
             </span>
             <progress-bar :position="$store.uiStore.contrastRatio" split1="4.5" split2="7" labels="ratios"></progress-bar>
+            <p class="sr-only" x-text="$store.uiStore.contrastRatio < 4.5 ? $store.uiStore.t('results.below', 4.5) : $store.uiStore.contrastRatio <= 7 ? $store.uiStore.t('results.between', 4.5, 7) : $store.uiStore.t('results.above', 7)"></p>
           </div>
         </div>
         <div class="progress" x-show="!compact" x-transition>
@@ -284,6 +285,7 @@
               <svg-icon name="text" size="1.5rem" class="non-active"></svg-icon>
             </span>
             <progress-bar :position="$store.uiStore.contrastRatio" split1="3" split2="4.5" labels="ratios"></progress-bar>
+            <p class="sr-only" x-text="$store.uiStore.contrastRatio < 3 ? $store.uiStore.t('results.below', 3) : $store.uiStore.contrastRatio <= 4.5 ? $store.uiStore.t('results.between', 3, 4.5) : $store.uiStore.t('results.above', 4.5)"></p>
           </div>
         </div>
         <div class="progress" x-show="!compact" x-transition>
@@ -298,6 +300,7 @@
               <svg-icon name="non-text" size="2rem"></svg-icon>
             </span>
             <progress-bar :position="$store.uiStore.contrastRatio" split1="3" labels="ratios"></progress-bar>
+            <p class="sr-only" x-text="$store.uiStore.contrastRatio < 3 ? $store.uiStore.t('results.below', 3) : $store.uiStore.t('results.above', 3)"></p>
           </div>
         </div>
         <!-- Vue compacte : icônes + pass/fail -->

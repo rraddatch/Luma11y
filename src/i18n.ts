@@ -60,10 +60,12 @@ function resolve(obj: Record<string, unknown>, key: string): string | undefined 
 
 /// Retourne la traduction pour une clé, avec fallback EN puis clé brute
 /// Returns the translation for a key, with EN fallback then raw key
-export function t(key: string): string {
-  return resolve(translations[currentLocale], key)
+export function t(key: string, ...args: (string | number)[]): string {
+  const raw = resolve(translations[currentLocale], key)
     ?? resolve(translations[DEFAULT_LOCALE], key)
     ?? key;
+  if (args.length === 0) return raw;
+  return raw.replace(/\{(\d+)\}/g, (_, i) => String(args[Number(i)] ?? _));
 }
 
 /// Retourne la locale courante

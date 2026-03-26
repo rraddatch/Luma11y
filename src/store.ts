@@ -59,7 +59,7 @@ export interface UIStore {
   locale: string;
 
   // Traduction / Translation
-  t(key: string): string;
+  t(key: string, ...args: (string | number)[]): string;
 
   // Changement de locale / Switch locale
   switchLocale(locale: string): void;
@@ -149,11 +149,11 @@ export const UIStore = {
 
   // Traduction : lit this.locale pour créer une dépendance réactive Alpine
   // Translation: reads this.locale to create an Alpine reactive dependency
-  t(this: UIStore, key: string): string {
+  t(this: UIStore, key: string, ...args: (string | number)[]): string {
     // Lire this.locale crée une dépendance Alpine, ce qui force le re-render
     // Reading this.locale creates an Alpine dependency, forcing re-render
     void this.locale;
-    return i18nT(key);
+    return i18nT(key, ...args);
   },
 
   // Changement de locale depuis le frontend

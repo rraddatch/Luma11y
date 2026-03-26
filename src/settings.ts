@@ -115,9 +115,9 @@ Alpine.store('settings', {
   toastDuration: parseInt(localStorage.getItem('cca-toast-duration') ?? '3', 10),
 
   // Traduction réactive / Reactive translation
-  t(key: string): string {
+  t(key: string, ...args: (string | number)[]): string {
     void (this as any).locale;
-    return i18nT(key);
+    return i18nT(key, ...args);
   },
 
   // Change le thème / Change theme

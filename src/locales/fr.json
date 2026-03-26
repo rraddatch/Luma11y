@@ -25,7 +25,10 @@
     "non_text": "Non-texte",
     "pass": "PASS",
     "fail": "FAIL",
-    "toggle_details": "Afficher/masquer les détails"
+    "toggle_details": "Afficher/masquer les détails",
+    "below": "Inférieur à {0}",
+    "between": "Entre {0} et {1}",
+    "above": "Supérieur à {0}"
   },
   "menu": {
     "about": "À propos de CCA",
