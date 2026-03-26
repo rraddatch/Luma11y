@@ -5,9 +5,9 @@
   "color": {
     "foreground": "Premier plan",
     "background": "Arrière-plan",
-    "pick_foreground": "Sélectionner la couleur de premier plan",
-    "pick_background": "Sélectionner la couleur d'arrière-plan",
-    "pick_switch": "Intervertir les couleurs",
+    "btn_pick": "Sélectionner la couleur",
+    "btn_switch": "Intervertir les couleurs",
+    "btn_controls": "Ajuster la couleur",
     "red": "Rouge",
     "green": "Vert",
     "blue": "Bleu",

@@ -5,9 +5,9 @@
   "color": {
     "foreground": "Foreground",
     "background": "Background",
-    "pick_foreground": "Pick foreground colour",
-    "pick_background": "Pick background colour",
-    "pick_switch": "Switch colours",
+    "btn_pick": "Pick colour",
+    "btn_switch": "Switch colours",
+    "btn_controls": "Adjust colour",
     "red": "Red",
     "green": "Green",
     "blue": "Blue",

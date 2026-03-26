@@ -146,8 +146,13 @@ strong {
   .progress-compact {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 1.5rem;
     padding: 1rem 0 0.5rem;
+    svg {
+      display: block;
+      margin: 0 auto;
+    }
     .compact-item {
       display: flex;
       align-items: center;

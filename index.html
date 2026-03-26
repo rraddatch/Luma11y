@@ -12,9 +12,9 @@
   <body>
     <main x-data x-effect="document.title = $store.uiStore.t('app.title'); document.documentElement.lang = $store.uiStore.locale">
       <h1 class="sr-only" x-text="$store.uiStore.t('app.title')">Colour Contrast Analyser</h1>
-      <div class="colors" x-data="{ rotated: false, showControls: false, showBgControls: false, fgSliderMode: 'dynamic', bgSliderMode: 'dynamic' }">
+      <div class="colors" x-data="{ rotated: false, showFgControls: false, showBgControls: false, fgSliderMode: 'dynamic', bgSliderMode: 'dynamic' }">
         <!-- Foreground Color -->
-        <div class="wrapper" x-bind:style="`background-color: ${showControls ? '#ffffff' : $store.uiStore.backgroundHex}`">
+        <div class="wrapper" x-bind:style="`background-color: ${showFgControls ? '#ffffff' : $store.uiStore.backgroundHex}`">
           <section id="foreground"
             x-bind:style="`background-color: ${$store.uiStore.foregroundHex}`"
           >
@@ -22,7 +22,7 @@
               class="color-preview"
               x-bind:class="$store.uiStore.foregroundIsDark ? 'isDark' : 'isLight'"
             >
-              <h2 x-text="$store.uiStore.t('color.foreground')">Foreground</h2>
+              <h2 id="foreground-title" x-text="$store.uiStore.t('color.foreground')">Foreground</h2>
               <p class="color-value">
                 <span class="color-name" x-show="$store.uiStore.foregroundName" x-text="$store.uiStore.foregroundName"></span>
                 <span class="hex-value" :class="{ 'hex-secondary': $store.uiStore.foregroundName }" x-text="$store.uiStore.foregroundHex"></span>
@@ -34,7 +34,7 @@
                 x-bind:class="{ rotated }"
                 @click="$store.uiStore.switchColor(); rotated = !rotated"
                 x-bind:disabled="$store.uiStore.isPicking"
-                x-bind:aria-label="$store.uiStore.t('color.pick_switch')"
+                x-bind:aria-label="$store.uiStore.t('color.btn_switch')"
               >
                 <svg-icon name="swap"></svg-icon>
               </button>
@@ -43,14 +43,18 @@
                   class="btn eyedropper"
                   @click="$store.uiStore.pickColor(true)"
                   x-bind:disabled="$store.uiStore.isPicking"
-                  x-bind:aria-label="$store.uiStore.t('color.pick_foreground')"
+                  x-bind:aria-label="$store.uiStore.t('color.btn_pick')"
+                  aria-describedby="foreground-title"
                 >
                   <svg-icon name="eyedropper" size="24px"></svg-icon>
                 </button>
                 <button
                   class="btn"
-                  @click="showControls = !showControls"
+                  @click="showFgControls = !showFgControls"
                   x-bind:disabled="$store.uiStore.isPicking"
+                  x-bind:aria-label="$store.uiStore.t('color.btn_controls')"
+                  aria-describedby="foreground-title"
+                  x-bind:aria-expanded="showFgControls"
                 >
                   <svg-icon name="sliders"></svg-icon>
                 </button>
@@ -59,7 +63,7 @@
           </section>
         </div>
         <!-- Foreground Color controls -->
-        <div class="color-controls" x-bind:class="'slider-mode-' + fgSliderMode" x-show="showControls" x-transition>
+        <div class="color-controls" x-bind:class="'slider-mode-' + fgSliderMode" x-show="showFgControls" x-transition>
           <button class="btn-slider-mode" @click="fgSliderMode = fgSliderMode === 'standard' ? 'static' : fgSliderMode === 'static' ? 'dynamic' : 'standard'">
             <span class="sr-only" x-text="$store.uiStore.t('color.slider_mode')"></span>
             <span x-show="fgSliderMode === 'standard'" x-text="$store.uiStore.t('color.slider_standard')">Standard</span>
@@ -129,14 +133,14 @@
         </div>
         <!-- Background Color -->
          <div class="wrapper"
-            x-bind:style="`background-color: ${showControls ? '#ffffff' : $store.uiStore.foregroundHex}`">
+            x-bind:style="`background-color: ${showFgControls ? '#ffffff' : $store.uiStore.foregroundHex}`">
             <section id="background"
               x-bind:style="`background-color: ${$store.uiStore.backgroundHex}`">
               <div
                 class="color-preview"
                 x-bind:class="$store.uiStore.backgroundIsDark ? 'isDark' : 'isLight'"
               >
-                <h2 x-text="$store.uiStore.t('color.background')">Background</h2>
+                <h2 id="background-title" x-text="$store.uiStore.t('color.background')">Background</h2>
                 <p class="color-value">
                   <span class="color-name" x-show="$store.uiStore.backgroundName" x-text="$store.uiStore.backgroundName"></span>
                   <span class="hex-value" :class="{ 'hex-secondary': $store.uiStore.backgroundName }" x-text="$store.uiStore.backgroundHex"></span>
@@ -148,7 +152,8 @@
                     class="btn eyedropper"
                     @click="$store.uiStore.pickColor(false)"
                     x-bind:disabled="$store.uiStore.isPicking"
-                    x-bind:aria-label="$store.uiStore.t('color.pick_background')"
+                    x-bind:aria-label="$store.uiStore.t('color.btn_pick')"
+                    aria-describedby="background-title"
                   >
                     <svg-icon name="eyedropper" size="24px"></svg-icon>
                   </button>
@@ -156,6 +161,9 @@
                     class="btn"
                     @click="showBgControls = !showBgControls"
                     x-bind:disabled="$store.uiStore.isPicking"
+                    x-bind:aria-label="$store.uiStore.t('color.btn_controls')"
+                    aria-describedby="background-title"
+                    x-bind:aria-expanded="showBgControls"
                   >
                     <svg-icon name="sliders"></svg-icon>
                   </button>
@@ -254,7 +262,7 @@
             <span class="pass" x-show="$store.uiStore.level146Regular" x-text="$store.uiStore.t('results.pass')">PASS</span>
           </p>
           <!-- 1.4.3 Regular text 4.5 AA - 7 AAA -->
-          <div class="progress-line">
+          <div class="progress-line" aria-hidden="true">
             <span class="icon">
               <svg-icon name="text" size="1.5rem"></svg-icon>
               <svg-icon name="text" size="2.2rem" class="non-active"></svg-icon>
@@ -270,7 +278,7 @@
             <span class="pass" x-show="$store.uiStore.level146Large" x-text="$store.uiStore.t('results.pass')">PASS</span>
           </p>
           <!-- 1.4.6 Large text 3.1 AA - 4.5 AAA -->
-          <div class="progress-line">
+          <div class="progress-line" aria-hidden="true">
             <span class="icon">
               <svg-icon name="text" size="2.2rem"></svg-icon>
               <svg-icon name="text" size="1.5rem" class="non-active"></svg-icon>
@@ -285,9 +293,9 @@
             <span class="pass" x-show="$store.uiStore.level1411" x-text="$store.uiStore.t('results.pass')">PASS</span>
           </p>
           <!-- 1.4.11 Non-text 3.1 AA -->
-          <div class="progress-line">
+          <div class="progress-line" aria-hidden="true">
             <span class="icon">
-              <svg-icon name="toggle" size="2rem"></svg-icon>
+              <svg-icon name="non-text" size="2rem"></svg-icon>
             </span>
             <progress-bar :position="$store.uiStore.contrastRatio" split1="3" labels="ratios"></progress-bar>
           </div>
@@ -312,7 +320,7 @@
           </div>
           <div class="compact-item">
             <span class="icon">
-              <svg-icon name="toggle" size="1.8rem"></svg-icon>
+              <svg-icon name="non-text" size="1.8rem"></svg-icon>
             </span>
             <span class="fail" x-show="!$store.uiStore.level1411" x-text="$store.uiStore.t('results.fail')"></span>
             <span class="pass" x-show="$store.uiStore.level1411" x-text="$store.uiStore.t('results.pass')"></span>
