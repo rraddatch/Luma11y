@@ -64,21 +64,11 @@
         </div>
         <!-- Foreground Color controls -->
         <div class="color-controls" x-bind:class="'slider-mode-' + fgSliderMode" x-show="showFgControls" x-transition>
-          <button class="btn-slider-mode" @click="fgSliderMode = fgSliderMode === 'standard' ? 'static' : fgSliderMode === 'static' ? 'dynamic' : 'standard'">
-            <span class="sr-only" x-text="$store.uiStore.t('color.slider_mode')"></span>
-            <span x-show="fgSliderMode === 'standard'" x-text="$store.uiStore.t('color.slider_standard')">Standard</span>
-            <span x-show="fgSliderMode === 'standard'">
-              <svg-icon name="circle-empty" size="14px"></svg-icon>
-            </span>
-            <span x-show="fgSliderMode === 'static'" x-text="$store.uiStore.t('color.slider_colored')">Coloured</span>
-            <span x-show="fgSliderMode === 'static'">
-              <svg-icon name="circle-dot" size="14px"></svg-icon>
-            </span>
-            <span x-show="fgSliderMode === 'dynamic'" x-text="$store.uiStore.t('color.slider_dynamic')">Dynamic</span>
-            <span x-show="fgSliderMode === 'dynamic'">
-              <svg-icon name="circle-full" size="14px"></svg-icon>
-            </span>
-          </button>
+          <select class="btn-slider-mode" x-bind:aria-label="$store.uiStore.t('color.slider_mode')" x-model="fgSliderMode">
+            <option value="standard" x-text="$store.uiStore.t('color.slider_standard')">Standard</option>
+            <option value="static" x-text="$store.uiStore.t('color.slider_colored')">Coloured</option>
+            <option value="dynamic" x-text="$store.uiStore.t('color.slider_dynamic')">Dynamic</option>
+          </select>
           <fieldset>
             <span aria-hidden="true">R</span>
             <legend class="sr-only" x-text="$store.uiStore.t('color.red')">Red</legend>
@@ -173,21 +163,11 @@
          </div>
         <!-- Background Color controls -->
         <div class="color-controls" x-bind:class="'slider-mode-' + bgSliderMode" x-show="showBgControls" x-transition>
-          <button class="btn-slider-mode" @click="bgSliderMode = bgSliderMode === 'standard' ? 'static' : bgSliderMode === 'static' ? 'dynamic' : 'standard'">
-            <span class="sr-only" x-text="$store.uiStore.t('color.slider_mode')"></span>
-            <span x-show="bgSliderMode === 'standard'" x-text="$store.uiStore.t('color.slider_standard')">Standard</span>
-            <span x-show="bgSliderMode === 'standard'">
-              <svg-icon name="circle-empty" size="14px"></svg-icon>
-            </span>
-            <span x-show="bgSliderMode === 'static'" x-text="$store.uiStore.t('color.slider_colored')">Coloured</span>
-            <span x-show="bgSliderMode === 'static'">
-              <svg-icon name="circle-dot" size="14px"></svg-icon>
-            </span>
-            <span x-show="bgSliderMode === 'dynamic'" x-text="$store.uiStore.t('color.slider_dynamic')">Dynamic</span>
-            <span x-show="bgSliderMode === 'dynamic'">
-              <svg-icon name="circle-full" size="14px"></svg-icon>
-            </span>
-          </button>
+          <select class="btn-slider-mode" x-bind:aria-label="$store.uiStore.t('color.slider_mode')" x-model="bgSliderMode">
+            <option value="standard" x-text="$store.uiStore.t('color.slider_standard')">Standard</option>
+            <option value="static" x-text="$store.uiStore.t('color.slider_colored')">Coloured</option>
+            <option value="dynamic" x-text="$store.uiStore.t('color.slider_dynamic')">Dynamic</option>
+          </select>
           <fieldset class="color-component">
             <span aria-hidden="true">R</span>
             <legend class="sr-only" x-text="$store.uiStore.t('color.red')">Red</legend>
@@ -249,6 +229,7 @@
             class="btn small"
             @click="compact = !compact"
             x-bind:aria-label="$store.uiStore.t('results.toggle_details')"
+            x-bind:aria-expanded="!compact"
           >
             <svg-icon x-show="!compact" name="chevron-down"></svg-icon>
             <svg-icon x-show="compact" name="chevron-up"></svg-icon>

@@ -180,14 +180,14 @@ strong {
   position: relative;
 
   .btn-slider-mode {
-    display: flex;
-    justify-content: flex-end;
+    display: block;
+    margin-left: auto;
     background: none;
     border: none;
-    cursor: pointer;
     color: var(--text-color-light);
-    padding: 0;
-    margin-left: auto;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: inherit;
   }
 
   fieldset {
