@@ -42,6 +42,7 @@ import { initTheme, applyTheme } from './theme';
 import { initStyleTheme, applyStyleTheme } from './styleTheme';
 
 // Import Webcomponents
+import './components/ColorControls';
 import './components/ProgressBar';
 import './components/SvgIcon';
 

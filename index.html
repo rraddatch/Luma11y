@@ -12,7 +12,7 @@
   <body>
     <main x-data x-effect="document.title = $store.uiStore.t('app.title'); document.documentElement.lang = $store.uiStore.locale">
       <h1 class="sr-only" x-text="$store.uiStore.t('app.title')">Colour Contrast Analyser</h1>
-      <div class="colors" x-data="{ rotated: false, showFgControls: false, showBgControls: false, fgSliderMode: 'dynamic', bgSliderMode: 'dynamic' }">
+      <div class="colors" x-data="{ rotated: false, showFgControls: false, showBgControls: false }">
         <!-- Foreground Color -->
         <div class="wrapper" x-bind:style="`background-color: ${showFgControls ? '#ffffff' : $store.uiStore.backgroundHex}`">
           <section id="foreground"
@@ -63,64 +63,13 @@
           </section>
         </div>
         <!-- Foreground Color controls -->
-        <div class="color-controls" x-bind:class="'slider-mode-' + fgSliderMode" x-show="showFgControls" x-transition>
-          <select class="btn-slider-mode" x-bind:aria-label="$store.uiStore.t('color.slider_mode')" x-model="fgSliderMode">
-            <option value="standard" x-text="$store.uiStore.t('color.slider_standard')">Standard</option>
-            <option value="static" x-text="$store.uiStore.t('color.slider_colored')">Coloured</option>
-            <option value="dynamic" x-text="$store.uiStore.t('color.slider_dynamic')">Dynamic</option>
-          </select>
-          <fieldset>
-            <span aria-hidden="true">R</span>
-            <legend class="sr-only" x-text="$store.uiStore.t('color.red')">Red</legend>
-            <input
-              x-bind:aria-label="$store.uiStore.t('color.component_value')"
-              type="number" min="0" max="255" class="rgb-input"
-              x-bind:value="$store.uiStore.foregroundRgb.split(',')[0]?.trim()"
-              @change="$store.uiStore.updateColor('foreground', 'r', Math.min(255, Math.max(0, +$event.target.value)))"
-            />
-            <input
-              x-bind:aria-label="$store.uiStore.t('color.component_slider')"
-              type="range" min="0" max="255" class="slider-r"
-              x-bind:value="$store.uiStore.foregroundRgb.split(',')[0]?.trim()"
-              @input="$store.uiStore.updateColor('foreground', 'r', +$event.target.value)"
-              x-bind:style="fgSliderMode === 'dynamic' ? `--slider-from: rgb(0,${$store.uiStore.foregroundRgb.split(',')[1]?.trim()},${$store.uiStore.foregroundRgb.split(',')[2]?.trim()}); --slider-to: rgb(255,${$store.uiStore.foregroundRgb.split(',')[1]?.trim()},${$store.uiStore.foregroundRgb.split(',')[2]?.trim()})` : ''"
-            />
-          </fieldset>
-          <fieldset>
-            <span aria-hidden="true">G</span>
-            <legend class="sr-only" x-text="$store.uiStore.t('color.green')">Green</legend>
-            <input
-              x-bind:aria-label="$store.uiStore.t('color.component_value')"
-              type="number" min="0" max="255" class="rgb-input"
-              x-bind:value="$store.uiStore.foregroundRgb.split(',')[1]?.trim()"
-              @change="$store.uiStore.updateColor('foreground', 'g', Math.min(255, Math.max(0, +$event.target.value)))"
-            />
-            <input
-              x-bind:aria-label="$store.uiStore.t('color.component_slider')"
-              type="range" min="0" max="255" class="slider-g"
-              x-bind:value="$store.uiStore.foregroundRgb.split(',')[1]?.trim()"
-              @input="$store.uiStore.updateColor('foreground', 'g', +$event.target.value)"
-              x-bind:style="fgSliderMode === 'dynamic' ? `--slider-from: rgb(${$store.uiStore.foregroundRgb.split(',')[0]?.trim()},0,${$store.uiStore.foregroundRgb.split(',')[2]?.trim()}); --slider-to: rgb(${$store.uiStore.foregroundRgb.split(',')[0]?.trim()},255,${$store.uiStore.foregroundRgb.split(',')[2]?.trim()})` : ''"
-            />
-          </fieldset>
-          <fieldset>
-            <span aria-hidden="true">B</span>
-            <legend class="sr-only" x-text="$store.uiStore.t('color.blue')">Blue</legend>
-            <input
-              x-bind:aria-label="$store.uiStore.t('color.component_value')"
-              type="number" min="0" max="255" class="rgb-input"
-              x-bind:value="$store.uiStore.foregroundRgb.split(',')[2]?.trim()"
-              @change="$store.uiStore.updateColor('foreground', 'b', Math.min(255, Math.max(0, +$event.target.value)))"
-            />
-            <input
-              x-bind:aria-label="$store.uiStore.t('color.component_slider')"
-              type="range" min="0" max="255" class="slider-b"
-              x-bind:value="$store.uiStore.foregroundRgb.split(',')[2]?.trim()"
-              @input="$store.uiStore.updateColor('foreground', 'b', +$event.target.value)"
-              x-bind:style="fgSliderMode === 'dynamic' ? `--slider-from: rgb(${$store.uiStore.foregroundRgb.split(',')[0]?.trim()},${$store.uiStore.foregroundRgb.split(',')[1]?.trim()},0); --slider-to: rgb(${$store.uiStore.foregroundRgb.split(',')[0]?.trim()},${$store.uiStore.foregroundRgb.split(',')[1]?.trim()},255)` : ''"
-            />
-          </fieldset>
-        </div>
+        <color-controls
+          x-show="showFgControls" x-transition
+          x-bind:rgb="$store.uiStore.foregroundRgb"
+          x-bind:locale="$store.uiStore.locale"
+          x-bind:label="$store.uiStore.t('color.foreground')"
+          @color-change="$store.uiStore.updateColor('foreground', $event.detail.component, $event.detail.value)"
+        ></color-controls>
         <!-- Background Color -->
          <div class="wrapper"
             x-bind:style="`background-color: ${showFgControls ? '#ffffff' : $store.uiStore.foregroundHex}`">
@@ -162,61 +111,13 @@
             </section>
          </div>
         <!-- Background Color controls -->
-        <div class="color-controls" x-bind:class="'slider-mode-' + bgSliderMode" x-show="showBgControls" x-transition>
-          <select class="btn-slider-mode" x-bind:aria-label="$store.uiStore.t('color.slider_mode')" x-model="bgSliderMode">
-            <option value="standard" x-text="$store.uiStore.t('color.slider_standard')">Standard</option>
-            <option value="static" x-text="$store.uiStore.t('color.slider_colored')">Coloured</option>
-            <option value="dynamic" x-text="$store.uiStore.t('color.slider_dynamic')">Dynamic</option>
-          </select>
-          <fieldset class="color-component">
-            <span aria-hidden="true">R</span>
-            <legend class="sr-only" x-text="$store.uiStore.t('color.red')">Red</legend>
-            <input x-bind:aria-label="$store.uiStore.t('color.component_value')"
-            type="number" min="0" max="255" class="rgb-input"
-              x-bind:value="$store.uiStore.backgroundRgb.split(',')[0]?.trim()"
-              @change="$store.uiStore.updateColor('background', 'r', Math.min(255, Math.max(0, +$event.target.value)))"
-            />
-            <input type="range"
-              x-bind:aria-label="$store.uiStore.t('color.component_slider')"
-              min="0" max="255" class="slider-r"
-              x-bind:value="$store.uiStore.backgroundRgb.split(',')[0]?.trim()"
-              @input="$store.uiStore.updateColor('background', 'r', +$event.target.value)"
-              x-bind:style="bgSliderMode === 'dynamic' ? `--slider-from: rgb(0,${$store.uiStore.backgroundRgb.split(',')[1]?.trim()},${$store.uiStore.backgroundRgb.split(',')[2]?.trim()}); --slider-to: rgb(255,${$store.uiStore.backgroundRgb.split(',')[1]?.trim()},${$store.uiStore.backgroundRgb.split(',')[2]?.trim()})` : ''"
-            />
-          </fieldset>
-          <fieldset class="color-component">
-            <span aria-hidden="true">G</span>
-            <legend class="sr-only" x-text="$store.uiStore.t('color.green')">Green</legend>
-            <input type="number" min="0" max="255" class="rgb-input"
-              x-bind:aria-label="$store.uiStore.t('color.component_value')"
-              x-bind:value="$store.uiStore.backgroundRgb.split(',')[1]?.trim()"
-              @change="$store.uiStore.updateColor('background', 'g', Math.min(255, Math.max(0, +$event.target.value)))"
-            />
-            <input type="range"
-              x-bind:aria-label="$store.uiStore.t('color.component_slider')"
-              min="0" max="255" class="slider-g"
-              x-bind:value="$store.uiStore.backgroundRgb.split(',')[1]?.trim()"
-              @input="$store.uiStore.updateColor('background', 'g', +$event.target.value)"
-              x-bind:style="bgSliderMode === 'dynamic' ? `--slider-from: rgb(${$store.uiStore.backgroundRgb.split(',')[0]?.trim()},0,${$store.uiStore.backgroundRgb.split(',')[2]?.trim()}); --slider-to: rgb(${$store.uiStore.backgroundRgb.split(',')[0]?.trim()},255,${$store.uiStore.backgroundRgb.split(',')[2]?.trim()})` : ''"
-            />
-          </fieldset>
-          <fieldset class="color-component">
-            <span aria-hidden="true">B</span>
-            <legend class="sr-only" x-text="$store.uiStore.t('color.blue')">Blue</legend>
-            <input type="number" min="0" max="255" class="rgb-input"
-              x-bind:aria-label="$store.uiStore.t('color.component_value')"
-              x-bind:value="$store.uiStore.backgroundRgb.split(',')[2]?.trim()"
-              @change="$store.uiStore.updateColor('background', 'b', Math.min(255, Math.max(0, +$event.target.value)))"
-            />
-            <input type="range"
-              x-bind:aria-label="$store.uiStore.t('color.component_slider')"
-              min="0" max="255" class="slider-b"
-              x-bind:value="$store.uiStore.backgroundRgb.split(',')[2]?.trim()"
-              @input="$store.uiStore.updateColor('background', 'b', +$event.target.value)"
-              x-bind:style="bgSliderMode === 'dynamic' ? `--slider-from: rgb(${$store.uiStore.backgroundRgb.split(',')[0]?.trim()},${$store.uiStore.backgroundRgb.split(',')[1]?.trim()},0); --slider-to: rgb(${$store.uiStore.backgroundRgb.split(',')[0]?.trim()},${$store.uiStore.backgroundRgb.split(',')[1]?.trim()},255)` : ''"
-            />
-          </fieldset>
-        </div>
+        <color-controls
+          x-show="showBgControls" x-transition
+          x-bind:rgb="$store.uiStore.backgroundRgb"
+          x-bind:locale="$store.uiStore.locale"
+          x-bind:label="$store.uiStore.t('color.background')"
+          @color-change="$store.uiStore.updateColor('background', $event.detail.component, $event.detail.value)"
+        ></color-controls>
       </div>
       <!-- Contrast Ratio -->
       <section class="results" x-data="{ compact: true }">
