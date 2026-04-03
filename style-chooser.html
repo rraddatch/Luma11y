@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Choose a style</title>
+    <link rel="stylesheet" href="/src/colors.css" />
+    <link rel="stylesheet" href="/src/style-chooser.css" />
+  </head>
+  <body x-data x-effect="
+    document.title = $store.chooser.t('style_chooser.title');
+    document.documentElement.lang = $store.chooser.locale;
+  ">
+    <main>
+      <h1 x-text="$store.chooser.t('style_chooser.heading')">Choose your style</h1>
+      <p class="description" x-text="$store.chooser.t('style_chooser.description')">You can change this later in Settings.</p>
+      <div class="choices" role="group" x-bind:aria-label="$store.chooser.t('style_chooser.heading')">
+        <button class="choice" @click="$store.chooser.choose('modern')">
+          <img src="/src/assets/style_modern.png" alt="" />
+          <span x-text="$store.chooser.t('style_chooser.modern')">Modern</span>
+        </button>
+        <button class="choice" @click="$store.chooser.choose('classic')">
+          <img src="/src/assets/style_classic.png" alt="" />
+          <span x-text="$store.chooser.t('style_chooser.classic')">Classic</span>
+        </button>
+      </div>
+    </main>
+
+    <script type="module" src="/src/style-chooser.ts"></script>
+  </body>
+</html>

@@ -29,7 +29,7 @@ import { UIStore, BackendStore } from './store';
 
 // Import du module i18n
 // Import i18n module
-import { initLocale, onLocaleChange, setLocale } from './i18n';
+import { initLocale, onLocaleChange, setLocale, t as i18nT } from './i18n';
 
 // Import de la détection de locale système via Tauri plugin OS
 // Import system locale detection via Tauri plugin OS
@@ -40,6 +40,9 @@ import { initTheme, applyTheme } from './theme';
 
 // Import du module thème de style / Import style theme module
 import { initStyleTheme, applyStyleTheme } from './styleTheme';
+
+// Import pour la création de fenêtre / Import for window creation
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 // Import Webcomponents
 import './components/ColorControls';
@@ -264,6 +267,37 @@ initStyleTheme();
     await invoke('set_locale', { locale: detectedLocale });
   } catch (error) {
     console.error('Error setting initial locale:', error);
+  }
+
+  // Étape 0b : Ouvre le sélecteur de style au premier lancement
+  // Step 0b: Open style chooser on first launch
+  if (!localStorage.getItem('cca-style-theme')) {
+    const chooser = new WebviewWindow('style-chooser', {
+      url: 'style-chooser.html',
+      title: i18nT('style_chooser.title'),
+      width: 620,
+      height: 400,
+      resizable: false,
+      center: true,
+    });
+
+    // Attend que l'utilisateur choisisse un style avant de continuer
+    // Wait for user to choose a style before continuing
+    await new Promise<void>((resolve) => {
+      listen<string>('style-chosen', (event) => {
+        applyStyleTheme(event.payload as any);
+        resolve();
+      });
+      // Si la fenêtre est fermée sans choix, applique le défaut
+      // If window is closed without choosing, apply default
+      chooser.onCloseRequested(() => {
+        if (!localStorage.getItem('cca-style-theme')) {
+          localStorage.setItem('cca-style-theme', 'modern');
+          applyStyleTheme('modern');
+        }
+        resolve();
+      });
+    });
   }
 
   // Étape 1 : Récupération de l'état initial du store Tauri au chargement de la page

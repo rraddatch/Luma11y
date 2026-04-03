@@ -78,5 +78,12 @@
     "tag_1_4_3": "Résultat 1.4.3 Contraste (Minimum)",
     "tag_1_4_6": "Résultat 1.4.6 Contraste (Amélioré)",
     "tag_1_4_11": "Résultat 1.4.11 Contraste des éléments non textuels"
+  },
+  "style_chooser": {
+    "title": "Choisir un style",
+    "heading": "Choisissez votre style",
+    "description": "Vous pourrez modifier ce choix dans les Préférences.",
+    "modern": "Moderne",
+    "classic": "Classique"
   }
 }

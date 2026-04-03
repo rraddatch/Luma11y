@@ -12,29 +12,47 @@
     document.title = $store.settings.t('settings.title');
     document.documentElement.lang = $store.settings.locale;
   ">
-    <main x-data="{ activeTab: 'general' }">
+    <main x-data="{
+      activeTab: 'general',
+      tabs: ['general', 'shortcuts', 'templates'],
+      focusTab(id) { this.$root.querySelector(`[role=tab][data-tab=${id}]`)?.focus(); },
+      prevTab() { const i = this.tabs.indexOf(this.activeTab); this.activeTab = this.tabs[(i - 1 + this.tabs.length) % this.tabs.length]; this.$nextTick(() => this.focusTab(this.activeTab)); },
+      nextTab() { const i = this.tabs.indexOf(this.activeTab); this.activeTab = this.tabs[(i + 1) % this.tabs.length]; this.$nextTick(() => this.focusTab(this.activeTab)); }
+    }">
 
       <!-- Onglets / Tabs -->
       <div class="tabs" role="tablist">
-        <button role="tab"
+        <button role="tab" data-tab="general"
+          id="tab-general" aria-controls="panel-general"
           :aria-selected="activeTab === 'general'"
+          :tabindex="activeTab === 'general' ? 0 : -1"
           :class="{ active: activeTab === 'general' }"
           @click="activeTab = 'general'"
+          @keydown.arrow-left.prevent="prevTab()"
+          @keydown.arrow-right.prevent="nextTab()"
           x-text="$store.settings.t('settings.tab_general')">General</button>
-        <button role="tab"
+        <button role="tab" data-tab="shortcuts"
+          id="tab-shortcuts" aria-controls="panel-shortcuts"
           :aria-selected="activeTab === 'shortcuts'"
+          :tabindex="activeTab === 'shortcuts' ? 0 : -1"
           :class="{ active: activeTab === 'shortcuts' }"
           @click="activeTab = 'shortcuts'"
+          @keydown.arrow-left.prevent="prevTab()"
+          @keydown.arrow-right.prevent="nextTab()"
           x-text="$store.settings.t('settings.tab_shortcuts')">Shortcuts</button>
-        <button role="tab"
+        <button role="tab" data-tab="templates"
+          id="tab-templates" aria-controls="panel-templates"
           :aria-selected="activeTab === 'templates'"
+          :tabindex="activeTab === 'templates' ? 0 : -1"
           :class="{ active: activeTab === 'templates' }"
           @click="activeTab = 'templates'"
+          @keydown.arrow-left.prevent="prevTab()"
+          @keydown.arrow-right.prevent="nextTab()"
           x-text="$store.settings.t('settings.tab_templates')">Copy templates</button>
       </div>
 
       <!-- Tab : Général / General -->
-      <div role="tabpanel" x-show="activeTab === 'general'" class="tab-panel">
+      <div role="tabpanel" id="panel-general" aria-labelledby="tab-general" x-show="activeTab === 'general'" class="tab-panel">
 
         <!-- Langue / Language -->
         <div class="section">
@@ -92,21 +110,24 @@
       </div>
 
       <!-- Tab : Raccourcis / Shortcuts -->
-      <div role="tabpanel" x-show="activeTab === 'shortcuts'" class="tab-panel">
+      <div role="tabpanel" id="panel-shortcuts" aria-labelledby="tab-shortcuts" x-show="activeTab === 'shortcuts'" class="tab-panel">
 
         <fieldset class="section">
-          <legend class="section-label" x-text="$store.settings.t('settings.shortcuts')">Keyboard shortcuts</legend>
+          <legend :id="sc.id" class="section-label" x-text="$store.settings.t('settings.shortcuts')">Keyboard shortcuts</legend>
 
           <template x-for="(sc, index) in $store.settings.shortcuts" :key="sc.id">
             <div class="shortcut-row" x-data="{ recording: false }">
-              <label x-text="$store.settings.t('settings.shortcut_' + sc.id)"></label>
+              <div x-text="$store.settings.t('settings.shortcut_' + sc.id)" aria-hidden="true"></div>
               <div class="shortcut-input"
                 tabindex="0"
+                role="button"
                 :class="{ recording }"
                 x-text="recording ? $store.settings.t('settings.press_keys') : sc.key || $store.settings.t('settings.no_shortcut')"
                 @click="recording = true; $el.focus()"
                 @keydown="if (!recording) { if ($event.key === 'Enter' || $event.key === ' ') { $event.preventDefault(); recording = true; } return; } $event.preventDefault(); if (['Control', 'Alt', 'Shift', 'Meta'].includes($event.key)) return; $store.settings.updateShortcut(index, $event); recording = false"
                 @blur="recording = false"
+                :aria-label="$store.settings.t('settings.shortcut_' + sc.id) + ' ' + sc.key || $store.settings.t('settings.no_shortcut')"
+                :aria-describedby="sc.id"
               ></div>
             </div>
           </template>
@@ -116,7 +137,7 @@
       </div>
 
       <!-- Tab : Modèles de copie / Copy templates -->
-      <div role="tabpanel" x-show="activeTab === 'templates'" class="tab-panel">
+      <div role="tabpanel" id="panel-templates" aria-labelledby="tab-templates" x-show="activeTab === 'templates'" class="tab-panel">
         <details class="tag-help">
           <summary x-text="$store.settings.t('settings.tag_help_title')">Available tags</summary>
           <dl class="tag-list">
@@ -133,36 +154,44 @@
           <template x-for="(tpl, index) in $store.settings.templates" :key="index">
             <fieldset class="template-item" x-data="{ recording: false, editing: !tpl.name }">
               <div class="template-header">
-                <legend class="template-name" x-show="!editing" x-text="tpl.name"></legend>
-                <legend class="template-name" x-show="editing" x-text="$store.settings.t('settings.new_template')">New template</legend>
-                <input type="text" class="template-name" x-show="editing"
-                  x-init="if (editing) $nextTick(() => $el.focus())"
-                  @input="$store.settings.templates[index].name = $event.target.value"
-                  :placeholder="$store.settings.t('settings.template_name')"
-                  @keydown.enter="if ($event.target.value) editing = false"
-                  @blur="if ($store.settings.templates[index].name) editing = false"
-                />
-                <button class="btn-remove" @click="$store.settings.removeTemplate(index)" :title="$store.settings.t('settings.remove_template')">&times;</button>
+                <legend class="template" :id="'template-' + index" x-show="!editing" x-text="tpl.name"></legend>
+                <legend class="template" :id="'template-' + index + '-new'" x-show="editing" x-text="$store.settings.t('settings.new_template')">New template</legend>
+                <button class="btn-remove" @click="$store.settings.removeTemplate(index)" :aria-label="$store.settings.t('settings.remove_template')" :aria-describedby="'template-' + index">&times;</button>
               </div>
-              <label x-text="$store.settings.t('settings.template_content')">Content</label>
-              <textarea rows="2" :value="tpl.template"
+              <label :for="'template-name' + index" x-text="$store.settings.t('settings.template_content')">Content</label>
+              <input type="text" class="template-name" x-show="editing"
+                :id="'template-name' + index"
+                x-init="if (editing) $nextTick(() => $el.focus())"
+                @input="$store.settings.templates[index].name = $event.target.value"
+                :placeholder="$store.settings.t('settings.template_name')"
+                @keydown.enter="if ($event.target.value) editing = false"
+                @blur="if ($store.settings.templates[index].name) editing = false"
+                :aria-describedby="'template-' + index"
+              />
+
+              <label :for="'template-content' + index" x-text="$store.settings.t('settings.template_content')">Content</label>
+              <textarea :id="'template-content' + index" rows="2" :value="tpl.template"
                 @input="$store.settings.templates[index].template = $event.target.value"
+                :aria-describedby="'template-' + index"
               ></textarea>
               <div class="template-shortcut">
-                <label x-text="$store.settings.t('settings.copy_shortcut')">Shortcut</label>
+                <div x-text="$store.settings.t('settings.copy_shortcut')" aria-hidden="true">Shortcut</div>
                 <div class="shortcut-input"
+                  role="button"
                   tabindex="0"
                   :class="{ recording }"
                   x-text="recording ? $store.settings.t('settings.press_keys') : tpl.shortcut || $store.settings.t('settings.no_shortcut')"
                   @click="recording = true; $el.focus()"
                   @keydown="if (!recording) { if ($event.key === 'Enter' || $event.key === ' ') { $event.preventDefault(); recording = true; } return; } $event.preventDefault(); if (['Control', 'Alt', 'Shift', 'Meta'].includes($event.key)) return; $store.settings.updateTemplateShortcut(index, $event); recording = false"
                   @blur="recording = false"
+                  :aria-label="$store.settings.t('settings.copy_shortcut') + ' ' + tpl.shortcut || $store.settings.t('settings.no_shortcut')"
+                  :aria-describedby="'template-' + index"
                 ></div>
               </div>
             </fieldset>
           </template>
         </div>
-        <button class="btn-add" @click="$store.settings.addTemplate()" x-text="'+ ' + $store.settings.t('settings.add_template')"><span aria-hidden="true">+</span> Add</button>
+        <button class="btn-add" @click="$store.settings.addTemplate()"><span aria-hidden="true">+</span> <span x-text="$store.settings.t('settings.add_template')">Add</span></button>
       </div>
     </main>
 

@@ -2,7 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main", "settings"],
+  "windows": ["main", "settings", "style-chooser"],
   "permissions": [
     "core:default",
     "core:window:allow-set-size",
@@ -10,6 +10,8 @@
     "core:window:allow-outer-size",
     "core:window:allow-close",
     "core:window:allow-set-focus",
+    "core:webview:allow-create-webview-window",
+    "core:window:allow-destroy",
     "opener:default",
     "os:default"
   ]

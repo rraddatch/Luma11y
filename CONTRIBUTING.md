@@ -18,7 +18,7 @@ Here's how to get your environment setup.  You will need Git and NPM installed o
 Clone down the repository:
 
 ```
-git clone https://github.com/ThePacielloGroup/CCAe.git
+git clone https://github.com/WebAccessibilityTools/CCA.git
 ```
 
 Install Dependencies:
@@ -53,7 +53,7 @@ The CHANGELOG.md is generated using github-changelog-generator
 https://github.com/github-changelog-generator/github-changelog-generator
 
 ```shell
-docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator github_changelog_generator -u ThePacielloGroup -p CCAe --since-tag=v3.1.1 --future-release=v3.1.2 -t <token>
+docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator github_changelog_generator -u WebAccessibilityTools -p CCA --since-tag=v4.0.0 --future-release=v4.0.1 -t <token>
 ```
 
 Other commands are available in the `package.json` file.

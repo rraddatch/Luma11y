@@ -1,0 +1,71 @@
+/* =============================================================================
+   style-chooser.css - Styles de la fenêtre de choix de style
+   style-chooser.css - Style chooser window styles
+   Utilise uniquement les variables --color-* de colors.css
+   Uses only --color-* variables from colors.css
+   ============================================================================= */
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: var(--color-slate-100);
+  color: var(--color-slate-700);
+}
+
+main {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: var(--color-slate-900);
+}
+
+.description {
+  font-size: 0.85rem;
+  color: var(--color-slate-500);
+  margin: 0 0 1.5rem;
+}
+
+.choices {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 12px;
+}
+
+.choice:hover,
+.choice:focus-visible {
+  outline: 4px solid var(--color-slate-600);
+  outline-offset: 2px;
+}
+
+.choice img {
+  width: 17rem;
+  border-radius: 8px;
+  border: 1px dashed var(--color-slate-400);
+}
+
+.choice span {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: var(--color-slate-900);
+}

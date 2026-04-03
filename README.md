@@ -2,7 +2,7 @@
 
 # Colour Contrast Analyser
 
-![CCA logo](src-tauri/icons/icon.svg)
+![](src-tauri/icons/64x64.png)
 
 **Determine the legibility of text and the contrast of visual elements, such as graphical controls and visual indicators.**
 
@@ -10,6 +10,8 @@
 [![GPL-3.0 licence](https://img.shields.io/github/license/WebAccessibilityTools/CCA.svg?style=flat-square)](LICENSE)
 [![Built with Tauri](https://img.shields.io/badge/built_with-Tauri-ffc131?style=flat-square&logo=tauri)](https://tauri.app/)
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+
+*Read this in other languages: [English](README.md) | [Français](README.fr.md)*
 
 </div>
 
@@ -21,9 +23,25 @@ For the previous Electron version, see the [CCAe](https://github.com/ThePaciello
 
 <div align="center">
 
-![CCA Interface](cca.png)
+![CCA Interface](en/cca-modern-en.png)
 
 </div>
+
+## ❤️ Support this project
+
+This project is something I build entirely on my own free time, driven by
+the belief that accessibility tooling should be open, and
+available to everyone. To keep it trustworthy and easy to install, I need
+code signing certificates for both Windows and macOS — which come with a
+real annual cost. If this tool saves you time or helps your team ship more
+accessible products, consider sponsoring this project. Even a small
+contribution goes a long way toward keeping it signed, maintained, and free.
+
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github)](https://github.com/sponsors/WebAccessibilityTools)
+
+Or, if you prefer, buy me some coffe for further improve this tool even more.
+
+<a href="https://www.buymeacoffee.com/ctrevisan" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height=48 ></a>
 
 ## Table of Contents
 
@@ -47,7 +65,7 @@ For the previous Electron version, see the [CCAe](https://github.com/ThePaciello
 | Configurable picker shortcuts | Done |
 | RGB Sliders | Done |
 | Copy/Paste format templates | Done |
-| Colour name | Planned |
+| Colour name | Done |
 
 ### Beta 2
 
