@@ -110,8 +110,9 @@ Or, if you prefer, buy me some coffe for further improve this tool even more.
 
 1. Download the latest release from the [Releases](https://github.com/WebAccessibilityTools/CCA/releases) page.
 2. Enable **System Settings** > **Privacy & Security** > **Security** > **App Store and identified developers**.
-3. Double-click `CCA.app`. It will be blocked. Go to **System Settings** > **Privacy & Security** > **Security** and click **Open Anyway**.
-4. If prompted, allow the application to run.
+3. Double-click `CCA.app`. It will be blocked.
+4. Go to **System Settings** > **Privacy & Security** > **Security** and click **Open Anyway**.
+5. If prompted, allow the application to run.
 
 ### Option 3 &mdash; Remove quarantine for CCA only
 

@@ -111,8 +111,9 @@ Ou, si vous préférez, offrez-moi un café pour m'aider à améliorer cet outil
 
 1. Téléchargez la dernière version depuis la page [Releases](https://github.com/WebAccessibilityTools/CCA/releases).
 2. Activez **Réglages du système** > **Confidentialité et sécurité** > **Sécurité** > **App Store et développeurs identifiés**.
-3. Double-cliquez sur `CCA.app`. Il sera bloqué. Allez dans **Réglages du système** > **Confidentialité et sécurité** > **Sécurité** et cliquez sur **Ouvrir quand même**.
-4. Si demandé, autorisez l'exécution de l'application.
+3. Double-cliquez sur `CCA.app`. Il sera bloqué. 
+4. Allez dans **Réglages du système** > **Confidentialité et sécurité** > **Sécurité** et cliquez sur **Ouvrir quand même**.
+5. Si demandé, autorisez l'exécution de l'application.
 
 ### Option 3 &mdash; Supprimer la quarantaine pour CCA uniquement
 
