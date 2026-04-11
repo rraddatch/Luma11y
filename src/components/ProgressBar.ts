@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { t } from '../i18n';
 
 @customElement('progress-bar')
 export class ProgressBar extends LitElement {
@@ -19,8 +20,8 @@ export class ProgressBar extends LitElement {
       position: relative;
       width: 100%;
       min-width: 0;
-      height: 3rem;
-      overflow: hidden;
+      height: 3.4rem;
+      overflow: visible;
       margin: 20px 0;
       font-family: system-ui, -apple-system, sans-serif;
     }
@@ -36,31 +37,36 @@ export class ProgressBar extends LitElement {
       transform: translateY(-50%);
     }
 
-    /* Les traits de séparation blancs */
+    /* white separator */
     .divider {
       position: absolute;
       top: 0;
       width: 2px;
       height: 100%;
-      background-color: white;
+      background-color: var(--progress-divider);
       z-index: 1;
     }
 
-    .progress-indicator {
+    .position-value {
       position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-
-      /* On définit une largeur fine et une hauteur qui dépasse un peu */
-      width: 3px;
-      height: 30px; 
-
-      background-color: var(--background-color-inverted); /* indicator color */
-      border-radius: 2px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.2);
-
-      z-index: 3; /* Above the bar */
+      bottom: 100%;
+      margin-bottom: 0;
+      transform: translateX(-50%);
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--text-color);
+      white-space: nowrap;
+      z-index: 3;
       transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .position-chevron {
+      font-size: 10px;
+      line-height: 1;
+      color: var(--background-color-inverted);
     }
 
     .labels-container {
@@ -72,15 +78,6 @@ export class ProgressBar extends LitElement {
       width: 100%;
     }
 
-    .label-item {
-      text-align: center;
-      font-size: 13px;
-      font-weight: bold;
-      color: var(--text-color);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
     .label-ratio {
       position: absolute;
       left: 0;
@@ -90,22 +87,30 @@ export class ProgressBar extends LitElement {
       color: var(--text-color);
       letter-spacing: 0.5px;
       white-space: nowrap;
-    }
+      &.border {
+        border: 1px solid var(--border-color-light);
+        border-radius: 3px;
+      }
 
-    .label-ratio.above {
-      bottom: 100%;
-      margin-bottom: 4px;
-    }
+      &.end {
+        transform: translateX(-100%);
+      }
 
-    .label-ratio.below {
-      top: 100%;
-      margin-top: 4px;
+      &.above {
+        bottom: 100%;
+        margin-bottom: 4px;
+      }
+
+      &.below {
+        top: 100%;
+        margin-top: 4px;
+      }
     }
   `;
 
-  // Convertit une valeur sur l'échelle 0-21 en pourcentage
+  // Convertit une valeur sur l'échelle 1-21 en pourcentage
   private toPercent(value: number): number {
-    return (value / 21) * 100;
+    return ((value - 1) / 20) * 100;
   }
 
   render() {
@@ -131,14 +136,18 @@ export class ProgressBar extends LitElement {
           ? html`<div class="divider" style="left: ${s2Percent}%"></div>`
           : ''}
 
-        <div class="progress-indicator" style="left: ${posPercent}%"></div>
+        <span class="position-value" style="left: ${posPercent}%">
+          <span>${this.position}</span>
+          <span class="position-chevron">▼</span>
+        </span>
 
         ${this.labels === 'ratios'
           ? html`
-            <span class="label-ratio above" style="left: ${s1Percent}%">${this.split1}</span>
+            <span class="label-ratio border below" style="left: ${s1Percent}%">${this.split1}</span>
             ${this.split2 != null
-              ? html`<span class="label-ratio below" style="left: ${s2Percent}%">${this.split2}</span>`
+              ? html`<span class="label-ratio border below" style="left: ${s2Percent}%">${this.split2}</span>`
               : ''}
+            <span class="label-ratio below end" style="left: 100%">${t('results.ratio')}</span>
           `
           : ''}
       </div>

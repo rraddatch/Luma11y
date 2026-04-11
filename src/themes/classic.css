@@ -24,6 +24,7 @@
   --progress-aa: var(--color-neutral-500);
   --progress-aaa: var(--color-neutral-800);
   --progress-fail: var(--color-red-700);
+  --progress-divider: white;
 }
 
 [data-theme="dark"] {
@@ -47,6 +48,8 @@
   --progress-aa: var(--color-neutral-400);
   --progress-aaa: var(--color-neutral-200);
   --progress-fail: var(--color-red-400);
+  --progress-divider: white;
+
 }
 
 /* Styles du corps / Body styles */

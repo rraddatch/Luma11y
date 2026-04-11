@@ -25,6 +25,7 @@
     "non_text": "Non-text",
     "pass": "PASS",
     "fail": "FAIL",
+    "ratio": "Ratio",
     "toggle_details": "Show detailed results",
     "below": "Below {0}",
     "between": "Between {0} and {1}",
