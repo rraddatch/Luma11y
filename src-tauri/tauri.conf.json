@@ -16,6 +16,7 @@
         "title": "Colour Contrast Analyser",
         "width": 400,
         "height": 500,
+        "minWidth": 400,
         "resizable": true,
         "center": true
       }

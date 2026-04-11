@@ -19,7 +19,6 @@
 
 Ce dépôt contient le code source de la nouvelle version du Colour Contrast Analyser (CCA) pour Windows et macOS.
 Il s'agit d'une réécriture complète en Rust basée sur [Tauri](https://tauri.app/).
-Pour la version précédente sous Electron, voir le dépôt [CCAe](https://github.com/ThePacielloGroup/CCAe).
 
 <div align="center">
 

@@ -119,26 +119,28 @@ strong {
   }
 
   .progress {
-    align-items: center;
-    padding: 0 1rem;
-    .icon {
-      display: flex;
+    li {
       align-items: center;
-      .non-active {
-        opacity: 0.2;
-        margin-left: -1.2rem;
-      }
-    }
-    .progress-line {
-      display: flex;
-      align-items: center;
+      padding: 0 1rem;
       .icon {
-        width: 2.5rem;
+        display: flex;
+        align-items: center;
+        .non-active {
+          opacity: 0.2;
+          margin-left: -1.2rem;
+        }
       }
-      progress-bar {
-        flex: 1;
-        min-width: 0;
-        padding: 0 0 0;
+      .progress-line {
+        display: flex;
+        align-items: center;
+        .icon {
+          width: 2.5rem;
+        }
+        progress-bar {
+          flex: 1;
+          min-width: 0;
+          padding: 0 0 0;
+        }
       }
     }
   }

@@ -136,81 +136,86 @@
             <svg-icon x-show="compact" name="chevron-up"></svg-icon>
           </button>
         </div>
-        <div class="progress" x-show="!compact" x-transition>
-          <p class="label">
-            <span x-text="$store.uiStore.t('results.regular_text')">Regular Text</span>
-            <span class="fail" x-show="!$store.uiStore.level143Regular" x-text="$store.uiStore.t('results.fail')">FAIL</span>
-            <span class="pass" x-show="$store.uiStore.level143Regular && !$store.uiStore.level146Regular" x-text="$store.uiStore.t('results.pass')">PASS</span>
-            <span class="pass" x-show="$store.uiStore.level146Regular" x-text="$store.uiStore.t('results.pass')">PASS</span>
-          </p>
-          <!-- 1.4.3 Regular text 4.5 AA - 7 AAA -->
-          <div class="progress-line" aria-hidden="true">
-            <span class="icon">
-              <svg-icon name="text" size="1.5rem"></svg-icon>
-              <svg-icon name="text" size="2.2rem" class="non-active"></svg-icon>
-            </span>
-            <progress-bar :position="$store.uiStore.contrastRatio" split1="4.5" split2="7" labels="ratios"></progress-bar>
-            <p class="sr-only" x-text="$store.uiStore.contrastRatio < 4.5 ? $store.uiStore.t('results.below', 4.5) : $store.uiStore.contrastRatio <= 7 ? $store.uiStore.t('results.between', 4.5, 7) : $store.uiStore.t('results.above', 7)"></p>
-          </div>
-        </div>
-        <div class="progress" x-show="!compact" x-transition>
-          <p class="label">
-            <span x-text="$store.uiStore.t('results.large_text')">Large Text</span>
-            <span class="fail" x-show="!$store.uiStore.level143Large" x-text="$store.uiStore.t('results.fail')">FAIL</span>
-            <span class="pass" x-show="$store.uiStore.level143Large && !$store.uiStore.level146Large" x-text="$store.uiStore.t('results.pass')">PASS</span>
-            <span class="pass" x-show="$store.uiStore.level146Large" x-text="$store.uiStore.t('results.pass')">PASS</span>
-          </p>
-          <!-- 1.4.6 Large text 3.1 AA - 4.5 AAA -->
-          <div class="progress-line" aria-hidden="true">
-            <span class="icon">
-              <svg-icon name="text" size="2.2rem"></svg-icon>
-              <svg-icon name="text" size="1.5rem" class="non-active"></svg-icon>
-            </span>
-            <progress-bar :position="$store.uiStore.contrastRatio" split1="3" split2="4.5" labels="ratios"></progress-bar>
-            <p class="sr-only" x-text="$store.uiStore.contrastRatio < 3 ? $store.uiStore.t('results.below', 3) : $store.uiStore.contrastRatio <= 4.5 ? $store.uiStore.t('results.between', 3, 4.5) : $store.uiStore.t('results.above', 4.5)"></p>
-          </div>
-        </div>
-        <div class="progress" x-show="!compact" x-transition>
-          <p class="label">
-            <span x-text="$store.uiStore.t('results.non_text')">Non-text</span>
-            <span class="fail" x-show="!$store.uiStore.level1411" x-text="$store.uiStore.t('results.fail')">FAIL</span>
-            <span class="pass" x-show="$store.uiStore.level1411" x-text="$store.uiStore.t('results.pass')">PASS</span>
-          </p>
-          <!-- 1.4.11 Non-text 3.1 AA -->
-          <div class="progress-line" aria-hidden="true">
-            <span class="icon">
-              <svg-icon name="non-text" size="2rem"></svg-icon>
-            </span>
-            <progress-bar :position="$store.uiStore.contrastRatio" split1="3" labels="ratios"></progress-bar>
-            <p class="sr-only" x-text="$store.uiStore.contrastRatio < 3 ? $store.uiStore.t('results.below', 3) : $store.uiStore.t('results.above', 3)"></p>
-          </div>
-        </div>
+        <ul class="progress" x-show="!compact" x-transition>
+          <li>
+            <div class="label">
+              <span x-text="$store.uiStore.t('results.regular_text')">Regular Text</span>
+              <span class="fail" x-show="!$store.uiStore.level143Regular" x-text="$store.uiStore.t('results.fail')">FAIL</span>
+              <span class="pass" x-show="$store.uiStore.level143Regular && !$store.uiStore.level146Regular" x-text="$store.uiStore.t('results.pass')">PASS</span>
+              <span class="pass" x-show="$store.uiStore.level146Regular" x-text="$store.uiStore.t('results.pass')">PASS</span>
+            </div>
+            <!-- 1.4.3 Regular text 4.5 AA - 7 AAA -->
+            <div class="progress-line" aria-hidden="true">
+              <span class="icon">
+                <svg-icon name="text" size="1.5rem"></svg-icon>
+                <svg-icon name="text" size="2.2rem" class="non-active"></svg-icon>
+              </span>
+              <progress-bar :position="$store.uiStore.contrastRatio" split1="4.5" split2="7" labels="ratios"></progress-bar>
+              <p class="sr-only" x-text="$store.uiStore.contrastRatio < 4.5 ? $store.uiStore.t('results.below', 4.5) : $store.uiStore.contrastRatio <= 7 ? $store.uiStore.t('results.between', 4.5, 7) : $store.uiStore.t('results.above', 7)"></p>
+            </div>
+          </li>
+          <li>
+            <div class="label">
+              <span x-text="$store.uiStore.t('results.large_text')">Large Text</span>
+              <span class="fail" x-show="!$store.uiStore.level143Large" x-text="$store.uiStore.t('results.fail')">FAIL</span>
+              <span class="pass" x-show="$store.uiStore.level143Large && !$store.uiStore.level146Large" x-text="$store.uiStore.t('results.pass')">PASS</span>
+              <span class="pass" x-show="$store.uiStore.level146Large" x-text="$store.uiStore.t('results.pass')">PASS</span>
+            </div>
+            <!-- 1.4.6 Large text 3.1 AA - 4.5 AAA -->
+            <div class="progress-line" aria-hidden="true">
+              <span class="icon">
+                <svg-icon name="text" size="2.2rem"></svg-icon>
+                <svg-icon name="text" size="1.5rem" class="non-active"></svg-icon>
+              </span>
+              <progress-bar :position="$store.uiStore.contrastRatio" split1="3" split2="4.5" labels="ratios"></progress-bar>
+              <p class="sr-only" x-text="$store.uiStore.contrastRatio < 3 ? $store.uiStore.t('results.below', 3) : $store.uiStore.contrastRatio <= 4.5 ? $store.uiStore.t('results.between', 3, 4.5) : $store.uiStore.t('results.above', 4.5)"></p>
+            </div>
+          </li>
+          <li>
+            <div class="label">
+              <span x-text="$store.uiStore.t('results.non_text')">Non-text</span>
+              <span class="fail" x-show="!$store.uiStore.level1411" x-text="$store.uiStore.t('results.fail')">FAIL</span>
+              <span class="pass" x-show="$store.uiStore.level1411" x-text="$store.uiStore.t('results.pass')">PASS</span>
+            </div>
+            <!-- 1.4.11 Non-text 3.1 AA -->
+            <div class="progress-line" aria-hidden="true">
+              <span class="icon">
+                <svg-icon name="non-text" size="2rem"></svg-icon>
+              </span>
+              <progress-bar :position="$store.uiStore.contrastRatio" split1="3" labels="ratios"></progress-bar>
+              <p class="sr-only" x-text="$store.uiStore.contrastRatio < 3 ? $store.uiStore.t('results.below', 3) : $store.uiStore.t('results.above', 3)"></p>
+            </div>
+          </li>
+        </ul>
         <!-- Vue compacte : icônes + pass/fail -->
-        <div class="progress-compact" x-show="compact" x-transition>
-          <div class="compact-item">
-            <span class="icon">
+        <ul class="progress-compact" x-show="compact" x-transition>
+          <li class="compact-item">
+            <span class="icon" aria-hidden="true">
               <svg-icon name="text" size="1.5rem"></svg-icon>
               <svg-icon name="text" size="2rem" class="non-active"></svg-icon>
             </span>
+            <span class="sr-only" x-text="$store.uiStore.t('results.regular_text')">Regular Text</span>
             <span class="fail" x-show="!$store.uiStore.level143Regular" x-text="$store.uiStore.t('results.fail')"></span>
             <span class="pass" x-show="$store.uiStore.level143Regular" x-text="$store.uiStore.t('results.pass')"></span>
-          </div>
-          <div class="compact-item">
-            <span class="icon">
+          </li>
+          <li class="compact-item">
+            <span class="icon" aria-hidden="true">
               <svg-icon name="text" size="2rem"></svg-icon>
               <svg-icon name="text" size="1.5rem" class="non-active"></svg-icon>
             </span>
+            <span class="sr-only" x-text="$store.uiStore.t('results.large_text')">Large Text</span>
             <span class="fail" x-show="!$store.uiStore.level143Large" x-text="$store.uiStore.t('results.fail')"></span>
             <span class="pass" x-show="$store.uiStore.level143Large" x-text="$store.uiStore.t('results.pass')"></span>
-          </div>
-          <div class="compact-item">
-            <span class="icon">
+          </li>
+          <li class="compact-item">
+            <span class="icon" aria-hidden="true">
               <svg-icon name="non-text" size="1.8rem"></svg-icon>
             </span>
+            <span class="sr-only" x-text="$store.uiStore.t('results.non_text')">Non-text</span>
             <span class="fail" x-show="!$store.uiStore.level1411" x-text="$store.uiStore.t('results.fail')"></span>
             <span class="pass" x-show="$store.uiStore.level1411" x-text="$store.uiStore.t('results.pass')"></span>
-          </div>
-        </div>
+          </li>
+        </ul>
       </section>
 
       <!-- Toast de confirmation copie / Copy confirmation toast -->
