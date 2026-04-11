@@ -9,9 +9,9 @@ export class ProgressBar extends LitElement {
   @property({ type: Number }) split2?: number;
   @property({ type: String }) labels: 'levels' | 'ratios' = 'levels';
 
-  static aaColor: string = 'oklch(0.55 0.01 286)';
-  static aaaColor: string = 'oklch(0.37 0.01 286)';
-  static failColor: string = 'oklch(0.51 0.19 28)';
+  static aaColor: string = 'var(--progress-aa)';
+  static aaaColor: string = 'var(--progress-aaa)';
+  static failColor: string = 'var(--progress-fail)';
 
   static styles = css`
     :host {
@@ -116,12 +116,12 @@ export class ProgressBar extends LitElement {
     // Dégradé dynamique : Si pas de split2, on ne passe que du rouge au jaune/vert
     const gradient = this.split2 != null
       ? `linear-gradient(to right,
-          ${ProgressBar.failColor} 0%, ${ProgressBar.failColor} ${s1Percent}%,
-          ${ProgressBar.aaColor} ${s1Percent}%, ${ProgressBar.aaColor} ${s2Percent}%,
-          ${ProgressBar.aaaColor} ${s2Percent}%, ${ProgressBar.aaaColor} 100%)`
+          var(--progress-fail) 0%, var(--progress-fail) ${s1Percent}%,
+          var(--progress-aa) ${s1Percent}%, var(--progress-aa) ${s2Percent}%,
+          var(--progress-aaa) ${s2Percent}%, var(--progress-aaa) 100%)`
       : `linear-gradient(to right,
-          ${ProgressBar.failColor} 0%, ${ProgressBar.failColor} ${s1Percent}%,
-          ${ProgressBar.aaaColor} ${s1Percent}%, ${ProgressBar.aaaColor} 100%)`;
+          var(--progress-fail) 0%, var(--progress-fail) ${s1Percent}%,
+          var(--progress-aaa) ${s1Percent}%, var(--progress-aaa) 100%)`;
 
     return html`
       <div class="progress-bar" style="background: ${gradient}" aria-hidden="true">

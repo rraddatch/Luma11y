@@ -21,7 +21,11 @@
   --border-color: var(--color-zinc-400);
   --border-color-strong: var(--color-zinc-700);
   --border-color-disabled: var(--color-zinc-200);
+  /* colors for progress bars */
   --progress-background: var(--color-zinc-500);
+  --progress-aa: var(--color-neutral-500);
+  --progress-aaa: var(--color-neutral-800);
+  --progress-fail: var(--color-red-700);
 }
 
 /* Dark theme overrides */
@@ -41,7 +45,11 @@
   --border-color: var(--color-zinc-400);
   --border-color-strong: var(--color-zinc-50);
   --border-color-disabled: var(--color-zinc-200);
+  /* colors for progress bars */
   --progress-background: var(--color-zinc-500);
+  --progress-aa: var(--color-neutral-400);
+  --progress-aaa: var(--color-neutral-200);
+  --progress-fail: var(--color-red-400);
 }
 
 /* Styles du corps de la page - centrage vertical et horizontal */
