@@ -109,6 +109,14 @@ export interface UIStore {
   currentICCProfile: string;
 
 
+  // Mode d'affichage des barres de progression ('levels' ou 'ratios')
+  // Progress bar display mode ('levels' or 'ratios')
+  progressLabels: 'levels' | 'ratios';
+
+  // Basculer le mode d'affichage des barres de progression
+  // Toggle progress bar display mode
+  toggleProgressLabels(): void;
+
   // WCAG Levels
   level143Regular: boolean;
   level143Large: boolean;
@@ -206,6 +214,17 @@ export const UIStore = {
   // Initial state: default ICC profile (Auto)
   currentICCProfile: 'Auto',
 
+
+  // Mode d'affichage des barres de progression
+  // Progress bar display mode
+  progressLabels: (localStorage.getItem('cca-progress-labels') === 'ratios' ? 'ratios' : 'levels') as 'levels' | 'ratios',
+
+  // Basculer le mode d'affichage
+  // Toggle display mode
+  toggleProgressLabels(this: UIStore) {
+    this.progressLabels = this.progressLabels === 'levels' ? 'ratios' : 'levels';
+    localStorage.setItem('cca-progress-labels', this.progressLabels);
+  },
 
   // WCAG Levels
   level143Regular: true,

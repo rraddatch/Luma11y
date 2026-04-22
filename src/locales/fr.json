@@ -26,10 +26,12 @@
     "pass": "PASS",
     "fail": "FAIL",
     "ratio": "Ratio",
+    "level": "Niveau",
     "toggle_details": "Afficher les détails",
     "below": "Inférieur à {0}",
     "between": "Entre {0} et {1}",
-    "above": "Supérieur à {0}"
+    "above": "Supérieur à {0}",
+    "switch_to": "Afficher"
   },
   "menu": {
     "about": "À propos de CCA",

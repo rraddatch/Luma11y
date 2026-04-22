@@ -26,10 +26,12 @@
     "pass": "PASS",
     "fail": "FAIL",
     "ratio": "Ratio",
+    "level": "Level",
     "toggle_details": "Show detailed results",
     "below": "Below {0}",
     "between": "Between {0} and {1}",
-    "above": "Above {0}"
+    "above": "Above {0}",
+    "switch_to": "Switch to"
   },
   "menu": {
     "about": "About CCA",

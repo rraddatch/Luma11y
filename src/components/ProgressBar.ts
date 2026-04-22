@@ -69,15 +69,6 @@ export class ProgressBar extends LitElement {
       color: var(--background-color-inverted);
     }
 
-    .labels-container {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      display: flex;
-      width: 100%;
-    }
-
     .label-ratio {
       position: absolute;
       left: 0;
@@ -96,6 +87,16 @@ export class ProgressBar extends LitElement {
         transform: translateX(-100%);
       }
 
+      &.label-switch {
+        cursor: pointer;
+        user-select: none;
+        &:hover {
+          text-decoration: underline;
+        }
+        border: none;
+        background: none;
+      }
+
       &.above {
         bottom: 100%;
         margin-bottom: 4px;
@@ -107,6 +108,10 @@ export class ProgressBar extends LitElement {
       }
     }
   `;
+
+  private _toggleLabels() {
+    this.dispatchEvent(new CustomEvent('toggle-labels', { bubbles: true, composed: true }));
+  }
 
   // Convertit une valeur sur l'échelle 1-21 en pourcentage
   private toPercent(value: number): number {
@@ -147,27 +152,26 @@ export class ProgressBar extends LitElement {
             ${this.split2 != null
               ? html`<span class="label-ratio border below" style="left: ${s2Percent}%">${this.split2}</span>`
               : ''}
-            <span class="label-ratio below end" style="left: 100%">${t('results.ratio')}</span>
+            <button class="label-ratio below end label-switch" style="left: 100%" @click=${this._toggleLabels} aria-label="${t('results.switch_to')} ${t('results.level')}">${t('results.ratio')}</button>
           `
           : ''}
-      </div>
 
-      ${this.labels === 'levels'
-        ? html`
-          <div class="labels-container">
-            <div class="label-item" style="width: ${s1Percent}%"></div>
+        ${this.labels === 'levels'
+          ? html`
             ${this.split2 != null
               ? html`
-                  <div class="label-item" style="width: ${s2Percent - s1Percent}%">AA</div>
-                  <div class="label-item" style="width: ${100 - s2Percent}%">AAA</div>
+                  <span class="label-ratio below" style="left: ${(s1Percent + s2Percent) / 2}%">AA</span>
+                  <span class="label-ratio below" style="left: ${(s2Percent + 100) / 2}%">AAA</span>
                 `
               : html`
-                  <div class="label-item" style="width: ${100 - s1Percent}%">AA</div>
+                  <span class="label-ratio below" style="left: ${(s1Percent + 100) / 2}%">AA</span>
                 `
             }
-          </div>`
-        : ''
-      }
+            <button class="label-ratio below end label-switch" style="left: 100%" @click=${this._toggleLabels} aria-label="${t('results.switch_to')} ${t('results.ratio')}">${t('results.level')}</button>`
+          : ''
+        }
+
+      </div>
     `;
   }
 }
