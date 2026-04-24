@@ -101,6 +101,9 @@ export class ColorControls extends LitElement {
       cursor: pointer;
       font-size: 0.75rem;
       font-family: inherit;
+      option {
+        background-color: var(--background-color);
+      }
     }
 
     /* Ligne d'un canal RGB (label + input + slider) */
