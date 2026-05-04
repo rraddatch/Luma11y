@@ -71,7 +71,7 @@ function loadShortcuts(): AppShortcut[] {
 const DEFAULT_SHORTCUT = navigator.platform.includes('Mac') ? 'Cmd+S' : 'Ctrl+S';
 
 const DEFAULT_TEMPLATES: CopyTemplate[] = [
-  { name: 'Short', template: '%f.hex%/%b.hex% = ratio de %cr%:1', shortcut: DEFAULT_SHORTCUT },
+  { name: 'Short', template: '%f.hex% / %b.hex% = %cr%:1', shortcut: DEFAULT_SHORTCUT },
 ];
 
 function loadTemplates(): CopyTemplate[] {
