@@ -134,9 +134,9 @@ body {
 
 .results {
   .contrast-ratio {
-    font-size: 0.8rem;
-    .ratio {
-      font-size: 1.4rem;
+    font-size: 1.4rem;
+    .text {
+      font-size: 0.8rem;
     }
   }
   .buttons {

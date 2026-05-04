@@ -122,7 +122,7 @@
       <!-- Contrast Ratio -->
       <section class="results" x-data="{ compact: true }" @toggle-labels="$store.uiStore.toggleProgressLabels()">
         <p class="contrast-ratio">
-          <span x-text="$store.uiStore.t('results.contrast_ratio')">Contrast Ratio</span>
+          <span class="text" x-text="$store.uiStore.t('results.contrast_ratio')">Contrast Ratio</span>
           <span><strong class="ratio" x-text="$store.uiStore.contrastRatio"></strong>:1</span>
         </p>
         <div class="buttons">

@@ -169,10 +169,10 @@ body {
 
 .results {
   .contrast-ratio {
-    font-size: 0.8rem;
+    font-size: 1.4rem;
     color: var(--text-color-light);
-    .ratio {
-      font-size: 1.4rem;
+    .text {
+      font-size: 0.8rem;
     }
   }
   .buttons {
