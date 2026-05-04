@@ -44,6 +44,10 @@ export interface BackendStore {
   // Contrast Ratio (Rounded)
   contrast_ratio_rounded: number;
 
+  // Ratio de contraste entre l'arrière-plan et le blanc
+  // Contrast ratio between background and white
+  background_contrast_with_white: number;
+
   // Indique si le mode continu est activé
   // Indicates if continue mode is enabled
   continue_mode: boolean;
@@ -103,11 +107,13 @@ export interface UIStore {
   // Contrast Ratio Rounded
   contrastRatio: string;
 
+  // Ratio de contraste entre la couleur d'arrière-plan et blanc
+  // Contrast ratio between background color and white
+  backgroundContrastWithWhite: number;
 
   // Profil ICC actuellement sélectionné
   // Currently selected ICC profile
   currentICCProfile: string;
-
 
   // Mode d'affichage des barres de progression ('levels' ou 'ratios')
   // Progress bar display mode ('levels' or 'ratios')
@@ -208,6 +214,11 @@ export const UIStore = {
 
   // Initial state: Contrast ratio
   contrastRatio: '0',
+
+  // Ratio de contraste entre l'arrière-plan et le blanc
+  // Contrast ratio between background and white
+  // (Fixes #9)
+  backgroundContrastWithWhite: 1,
 
 
   // État initial : profil ICC par défaut (Auto)
@@ -346,6 +357,7 @@ export const UIStore = {
     this.backgroundIsDark = store.background_is_dark;
 
     this.contrastRatio = `${store.contrast_ratio_rounded}`;
+    this.backgroundContrastWithWhite = store.background_contrast_with_white;
 
     // Update WCAG Level rules, based on contrast ratio
     this.level143Regular = true;

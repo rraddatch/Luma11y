@@ -70,6 +70,11 @@ pub struct ResultStore {
     // Contast Ratio value, rounded
     // Valeur du Ratio de Contraste, arrondi
     pub contrast_ratio_rounded: f32,
+
+    /// Ratio de contraste entre l'arrière-plan et le blanc
+    /// Contrast ratio between background and white
+    /// (Fixes #9)
+    pub background_contrast_with_white: f32,
 }
 
 impl Default for ResultStore {
@@ -78,8 +83,10 @@ impl Default for ResultStore {
         let (br, bg, bb) = config::DEFAULT_BACKGROUND_RGB;
         let fc = BigColor::from_rgb(fr, fg, fb, 1.0);
         let bc = BigColor::from_rgb(br, bg, bb, 1.0);
+        let white = BigColor::from_rgb(255, 255, 255, 1.0);
         let contrast_ratio = fc.get_contrast_ratio(&bc);
         let contrast_ratio_rounded = (contrast_ratio * config::ROUNDING_FACTOR).round() / config::ROUNDING_FACTOR;
+        let background_contrast_with_white = bc.get_contrast_ratio(&white);
         Self {
             // Plateforme détectée à la compilation
             // Platform detected at compile time
@@ -102,6 +109,7 @@ impl Default for ResultStore {
             continue_mode: false,
             contrast_ratio_raw: contrast_ratio,
             contrast_ratio_rounded: contrast_ratio_rounded,
+            background_contrast_with_white: background_contrast_with_white,
         }
     }
 }
@@ -195,6 +203,11 @@ pub fn update_store(app: AppHandle, state: tauri::State<AppState>, key: String, 
         // Recalculate contrast ratio
         store.contrast_ratio_raw = store.foreground.get_contrast_ratio(&store.background);
         store.contrast_ratio_rounded = (store.contrast_ratio_raw * config::ROUNDING_FACTOR).round() / config::ROUNDING_FACTOR;
+
+        // Recalcule le contraste arrière-plan vs blanc
+        // Recalculate background-vs-white contrast
+        let white = BigColor::from_rgb(255, 255, 255, 1.0);
+        store.background_contrast_with_white = store.background.get_contrast_ratio(&white);
 
         // Émet l'événement
         // Emit the event

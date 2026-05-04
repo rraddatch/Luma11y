@@ -38,4 +38,9 @@ pub fn update_results_from_picker(store: &mut ResultStore, result: &ColorPickerR
 
     // Round the contrast ratio, to 3 decimal
     store.contrast_ratio_rounded = (store.contrast_ratio_raw * config::ROUNDING_FACTOR).round() / config::ROUNDING_FACTOR;
+
+    // Calcule le ratio de contraste entre l'arrière-plan et le blanc
+    // Calculate contrast ratio between background and white
+    let white = BigColor::from_rgb(255, 255, 255, 1.0);
+    store.background_contrast_with_white = store.background.get_contrast_ratio(&white);
 }
