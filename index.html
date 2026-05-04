@@ -6,12 +6,12 @@
     <link rel="stylesheet" href="/src/common-style.css" />
     <link rel="stylesheet" href="/src/utils.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Colour Contrast Analyser</title>
+    <title>Luma11y</title>
   </head>
 
   <body>
     <main x-data x-effect="document.title = $store.uiStore.t('app.title'); document.documentElement.lang = $store.uiStore.locale">
-      <h1 class="sr-only" x-text="$store.uiStore.t('app.title')">Colour Contrast Analyser</h1>
+      <h1 class="sr-only" x-text="$store.uiStore.t('app.title')">Luma11y</h1>
       <div class="colors" x-data="{ rotated: false, showFgControls: false, showBgControls: false }">
         <!-- Foreground Color -->
         <div class="wrapper" x-bind:style="`background-color: ${showFgControls ? '#ffffff' : $store.uiStore.backgroundHex}`">

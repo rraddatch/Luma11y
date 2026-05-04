@@ -29,7 +29,7 @@ Alpine.store('chooser', {
   // Sélectionne un style, sauvegarde et ferme la fenêtre
   // Select a style, save and close the window
   async choose(style: 'modern' | 'classic'): Promise<void> {
-    localStorage.setItem('cca-style-theme', style);
+    localStorage.setItem('luma11y-style-theme', style);
     await emit('style-chosen', style);
     getCurrentWindow().close();
   },

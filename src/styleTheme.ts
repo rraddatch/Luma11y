@@ -5,9 +5,9 @@
 
 export type StyleTheme = 'modern' | 'classic';
 
-const STORAGE_KEY = 'cca-style-theme';
+const STORAGE_KEY = 'luma11y-style-theme';
 
-const STYLE_ELEMENT_ID = 'cca-style-theme';
+const STYLE_ELEMENT_ID = 'luma11y-style-theme';
 
 /** Retourne la préférence sauvegardée / Returns saved preference */
 export function getStyleTheme(): StyleTheme {

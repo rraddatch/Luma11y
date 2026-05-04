@@ -124,7 +124,7 @@ let toastTimeout: ReturnType<typeof setTimeout>;
 function showCopyToast(text: string) {
   const toast = document.getElementById('copy-toast');
   if (!toast) return;
-  const duration = parseInt(localStorage.getItem('cca-toast-duration') ?? '3', 10);
+  const duration = parseInt(localStorage.getItem('luma11y-toast-duration') ?? '3', 10);
 
   toast.textContent = text;
 
@@ -157,7 +157,7 @@ interface AppShortcut {
 
 function loadCopyTemplates(): CopyTemplate[] {
   try {
-    const raw = localStorage.getItem('cca-copy-templates');
+    const raw = localStorage.getItem('luma11y-copy-templates');
     if (raw) return JSON.parse(raw);
   } catch {}
   const defaultShortcut = navigator.platform.includes('Mac') ? 'Cmd+S' : 'Ctrl+S';
@@ -166,7 +166,7 @@ function loadCopyTemplates(): CopyTemplate[] {
 
 function loadShortcuts(): AppShortcut[] {
   try {
-    const raw = localStorage.getItem('cca-shortcuts');
+    const raw = localStorage.getItem('luma11y-shortcuts');
     if (raw) return JSON.parse(raw);
   } catch {}
   return [
@@ -271,7 +271,7 @@ initStyleTheme();
 
   // Étape 0b : Ouvre le sélecteur de style au premier lancement
   // Step 0b: Open style chooser on first launch
-  if (!localStorage.getItem('cca-style-theme')) {
+  if (!localStorage.getItem('luma11y-style-theme')) {
     const chooser = new WebviewWindow('style-chooser', {
       url: 'style-chooser.html',
       title: i18nT('style_chooser.title'),
@@ -291,8 +291,8 @@ initStyleTheme();
       // Si la fenêtre est fermée sans choix, applique le défaut
       // If window is closed without choosing, apply default
       chooser.onCloseRequested(() => {
-        if (!localStorage.getItem('cca-style-theme')) {
-          localStorage.setItem('cca-style-theme', 'modern');
+        if (!localStorage.getItem('luma11y-style-theme')) {
+          localStorage.setItem('luma11y-style-theme', 'modern');
           applyStyleTheme('modern');
         }
         resolve();

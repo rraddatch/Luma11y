@@ -12,8 +12,8 @@ const translations: Record<string, Record<string, unknown>> = { en, fr };
 // Langues supportées / Supported languages
 const SUPPORTED_LOCALES = ['en', 'fr'];
 const DEFAULT_LOCALE = 'en';
-const STORAGE_KEY = 'cca-locale';
-const PREFERENCE_KEY = 'cca-locale-preference';
+const STORAGE_KEY = 'luma11y-locale';
+const PREFERENCE_KEY = 'luma11y-locale-preference';
 
 // Type de préférence / Preference type
 export type LocalePreference = 'auto' | 'en' | 'fr';

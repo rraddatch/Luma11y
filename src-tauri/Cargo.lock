@@ -423,24 +423,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cca"
-version = "0.1.0"
-dependencies = [
- "bigcolor",
- "core-graphics",
- "objc2 0.6.3",
- "objc2-app-kit",
- "objc2-foundation 0.3.2",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-opener",
- "tauri-plugin-os",
- "windows 0.58.0",
-]
-
-[[package]]
 name = "cesu8"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1965,6 +1947,24 @@ name = "log"
 version = "0.4.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34080505efa8e45a4b816c349525ebe327ceaa8559756f0356cba97ef3bf7432"
+
+[[package]]
+name = "luma11y"
+version = "0.1.0"
+dependencies = [
+ "bigcolor",
+ "core-graphics",
+ "objc2 0.6.3",
+ "objc2-app-kit",
+ "objc2-foundation 0.3.2",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-opener",
+ "tauri-plugin-os",
+ "windows 0.58.0",
+]
 
 [[package]]
 name = "mac"

@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Analyseur de contraste des couleurs"
+    "title": "Luma11y"
   },
   "color": {
     "foreground": "Premier plan",
@@ -34,7 +34,7 @@
     "switch_to": "Afficher"
   },
   "menu": {
-    "about": "À propos de CCA",
+    "about": "À propos de Luma11y",
     "hide": "Masquer",
     "hide_others": "Masquer les autres",
     "show_all": "Tout afficher",

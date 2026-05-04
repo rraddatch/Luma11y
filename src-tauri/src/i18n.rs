@@ -8,7 +8,7 @@
 pub fn menu_t(locale: &str, key: &str) -> &'static str {
     match (locale, key) {
         // === English ===
-        ("en", "about") => "About CCA",
+        ("en", "about") => "About Luma11y",
         ("en", "hide") => "Hide",
         ("en", "hide_others") => "Hide Others",
         ("en", "show_all") => "Show All",
@@ -21,7 +21,7 @@ pub fn menu_t(locale: &str, key: &str) -> &'static str {
         ("en", "copy_templates") => "Copy Templates",
 
         // === Français ===
-        ("fr", "about") => "À propos de CCA",
+        ("fr", "about") => "À propos de Luma11y",
         ("fr", "hide") => "Masquer",
         ("fr", "hide_others") => "Masquer les autres",
         ("fr", "show_all") => "Tout afficher",
@@ -34,7 +34,7 @@ pub fn menu_t(locale: &str, key: &str) -> &'static str {
         ("fr", "copy_templates") => "Mod\u{00e8}les de copie",
 
         // Fallback vers l'anglais / Fallback to English
-        (_, "about") => "About CCA",
+        (_, "about") => "About Luma11y",
         (_, "hide") => "Hide",
         (_, "hide_others") => "Hide Others",
         (_, "show_all") => "Show All",

@@ -171,7 +171,7 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
         app,
         Some(i18n::menu_t(locale, "about")), // Titre / Title
         Some(AboutMetadata {
-            name: Some("CCA".to_string()),    // Nom de l'app / App name
+            name: Some("Luma11y".to_string()),    // Nom de l'app / App name
             version: Some("1.0.0".to_string()),           // Version / Version
             copyright: Some("xxx Licence".to_string()), // Copyright / Copyright
             authors: Some(vec!["Cédric Trévisan".to_string()]), // Auteurs / Authors
@@ -209,7 +209,7 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
     // Construit le sous-menu Application / Build Application submenu
     let app_menu = Submenu::with_items(
         app,
-        "CCA",  // Nom affiché dans la barre de menu / Name shown in menu bar
+        "Luma11y",  // Nom affiché dans la barre de menu / Name shown in menu bar
         true,       // Activé / Enabled
         &[
             &about,           // À propos / About

@@ -4,7 +4,7 @@ Please follow these guidlines before sending your pull request and making contri
 
 * When you submit a pull request, you agree that your code is published under the [GNU General Public License](https://www.gnu.org/licenses/gpl.html)
 * Do not include non-free software or modules with your code.
-* Make sure your pull request is setup to merge your branch to CCA's development branch.
+* Make sure your pull request is setup to merge your branch to Luma11y's development branch.
 * Make sure your branch is up to date with the development branch before submitting your pull request.
 * Stick to a similar style of code already in the project. Please look at current code to get an idea on how to do this.
 * Comment your code when necessary.
@@ -18,7 +18,7 @@ Here's how to get your environment setup.  You will need Git and NPM installed o
 Clone down the repository:
 
 ```
-git clone https://github.com/WebAccessibilityTools/CCA.git
+git clone https://github.com/WebAccessibilityTools/Luma11y.git
 ```
 
 Install Dependencies:
@@ -53,7 +53,7 @@ The CHANGELOG.md is generated using github-changelog-generator
 https://github.com/github-changelog-generator/github-changelog-generator
 
 ```shell
-docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator github_changelog_generator -u WebAccessibilityTools -p CCA --since-tag=v4.0.0 --future-release=v4.0.1 -t <token>
+docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator github_changelog_generator -u WebAccessibilityTools -p Luma11y --since-tag=v4.0.0 --future-release=v4.0.1 -t <token>
 ```
 
 Other commands are available in the `package.json` file.

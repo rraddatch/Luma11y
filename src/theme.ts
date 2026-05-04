@@ -5,7 +5,7 @@
 
 export type ThemePreference = 'auto' | 'light' | 'dark';
 
-const STORAGE_KEY = 'cca-theme';
+const STORAGE_KEY = 'luma11y-theme';
 
 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 

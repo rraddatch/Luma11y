@@ -217,13 +217,13 @@ export const UIStore = {
 
   // Mode d'affichage des barres de progression
   // Progress bar display mode
-  progressLabels: (localStorage.getItem('cca-progress-labels') === 'ratios' ? 'ratios' : 'levels') as 'levels' | 'ratios',
+  progressLabels: (localStorage.getItem('luma11y-progress-labels') === 'ratios' ? 'ratios' : 'levels') as 'levels' | 'ratios',
 
   // Basculer le mode d'affichage
   // Toggle display mode
   toggleProgressLabels(this: UIStore) {
     this.progressLabels = this.progressLabels === 'levels' ? 'ratios' : 'levels';
-    localStorage.setItem('cca-progress-labels', this.progressLabels);
+    localStorage.setItem('luma11y-progress-labels', this.progressLabels);
   },
 
   // WCAG Levels

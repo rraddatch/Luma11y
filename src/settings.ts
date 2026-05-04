@@ -62,7 +62,7 @@ const DEFAULT_SHORTCUTS: AppShortcut[] = [
 
 function loadShortcuts(): AppShortcut[] {
   try {
-    const raw = localStorage.getItem('cca-shortcuts');
+    const raw = localStorage.getItem('luma11y-shortcuts');
     if (raw) return JSON.parse(raw);
   } catch {}
   return structuredClone(DEFAULT_SHORTCUTS);
@@ -76,7 +76,7 @@ const DEFAULT_TEMPLATES: CopyTemplate[] = [
 
 function loadTemplates(): CopyTemplate[] {
   try {
-    const raw = localStorage.getItem('cca-copy-templates');
+    const raw = localStorage.getItem('luma11y-copy-templates');
     if (raw) return JSON.parse(raw);
   } catch {}
   return structuredClone(DEFAULT_TEMPLATES);
@@ -112,7 +112,7 @@ Alpine.store('settings', {
   styleTheme: getStyleTheme() as StyleTheme,
 
   // Durée du toast en secondes (0 = manuel) / Toast duration in seconds (0 = manual)
-  toastDuration: parseInt(localStorage.getItem('cca-toast-duration') ?? '3', 10),
+  toastDuration: parseInt(localStorage.getItem('luma11y-toast-duration') ?? '3', 10),
 
   // Traduction réactive / Reactive translation
   t(key: string, ...args: (string | number)[]): string {
@@ -167,9 +167,9 @@ Alpine.store('settings', {
   async save(): Promise<void> {
     // Filtre les modèles sans nom / Filter out templates without a name
     (this as any).templates = (this as any).templates.filter((t: CopyTemplate) => t.name.trim() !== '');
-    localStorage.setItem('cca-copy-templates', JSON.stringify((this as any).templates));
-    localStorage.setItem('cca-shortcuts', JSON.stringify((this as any).shortcuts));
-    localStorage.setItem('cca-toast-duration', String((this as any).toastDuration));
+    localStorage.setItem('luma11y-copy-templates', JSON.stringify((this as any).templates));
+    localStorage.setItem('luma11y-shortcuts', JSON.stringify((this as any).shortcuts));
+    localStorage.setItem('luma11y-toast-duration', String((this as any).toastDuration));
     // Synchronise les modèles avec le backend pour le menu Édition
     // Sync templates with backend for Edit menu
     try {
@@ -185,7 +185,7 @@ Alpine.store('settings', {
   async cancel(): Promise<void> {
     (this as any).templates = loadTemplates();
     (this as any).shortcuts = loadShortcuts();
-    (this as any).toastDuration = parseInt(localStorage.getItem('cca-toast-duration') ?? '3', 10);
+    (this as any).toastDuration = parseInt(localStorage.getItem('luma11y-toast-duration') ?? '3', 10);
     // Restaure le thème sauvegardé / Restore saved theme
     const savedTheme = getThemePreference();
     (this as any).theme = savedTheme;
