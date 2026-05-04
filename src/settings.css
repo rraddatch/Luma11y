@@ -145,6 +145,7 @@ input[type="number"] {
       min-height: 5rem;
       font-size: 1rem;
       font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
+      box-sizing: border-box;  /* Include padding and border in the width calculation (fixes #10) */
     }
   }
 
