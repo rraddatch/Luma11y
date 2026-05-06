@@ -185,65 +185,110 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
         .build(app)?;
 
     // Éléments standards du menu Application / Standard Application menu items
-    let separator1 = PredefinedMenuItem::separator(app)?;
-    let hide = PredefinedMenuItem::hide(app, Some(i18n::menu_t(locale, "hide")))?;
-    let hide_others = PredefinedMenuItem::hide_others(app, Some(i18n::menu_t(locale, "hide_others")))?;
-    let show_all = PredefinedMenuItem::show_all(app, Some(i18n::menu_t(locale, "show_all")))?;
+    // Note : hide/hide_others/show_all sont réservés à macOS car Windows/Linux n'ont
+    // pas de menubar persistante pour réafficher l'application.
+    // Note: hide/hide_others/show_all are macOS-only since Windows/Linux have no
+    // persistent menubar to bring the app back.
     let separator2 = PredefinedMenuItem::separator(app)?;
     let quit = PredefinedMenuItem::quit(app, Some(i18n::menu_t(locale, "quit")))?;
 
-    // === SOUS-MENU LANGUAGE ===
-    // === LANGUAGE SUBMENU ===
-    let lang_en = CheckMenuItemBuilder::with_id("lang_en", "English")
-        .checked(locale == "en")
+    // === SOUS-MENU APPARENCE ===
+    // === APPEARANCE SUBMENU ===
+    let appearance = {
+        let state = app.state::<store::AppState>();
+        let value = state.appearance.lock().unwrap().clone();
+        value
+    };
+    let appearance_auto = CheckMenuItemBuilder::with_id("appearance_auto", i18n::menu_t(locale, "appearance_auto"))
+        .checked(appearance == "auto")
         .build(app)?;
-    let lang_fr = CheckMenuItemBuilder::with_id("lang_fr", "Français")
-        .checked(locale == "fr")
+    let appearance_light = CheckMenuItemBuilder::with_id("appearance_light", i18n::menu_t(locale, "appearance_light"))
+        .checked(appearance == "light")
+        .build(app)?;
+    let appearance_dark = CheckMenuItemBuilder::with_id("appearance_dark", i18n::menu_t(locale, "appearance_dark"))
+        .checked(appearance == "dark")
         .build(app)?;
 
-    let language_submenu = SubmenuBuilder::new(app, i18n::menu_t(locale, "language"))
-        .item(&lang_en)
-        .item(&lang_fr)
+    let appearance_submenu = SubmenuBuilder::new(app, i18n::menu_t(locale, "appearance"))
+        .item(&appearance_auto)
+        .item(&appearance_light)
+        .item(&appearance_dark)
+        .build()?;
+
+    // === SOUS-MENU STYLE ===
+    // === STYLE SUBMENU ===
+    let style_theme = {
+        let state = app.state::<store::AppState>();
+        let value = state.style_theme.lock().unwrap().clone();
+        value
+    };
+    let style_modern = CheckMenuItemBuilder::with_id("style_modern", i18n::menu_t(locale, "style_modern"))
+        .checked(style_theme == "modern")
+        .build(app)?;
+    let style_classic = CheckMenuItemBuilder::with_id("style_classic", i18n::menu_t(locale, "style_classic"))
+        .checked(style_theme == "classic")
+        .build(app)?;
+
+    let style_submenu = SubmenuBuilder::new(app, i18n::menu_t(locale, "style_theme"))
+        .item(&style_modern)
+        .item(&style_classic)
         .build()?;
 
     // Construit le sous-menu Application / Build Application submenu
-    let app_menu = Submenu::with_items(
-        app,
-        "Luma11y",  // Nom affiché dans la barre de menu / Name shown in menu bar
-        true,       // Activé / Enabled
-        &[
-            &about,           // À propos / About
-            &PredefinedMenuItem::separator(app)?,
-            &settings_item,   // Settings… / Préférences…
-            &separator1,      // --- / ---
-            &hide,            // Masquer / Hide
-            &hide_others, // Masquer les autres / Hide others
-            &show_all,    // Tout afficher / Show all
-            &separator2,  // --- / ---
-            &language_submenu, // Language
-            &PredefinedMenuItem::separator(app)?,
-            &quit,        // Quitter / Quit
-        ],
-    )?;
+    // Sur macOS on ajoute hide/hide_others/show_all ; ailleurs on les omet.
+    // On macOS we include hide/hide_others/show_all; elsewhere we omit them.
+    let app_menu;
+    #[cfg(target_os = "macos")]
+    {
+        let separator1 = PredefinedMenuItem::separator(app)?;
+        let hide = PredefinedMenuItem::hide(app, Some(i18n::menu_t(locale, "hide")))?;
+        let hide_others = PredefinedMenuItem::hide_others(app, Some(i18n::menu_t(locale, "hide_others")))?;
+        let show_all = PredefinedMenuItem::show_all(app, Some(i18n::menu_t(locale, "show_all")))?;
+
+        app_menu = Submenu::with_items(
+            app,
+            "Luma11y",
+            true,
+            &[
+                &about,
+                &PredefinedMenuItem::separator(app)?,
+                &settings_item,
+                &separator1,
+                &hide,
+                &hide_others,
+                &show_all,
+                &separator2,
+                &appearance_submenu,
+                &style_submenu,
+                &PredefinedMenuItem::separator(app)?,
+                &quit,
+            ],
+        )?;
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        app_menu = Submenu::with_items(
+            app,
+            "Luma11y",
+            true,
+            &[
+                &about,
+                &PredefinedMenuItem::separator(app)?,
+                &settings_item,
+                &separator2,
+                &appearance_submenu,
+                &style_submenu,
+                &PredefinedMenuItem::separator(app)?,
+                &quit,
+            ],
+        )?;
+    }
 
     // === MENU ÉDITION ===
     // === EDIT MENU ===
-    let edit_undo = PredefinedMenuItem::undo(app, None)?;
-    let edit_redo = PredefinedMenuItem::redo(app, None)?;
-    let edit_sep1 = PredefinedMenuItem::separator(app)?;
-    let edit_cut = PredefinedMenuItem::cut(app, None)?;
-    let edit_copy = PredefinedMenuItem::copy(app, None)?;
-    let edit_paste = PredefinedMenuItem::paste(app, None)?;
-    let edit_select_all = PredefinedMenuItem::select_all(app, None)?;
 
-    let mut edit_builder = SubmenuBuilder::new(app, i18n::menu_t(locale, "edit"))
-        .item(&edit_undo)
-        .item(&edit_redo)
-        .item(&edit_sep1)
-        .item(&edit_cut)
-        .item(&edit_copy)
-        .item(&edit_paste)
-        .item(&edit_select_all);
+    let mut edit_builder = SubmenuBuilder::new(app, i18n::menu_t(locale, "edit"));
 
     // Ajoute les modèles de copie avec leurs raccourcis
     // Add copy templates with their shortcuts
@@ -251,9 +296,6 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
     let templates = state.templates.lock().unwrap().clone();
 
     if !templates.is_empty() {
-        let tpl_sep = PredefinedMenuItem::separator(app)?;
-        edit_builder = edit_builder.item(&tpl_sep);
-
         let mut tpl_submenu_builder = SubmenuBuilder::new(app, i18n::menu_t(locale, "copy_templates"));
 
         for (i, tpl) in templates.iter().enumerate() {
@@ -326,6 +368,36 @@ fn set_copy_templates(app: tauri::AppHandle, state: tauri::State<store::AppState
     let _ = rebuild_menu(&app, &locale);
 }
 
+/// Commande Tauri pour synchroniser le mode d'apparence depuis le frontend
+/// Tauri command to synchronize appearance mode from frontend
+#[tauri::command]
+fn set_appearance(app: tauri::AppHandle, state: tauri::State<store::AppState>, appearance: String) {
+    let locale = {
+        let mut current = state.appearance.lock().unwrap();
+        if *current == appearance {
+            return;
+        }
+        *current = appearance;
+        state.locale.lock().unwrap().clone()
+    };
+    let _ = rebuild_menu(&app, &locale);
+}
+
+/// Commande Tauri pour synchroniser le thème de style depuis le frontend
+/// Tauri command to synchronize style theme from frontend
+#[tauri::command]
+fn set_style_theme(app: tauri::AppHandle, state: tauri::State<store::AppState>, style: String) {
+    let locale = {
+        let mut current = state.style_theme.lock().unwrap();
+        if *current == style {
+            return;
+        }
+        *current = style;
+        state.locale.lock().unwrap().clone()
+    };
+    let _ = rebuild_menu(&app, &locale);
+}
+
 /// Commande Tauri pour changer la locale depuis le frontend
 /// Tauri command to change locale from frontend
 #[tauri::command]
@@ -361,6 +433,8 @@ pub fn run() {
             store: Mutex::new(store::ResultStore::default()),
             locale: Mutex::new("en".to_string()),
             templates: Mutex::new(Vec::new()),
+            appearance: Mutex::new("auto".to_string()),
+            style_theme: Mutex::new("modern".to_string()),
         })
         // Configure le menu de l'application
         // Configure the application menu
@@ -440,6 +514,42 @@ pub fn run() {
                     // Emit event to notify frontend
                     let _ = app.emit("locale-changed", new_locale);
 
+                    return;
+                }
+                "appearance_auto" | "appearance_light" | "appearance_dark" => {
+                    let mode = match menu_id {
+                        "appearance_light" => "light",
+                        "appearance_dark" => "dark",
+                        _ => "auto",
+                    };
+
+                    // Met à jour le mode dans l'état et reconstruit le menu
+                    // Update mode in state and rebuild menu
+                    let state = app.state::<store::AppState>();
+                    let locale = {
+                        let mut appearance = state.appearance.lock().unwrap();
+                        *appearance = mode.to_string();
+                        state.locale.lock().unwrap().clone()
+                    };
+
+                    let _ = rebuild_menu(app, &locale);
+                    let _ = app.emit("appearance-changed", mode);
+                    return;
+                }
+                "style_modern" | "style_classic" => {
+                    let theme = if menu_id == "style_classic" { "classic" } else { "modern" };
+
+                    // Met à jour le style theme dans l'état et reconstruit le menu
+                    // Update style theme in state and rebuild menu
+                    let state = app.state::<store::AppState>();
+                    let locale = {
+                        let mut style = state.style_theme.lock().unwrap();
+                        *style = theme.to_string();
+                        state.locale.lock().unwrap().clone()
+                    };
+
+                    let _ = rebuild_menu(app, &locale);
+                    let _ = app.emit("style-theme-changed", theme);
                     return;
                 }
                 _ => {}
@@ -531,6 +641,8 @@ pub fn run() {
             icc::select_icc_profile,
             icc::get_selected_icc_profile,
             set_locale,
+            set_appearance,
+            set_style_theme,
             set_copy_templates,
         ])
         // Lance l'application Tauri

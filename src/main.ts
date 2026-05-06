@@ -36,10 +36,10 @@ import { initLocale, onLocaleChange, setLocale, t as i18nT } from './i18n';
 import { locale as getSystemLocale } from '@tauri-apps/plugin-os';
 
 // Import du module thème / Import theme module
-import { initTheme, applyTheme } from './theme';
+import { initTheme, applyTheme, getThemePreference, setThemePreference } from './theme';
 
 // Import du module thème de style / Import style theme module
-import { initStyleTheme, applyStyleTheme } from './styleTheme';
+import { initStyleTheme, applyStyleTheme, getStyleTheme, setStyleTheme } from './styleTheme';
 
 // Import pour la création de fenêtre / Import for window creation
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -146,6 +146,7 @@ function showCopyToast(text: string) {
 }
 
 interface CopyTemplate {
+  name: string;
   template: string;
   shortcut: string;
 }
@@ -161,7 +162,7 @@ function loadCopyTemplates(): CopyTemplate[] {
     if (raw) return JSON.parse(raw);
   } catch {}
   const defaultShortcut = navigator.platform.includes('Mac') ? 'Cmd+S' : 'Ctrl+S';
-  return [{ template: '%f.hex%/%b.hex% = ratio de %cr%:1', shortcut: defaultShortcut }];
+  return [{ name: 'Short', template: '%f.hex% / %b.hex% = %cr%:1', shortcut: defaultShortcut }];
 }
 
 function loadShortcuts(): AppShortcut[] {
@@ -269,6 +270,22 @@ initStyleTheme();
     console.error('Error setting initial locale:', error);
   }
 
+  // Synchronise l'apparence (auto/light/dark) avec le menu natif
+  // Sync appearance (auto/light/dark) with native menu
+  try {
+    await invoke('set_appearance', { appearance: getThemePreference() });
+  } catch (error) {
+    console.error('Error setting initial appearance:', error);
+  }
+
+  // Synchronise le thème de style (modern/classic) avec le menu natif
+  // Sync style theme (modern/classic) with native menu
+  try {
+    await invoke('set_style_theme', { style: getStyleTheme() });
+  } catch (error) {
+    console.error('Error setting initial style theme:', error);
+  }
+
   // Étape 0b : Ouvre le sélecteur de style au premier lancement
   // Step 0b: Open style chooser on first launch
   if (!localStorage.getItem('luma11y-style-theme')) {
@@ -352,6 +369,18 @@ initStyleTheme();
     // Met à jour le profil ICC dans le store Alpine
     // Update ICC profile in Alpine store
     store.currentICCProfile = profileName;
+  });
+
+  // Étape 3b : Écoute les changements d'apparence depuis le menu natif
+  // Step 3b: Listen for appearance changes from the native menu
+  await listen<string>('appearance-changed', (event) => {
+    setThemePreference(event.payload as 'auto' | 'light' | 'dark');
+  });
+
+  // Étape 3c : Écoute les changements de thème de style depuis le menu natif
+  // Step 3c: Listen for style theme changes from the native menu
+  await listen<string>('style-theme-changed', (event) => {
+    setStyleTheme(event.payload as 'modern' | 'classic');
   });
 
   // Étape 4 : Écoute les changements de locale depuis le menu natif Rust

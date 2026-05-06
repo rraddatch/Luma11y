@@ -124,12 +124,18 @@ Alpine.store('settings', {
   setTheme(pref: ThemePreference): void {
     (this as any).theme = pref;
     setThemePreference(pref);
+    invoke('set_appearance', { appearance: pref }).catch((err: unknown) => {
+      console.error('Error setting appearance in backend:', err);
+    });
   },
 
   // Change le thème de style / Change style theme
   setStyleTheme(theme: StyleTheme): void {
     (this as any).styleTheme = theme;
     setStyleTheme(theme);
+    invoke('set_style_theme', { style: theme }).catch((err: unknown) => {
+      console.error('Error setting style theme in backend:', err);
+    });
   },
 
   // Applique un changement de préférence / Apply a preference change

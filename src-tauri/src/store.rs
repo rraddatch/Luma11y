@@ -118,6 +118,7 @@ impl Default for ResultStore {
 /// Copy template (template + shortcut)
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct CopyTemplate {
+    #[serde(default)]
     pub name: String,
     pub template: String,
     pub shortcut: String,
@@ -129,6 +130,8 @@ pub struct AppState {
     pub store: Mutex<ResultStore>,
     pub locale: Mutex<String>,
     pub templates: Mutex<Vec<CopyTemplate>>,
+    pub appearance: Mutex<String>,
+    pub style_theme: Mutex<String>,
 }
 
 // =============================================================================
