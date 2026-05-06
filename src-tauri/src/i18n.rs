@@ -26,6 +26,8 @@ pub fn menu_t(locale: &str, key: &str) -> &'static str {
         ("en", "settings_title") => "Settings",
         ("en", "edit") => "Edit",
         ("en", "copy_templates") => "Copy Templates",
+        // Clé inconnue en anglais / Unknown English key
+        ("en", _) => "?",
 
         // === Français ===
         ("fr", "about") => "À propos de Luma11y",
@@ -47,27 +49,8 @@ pub fn menu_t(locale: &str, key: &str) -> &'static str {
         ("fr", "edit") => "\u{00c9}dition",
         ("fr", "copy_templates") => "Mod\u{00e8}les de copie",
 
-        // Fallback vers l'anglais / Fallback to English
-        (_, "about") => "About Luma11y",
-        (_, "hide") => "Hide",
-        (_, "hide_others") => "Hide Others",
-        (_, "show_all") => "Show All",
-        (_, "quit") => "Quit",
-        (_, "colour_profiles") => "Colour Profiles",
-        (_, "language") => "Language",
-        (_, "appearance") => "Appearance",
-        (_, "appearance_auto") => "Auto",
-        (_, "appearance_light") => "Light",
-        (_, "appearance_dark") => "Dark",
-        (_, "style_theme") => "Style",
-        (_, "style_modern") => "Modern",
-        (_, "style_classic") => "Classic",
-        (_, "settings") => "Settings\u{2026}",
-        (_, "settings_title") => "Settings",
-        (_, "edit") => "Edit",
-        (_, "copy_templates") => "Copy Templates",
-
-        // Clé inconnue / Unknown key
-        _ => "?",
+        // Locale inconnue ou clé manquante : fallback vers l'anglais
+        // Unknown locale or missing key: fall back to English
+        (_, k) => menu_t("en", k),
     }
 }

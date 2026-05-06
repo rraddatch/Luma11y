@@ -33,22 +33,12 @@
     "above": "Above {0}",
     "switch_to": "Switch to"
   },
-  "menu": {
-    "about": "About Luma11y",
-    "hide": "Hide",
-    "hide_others": "Hide Others",
-    "show_all": "Show All",
-    "quit": "Quit",
-    "colour_profiles": "Colour Profiles",
-    "language": "Language"
-  },
   "settings": {
     "title": "Settings",
     "tab_general": "General",
     "tab_templates": "Copy templates",
     "language": "Language",
     "auto": "Automatic (system)",
-    "copy_templates": "Copy templates",
     "add_template": "Add template",
     "remove_template": "Remove",
     "new_template": "New template",
@@ -58,7 +48,6 @@
     "press_keys": "Press keys\u2026",
     "no_shortcut": "Click to set",
     "theme": "Theme",
-    "theme_auto": "Automatic (system)",
     "theme_light": "Light",
     "theme_dark": "Dark",
     "style_theme": "Style",
@@ -85,8 +74,6 @@
   "style_chooser": {
     "title": "Choose a style",
     "heading": "Choose your style",
-    "description": "You can change this later in Settings.",
-    "modern": "Modern",
-    "classic": "Classic"
+    "description": "You can change this later in Settings."
   }
 }

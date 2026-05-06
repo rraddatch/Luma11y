@@ -75,7 +75,7 @@
             <select id="settings-theme"
                 :value="$store.settings.theme"
                 @change="$store.settings.setTheme($event.target.value)">
-              <option value="auto" x-text="$store.settings.t('settings.theme_auto')">Automatic (system)</option>
+              <option value="auto" x-text="$store.settings.t('settings.auto')">Automatic (system)</option>
               <option value="light" x-text="$store.settings.t('settings.theme_light')">Light</option>
               <option value="dark" x-text="$store.settings.t('settings.theme_dark')">Dark</option>
             </select>

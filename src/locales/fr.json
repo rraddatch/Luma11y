@@ -33,22 +33,12 @@
     "above": "Supérieur à {0}",
     "switch_to": "Afficher"
   },
-  "menu": {
-    "about": "À propos de Luma11y",
-    "hide": "Masquer",
-    "hide_others": "Masquer les autres",
-    "show_all": "Tout afficher",
-    "quit": "Quitter",
-    "colour_profiles": "Profils de couleurs",
-    "language": "Langue"
-  },
   "settings": {
     "title": "Préférences",
     "tab_general": "Général",
     "tab_templates": "Modèles de copie",
     "language": "Langue",
     "auto": "Automatique (système)",
-    "copy_templates": "Modèles de copie",
     "add_template": "Ajouter un modèle",
     "remove_template": "Supprimer",
     "new_template": "Nouveau modèle",
@@ -58,7 +48,6 @@
     "press_keys": "Appuyez sur les touches\u2026",
     "no_shortcut": "Cliquer pour définir",
     "theme": "Thème",
-    "theme_auto": "Automatique (système)",
     "theme_light": "Clair",
     "theme_dark": "Sombre",
     "style_theme": "Style",
@@ -85,8 +74,6 @@
   "style_chooser": {
     "title": "Choisir un style",
     "heading": "Choisissez votre style",
-    "description": "Vous pourrez modifier ce choix dans les Préférences.",
-    "modern": "Moderne",
-    "classic": "Classique"
+    "description": "Vous pourrez modifier ce choix dans les Préférences."
   }
 }
