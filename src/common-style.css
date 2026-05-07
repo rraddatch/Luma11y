@@ -85,6 +85,7 @@ strong {
       display: flex;
       align-items: baseline;
       gap: 0.4rem;
+      height: 3.5rem; /* Fixes #7 */
     }
 
     /* Nom CSS de la couleur / CSS color name */
