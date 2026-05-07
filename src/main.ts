@@ -70,7 +70,7 @@ async function resizeWindow(container: HTMLElement) {
   // Ajoute le padding de la titlebar macOS si la fenêtre est décorée
   // Add macOS titlebar padding if window is decorated
   const isDecorated = await currentWindow.isDecorated();
-  const topPadding = isDecorated && osType() === 'macos' ? 55 : 0;
+  const topPadding = isDecorated && osType() === 'macos' ? 40 : 10; /* Add some space to the bottom of the app. (Fixes #11) */
 
   const newHeight = height + topPadding;
 

@@ -111,8 +111,6 @@ strong {
 }
 
 .results {
-  padding-bottom: 0.5rem; /* Add some space to the bottom of the app. (Fixes #11) */
-
   .contrast-ratio {
     text-align: center;
     border-top: 1px solid transparent;
