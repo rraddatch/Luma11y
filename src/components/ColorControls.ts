@@ -128,7 +128,6 @@ export class ColorControls extends LitElement {
       height: 6px;
       border-radius: 3px;
       background: var(--progress-background);
-      outline: none;
 
       &::-webkit-slider-thumb {
         -webkit-appearance: none;
