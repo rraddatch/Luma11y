@@ -42,6 +42,10 @@ mod icc;
 /// Menu internationalization
 mod i18n;
 
+/// Tables de traduction par langue
+/// Per-language translation tables
+mod lang;
+
 // =============================================================================
 // INITIALISATION
 // INITIALIZATION
@@ -322,6 +326,27 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
 
     let edit_submenu = edit_builder.build()?;
 
+    // === SOUS-MENU FENÊTRE ===
+    // === WINDOW SUBMENU ===
+    let win_minimize = PredefinedMenuItem::minimize(app, Some(i18n::menu_t(locale, "minimize")))?;
+    let win_close = PredefinedMenuItem::close_window(app, Some(i18n::menu_t(locale, "close_window")))?;
+    let win_sep = PredefinedMenuItem::separator(app)?;
+    let always_on_top = {
+        let state = app.state::<store::AppState>();
+        let value = *state.always_on_top.lock().unwrap();
+        value
+    };
+    let win_always_on_top = CheckMenuItemBuilder::with_id("always_on_top", i18n::menu_t(locale, "always_on_top"))
+        .checked(always_on_top)
+        .build(app)?;
+
+    let window_submenu = SubmenuBuilder::new(app, i18n::menu_t(locale, "window"))
+        .item(&win_minimize)
+        .item(&win_sep)
+        .item(&win_always_on_top)
+        .item(&win_close)
+        .build()?;
+
     #[cfg(target_os = "macos")]
     {
         // Crée le sous-menu ICC avec les profils
@@ -334,6 +359,7 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
             &app_menu,
             &edit_submenu,
             &icc_submenu,
+            &window_submenu,
         ])?;
         // Applique le menu à l'application
         // Apply menu to the application
@@ -347,6 +373,7 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
         let root_menu = Menu::with_items(app, &[
             &app_menu,
             &edit_submenu,
+            &window_submenu,
         ])?;
         // Applique le menu à l'application
         // Apply menu to the application
@@ -435,6 +462,7 @@ pub fn run() {
             templates: Mutex::new(Vec::new()),
             appearance: Mutex::new("auto".to_string()),
             style_theme: Mutex::new("modern".to_string()),
+            always_on_top: Mutex::new(false),
         })
         // Configure le menu de l'application
         // Configure the application menu
@@ -495,27 +523,6 @@ pub fn run() {
                     }
                     return;
                 }
-                "lang_en" | "lang_fr" => {
-                    let new_locale = if menu_id == "lang_en" { "en" } else { "fr" };
-
-                    // Met à jour la locale dans l'état
-                    // Update locale in state
-                    let state = app.state::<store::AppState>();
-                    {
-                        let mut locale = state.locale.lock().unwrap();
-                        *locale = new_locale.to_string();
-                    }
-
-                    // Reconstruit le menu avec la nouvelle locale
-                    // Rebuild menu with new locale
-                    let _ = rebuild_menu(app, new_locale);
-
-                    // Émet l'événement pour notifier le frontend
-                    // Emit event to notify frontend
-                    let _ = app.emit("locale-changed", new_locale);
-
-                    return;
-                }
                 "appearance_auto" | "appearance_light" | "appearance_dark" => {
                     let mode = match menu_id {
                         "appearance_light" => "light",
@@ -550,6 +557,23 @@ pub fn run() {
 
                     let _ = rebuild_menu(app, &locale);
                     let _ = app.emit("style-theme-changed", theme);
+                    return;
+                }
+                "always_on_top" => {
+                    // Bascule l'état always-on-top et l'applique à toutes les fenêtres
+                    // Toggle always-on-top state and apply it to all windows
+                    let state = app.state::<store::AppState>();
+                    let (new_value, locale) = {
+                        let mut current = state.always_on_top.lock().unwrap();
+                        *current = !*current;
+                        (*current, state.locale.lock().unwrap().clone())
+                    };
+
+                    for (_, window) in app.webview_windows() {
+                        let _ = window.set_always_on_top(new_value);
+                    }
+
+                    let _ = rebuild_menu(app, &locale);
                     return;
                 }
                 _ => {}

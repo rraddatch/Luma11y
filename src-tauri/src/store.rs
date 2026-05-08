@@ -132,6 +132,7 @@ pub struct AppState {
     pub templates: Mutex<Vec<CopyTemplate>>,
     pub appearance: Mutex<String>,
     pub style_theme: Mutex<String>,
+    pub always_on_top: Mutex<bool>,
 }
 
 // =============================================================================
