@@ -15,18 +15,21 @@ import {
   onLocaleChange,
   setLocale,
   setLocalePreference,
+  previewLocalePreference,
   getLocalePreference,
   t as i18nT,
   type LocalePreference,
 } from './i18n';
 import {
   initTheme,
+  applyTheme,
   getThemePreference,
   setThemePreference,
   type ThemePreference,
 } from './theme';
 import {
   initStyleTheme,
+  applyStyleTheme,
   getStyleTheme,
   setStyleTheme,
   type StyleTheme,
@@ -120,31 +123,25 @@ Alpine.store('settings', {
     return i18nT(key, ...args);
   },
 
-  // Change le thème / Change theme
+  // Change le thème (preview uniquement, persisté à la sauvegarde)
+  // Change theme (preview only, persisted on save)
   setTheme(pref: ThemePreference): void {
     (this as any).theme = pref;
-    setThemePreference(pref);
-    invoke('set_appearance', { appearance: pref }).catch((err: unknown) => {
-      console.error('Error setting appearance in backend:', err);
-    });
+    applyTheme(pref);
   },
 
-  // Change le thème de style / Change style theme
+  // Change le thème de style (preview uniquement, persisté à la sauvegarde)
+  // Change style theme (preview only, persisted on save)
   setStyleTheme(theme: StyleTheme): void {
     (this as any).styleTheme = theme;
-    setStyleTheme(theme);
-    invoke('set_style_theme', { style: theme }).catch((err: unknown) => {
-      console.error('Error setting style theme in backend:', err);
-    });
+    applyStyleTheme(theme);
   },
 
-  // Applique un changement de préférence / Apply a preference change
+  // Change la préférence de locale (preview uniquement, persisté à la sauvegarde)
+  // Change locale preference (preview only, persisted on save)
   apply(pref: LocalePreference): void {
     (this as any).preference = pref;
-    setLocalePreference(pref, systemLocale);
-    invoke('set_locale', { locale: getLocale() }).catch((err: unknown) => {
-      console.error('Error setting locale in backend:', err);
-    });
+    previewLocalePreference(pref, systemLocale);
   },
 
   // Met à jour un raccourci / Update a shortcut
@@ -176,30 +173,37 @@ Alpine.store('settings', {
     localStorage.setItem('luma11y-copy-templates', JSON.stringify((this as any).templates));
     localStorage.setItem('luma11y-shortcuts', JSON.stringify((this as any).shortcuts));
     localStorage.setItem('luma11y-toast-duration', String((this as any).toastDuration));
-    // Synchronise les modèles avec le backend pour le menu Édition
-    // Sync templates with backend for Edit menu
+
+    // Persiste le thème, le style et la locale
+    // Persist theme, style theme and locale
+    setThemePreference((this as any).theme);
+    setStyleTheme((this as any).styleTheme);
+    setLocalePreference((this as any).preference, systemLocale);
+
+    // Synchronise avec le backend (menu natif)
+    // Sync with backend (native menu)
     try {
-      await invoke('set_copy_templates', { templates: (this as any).templates });
+      await Promise.all([
+        invoke('set_copy_templates', { templates: (this as any).templates }),
+        invoke('set_appearance', { appearance: (this as any).theme }),
+        invoke('set_style_theme', { style: (this as any).styleTheme }),
+        invoke('set_locale', { locale: getLocale() }),
+      ]);
     } catch (error) {
-      console.error('Error syncing templates to backend:', error);
+      console.error('Error syncing settings to backend:', error);
     }
+
     await emit('focus-main');
     getCurrentWindow().close();
   },
 
-  // Annule les modifications / Cancel changes
+  // Annule les modifications : ferme simplement la fenêtre.
+  // Le contexte de Settings est détruit à la fermeture, et la prochaine
+  // ouverture re-lit localStorage (= valeurs sauvegardées).
+  // Cancel changes: just close the window.
+  // The Settings context is destroyed on close, and the next opening
+  // re-reads localStorage (= saved values).
   async cancel(): Promise<void> {
-    (this as any).templates = loadTemplates();
-    (this as any).shortcuts = loadShortcuts();
-    (this as any).toastDuration = parseInt(localStorage.getItem('luma11y-toast-duration') ?? '3', 10);
-    // Restaure le thème sauvegardé / Restore saved theme
-    const savedTheme = getThemePreference();
-    (this as any).theme = savedTheme;
-    setThemePreference(savedTheme);
-    // Restaure le thème de style sauvegardé / Restore saved style theme
-    const savedStyleTheme = getStyleTheme();
-    (this as any).styleTheme = savedStyleTheme;
-    setStyleTheme(savedStyleTheme);
     await emit('focus-main');
     getCurrentWindow().close();
   },
@@ -210,12 +214,11 @@ Alpine.store('settings', {
 // SYNCHRONIZATION
 // =============================================================================
 
-// Quand la locale change (via setLocalePreference ou setLocale), met à jour le store Alpine
-// When locale changes (via setLocalePreference or setLocale), update Alpine store
+// Quand la locale change, met à jour la locale réactive du store (pour t())
+// When locale changes, update the reactive locale on the store (used by t()).
 onLocaleChange((locale) => {
   const store = Alpine.store('settings') as any;
   store.locale = locale;
-  store.preference = getLocalePreference();
 });
 
 // =============================================================================

@@ -90,6 +90,24 @@ export function getLocalePreference(): LocalePreference {
   return 'auto';
 }
 
+/// Applique une locale effective sans persister (preview)
+/// Applies an effective locale without persisting (preview)
+///
+/// @param pref - 'auto', 'en', ou 'fr'
+/// @param systemLocale - locale système (nécessaire si pref === 'auto')
+export function previewLocalePreference(pref: LocalePreference, systemLocale?: string): void {
+  const effective = pref === 'auto'
+    ? (systemLocale ? normalizeLocale(systemLocale) : DEFAULT_LOCALE)
+    : pref;
+
+  if (effective !== currentLocale) {
+    currentLocale = effective;
+    for (const cb of callbacks) {
+      cb(effective);
+    }
+  }
+}
+
 /// Change la préférence de locale et applique la locale effective
 /// Changes the locale preference and applies the effective locale
 ///
