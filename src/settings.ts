@@ -193,6 +193,10 @@ Alpine.store('settings', {
       console.error('Error syncing settings to backend:', error);
     }
 
+    // Notifie la fenêtre principale pour ré-enregistrer les hotkeys pickers
+    // Notify main window to re-register picker hotkeys
+    await emit('shortcuts-changed');
+
     await emit('focus-main');
     getCurrentWindow().close();
   },

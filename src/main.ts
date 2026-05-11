@@ -44,6 +44,13 @@ import { initStyleTheme, applyStyleTheme, getStyleTheme, setStyleTheme } from '.
 // Import pour la création de fenêtre / Import for window creation
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
+// Import pour les raccourcis globaux (système-wide) / Global (system-wide) shortcuts
+import {
+  register as registerGlobalShortcut,
+  unregisterAll as unregisterAllGlobalShortcuts,
+  type ShortcutEvent,
+} from "@tauri-apps/plugin-global-shortcut";
+
 // Import Webcomponents
 import './components/ColorControls';
 import './components/ProgressBar';
@@ -165,6 +172,7 @@ function loadCopyTemplates(): CopyTemplate[] {
   return [{ name: 'Short', template: '%f.hex% / %b.hex% = %cr%:1', shortcut: defaultShortcut }];
 }
 
+// Load all shortcuts
 function loadShortcuts(): AppShortcut[] {
   try {
     const raw = localStorage.getItem('luma11y-shortcuts');
@@ -176,22 +184,13 @@ function loadShortcuts(): AppShortcut[] {
   ];
 }
 
+// Listener for app shortcuts (Not global shortcuts).
 document.addEventListener('keydown', (e) => {
+  // We ignore auto-repeat via e.repeat to avoid multiple triggers.
+  if (e.repeat) return;
+
   const pressed = eventToShortcut(e);
 
-  // Raccourcis globaux (pickers) / Global shortcuts (pickers)
-  const shortcuts = loadShortcuts();
-  for (const sc of shortcuts) {
-    if (sc.key && sc.key === pressed) {
-      e.preventDefault();
-      const store = Alpine.store('uiStore') as UIStore;
-      if (sc.id === 'pick_fg') store.pickColor(true);
-      if (sc.id === 'pick_bg') store.pickColor(false);
-      return;
-    }
-  }
-
-  // Raccourcis des modèles de copie / Copy template shortcuts
   const templates = loadCopyTemplates();
   for (const tpl of templates) {
     if (tpl.shortcut && tpl.shortcut === pressed) {
@@ -204,6 +203,38 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// Enregistre les raccourcis pickers en hotkeys système (fonctionnent même
+// quand l'app n'a pas le focus).
+// Registers picker shortcuts as system-wide hotkeys (work even when the app
+// is not focused).
+async function registerPickerShortcuts(): Promise<void> {
+  try {
+    await unregisterAllGlobalShortcuts();
+  } catch (err) {
+    console.error('Error unregistering global shortcuts:', err);
+  }
+
+  for (const sc of loadShortcuts()) {
+    if (!sc.key) continue;
+    if (sc.id !== 'pick_fg' && sc.id !== 'pick_bg') continue;
+    try {
+      await registerGlobalShortcut(sc.key, (event: ShortcutEvent) => {
+        // Déclenche au relâchement de la touche pour éviter de réagir à
+        // l'auto-repeat (la touche restant enfoncée).
+        // Trigger on key release to avoid reacting to auto-repeat events
+        // when the key is held down.
+        if (event.state !== 'Released') return;
+        const store = Alpine.store('uiStore') as UIStore;
+        store.pickColor(sc.id === 'pick_fg');
+      });
+    } catch (err) {
+      // Combinaison déjà prise par une autre app, ou syntaxe invalide
+      // Combination already taken by another app, or invalid syntax
+      console.error(`Failed to register global shortcut "${sc.key}" for ${sc.id}:`, err);
+    }
+  }
+}
 
 // =============================================================================
 // CONFIGURATION DU STORE ALPINE.JS
@@ -381,6 +412,15 @@ initStyleTheme();
   // Step 3c: Listen for style theme changes from the native menu
   await listen<string>('style-theme-changed', (event) => {
     setStyleTheme(event.payload as 'modern' | 'classic');
+  });
+
+  // Étape 3d : Enregistre les pickers en hotkeys système
+  // et ré-enregistre quand Settings sauvegarde
+  // Step 3d: Register pickers as system-wide hotkeys
+  // and re-register when Settings saves
+  await registerPickerShortcuts();
+  await listen('shortcuts-changed', () => {
+    registerPickerShortcuts();
   });
 
   // Étape 4 : Écoute les changements de locale depuis le menu natif Rust

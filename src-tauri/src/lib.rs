@@ -454,6 +454,9 @@ pub fn run() {
         // Initialise le plugin OS pour la détection de locale
         // Initialize OS plugin for locale detection
         .plugin(tauri_plugin_os::init())
+        // Plugin pour les raccourcis clavier globaux (système-wide)
+        // Plugin for global (system-wide) keyboard shortcuts
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         // Initialise l'état global du color store
         // Initialize global color store state
         .manage(store::AppState {
