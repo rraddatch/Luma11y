@@ -27,12 +27,12 @@
 // API moderne et type-safe pour déclarer des classes Objective-C en Rust
 // Modern type-safe API for declaring Objective-C classes in Rust
 use objc2::{define_class, msg_send, ClassType, MainThreadOnly}; // Class declaration macros
-use objc2::rc::{Allocated, Retained};                                          // Smart pointers for ObjC objects
+use objc2::rc::{Allocated, Retained};  // Smart pointers for ObjC objects
 
 // Types Foundation (équivalent de la bibliothèque standard ObjC)
 use objc2_foundation::{
     MainThreadMarker,    // Marqueur pour garantir l'exécution sur le thread principal
-    NSAffineTransform,   // Transformations 2D (rotation, translation, échelle)
+    NSAffineTransform,    // Transformations 2D (rotation, translation, échelle)
     NSCopying,           // Protocole de copie
     NSPoint,             // Point 2D (x, y)
     NSRect,              // Rectangle (origin + size)
@@ -42,7 +42,7 @@ use objc2_foundation::{
 
 // Types AppKit (framework UI de macOS)
 use objc2_app_kit::{
-    NSAffineTransformNSAppKitAdditions, // Extensions AppKit pour NSAffineTransform
+    NSAffineTransformNSAppKitAdditions,   // Extensions AppKit pour NSAffineTransform
     NSApplication,                       // Application principale
     NSApplicationActivationOptions,      // Options d'activation (ActivateAllWindows, etc.)
     NSApplicationActivationPolicy,       // Politique d'activation (Regular, Accessory, etc.)
@@ -50,7 +50,7 @@ use objc2_app_kit::{
     NSColor,                             // Couleurs
     NSCursor,                            // Curseur de la souris
     NSEvent,                             // Événements (souris, clavier, etc.)
-    NSEventModifierFlags,                // Modificateurs (Shift, Ctrl, etc.)
+    NSEventModifierFlags,                 // Modificateurs (Shift, Ctrl, etc.)
     NSFont,                              // Polices de caractères
     NSGraphicsContext,                   // Contexte de dessin
     NSRunningApplication,                // Application en cours d'exécution
@@ -58,6 +58,7 @@ use objc2_app_kit::{
     NSStringDrawing,                     // Extension pour dessiner du texte
     NSView,                              // Vue de base
     NSWindow as NSWindow2,               // Fenêtre (renommée pour éviter conflit)
+    NSWindowCollectionBehavior,          // Comportement par rapport aux Spaces / fullscreen
     NSWindowSharingType,                 // Type de partage de fenêtre (None, ReadOnly, ReadWrite)
     NSWindowStyleMask,                   // Styles de fenêtre (Borderless, etc.)
 };
@@ -1203,9 +1204,13 @@ pub fn run(fg: bool) -> ColorPickerResult {
     // Récupère l'instance partagée de l'application
     let app = NSApplication::sharedApplication(mtm);
 
-    // Configure la politique d'activation sur "Regular"
-    // L'app apparaît dans le dock et peut recevoir le focus
-    app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
+    // Pendant l'activation du picker, on bascule en Accessory : permet d'activer l'app
+    // sans sortir du Space d'une autre app en plein écran. La policy est
+    // restaurée à Regular en fin de fonction. (Fixes #25)
+    // During the picker activation, switch to Accessory: lets us activate the app
+    // without leaving the Space of another app's full-screen. The policy is
+    // restored to Regular at the end of this function. (Fixes #25)
+    app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
 
     // Crée des fenêtres overlay pour chaque écran
     // Create overlay windows for each screen
@@ -1255,6 +1260,13 @@ pub fn run(fg: bool) -> ColorPickerResult {
             // Configure la fenêtre using NSWindow2 methods
             // Configure the window using NSWindow2 methods
             window_as_nswindow.setLevel(1000);                        // Very high level (above everything)
+
+            // Permet à la fenêtre d'apparaître dans tous les Spaces (y compris
+            // ceux des apps en plein écran). 1 = CanJoinAllSpaces, 16 = Stationary,
+            // 256 = FullScreenAuxiliary. (Fixes #25)
+            // Lets the window show on every Space (including full-screen apps').
+            // 1 = CanJoinAllSpaces, 16 = Stationary, 256 = FullScreenAuxiliary. (Fixes #25)
+            window_as_nswindow.setCollectionBehavior(NSWindowCollectionBehavior(1 | 16 | 256));
 
             let clear_color = NSColor::clearColor();                  // Transparent color
             window_as_nswindow.setBackgroundColor(Some(&clear_color)); // Transparent background
@@ -1409,7 +1421,7 @@ pub fn run(fg: bool) -> ColorPickerResult {
     // Custom event loop (instead of app.run() which would close Tauri)
     unsafe {
         use objc2_foundation::NSDate;
-        
+
         while !SHOULD_STOP.load(std::sync::atomic::Ordering::SeqCst) {
             // Timeout court pour vérifier le flag régulièrement
             // Short timeout to check the flag regularly
@@ -1417,22 +1429,22 @@ pub fn run(fg: bool) -> ColorPickerResult {
                 NSDate::class(),
                 dateWithTimeIntervalSinceNow: 0.016f64  // ~60fps
             ];
-            
+
             let event = app.nextEventMatchingMask_untilDate_inMode_dequeue(
                 objc2_app_kit::NSEventMask::Any,
                 Some(&timeout),
                 objc2_foundation::NSDefaultRunLoopMode,
                 true
             );
-            
+
             if let Some(event) = event {
                 app.sendEvent(&event);
             }
-            
+
             app.updateWindows();
         }
     }
-    
+
     // Ferme toutes les fenêtres de l'application qui sont au niveau 1000 (nos fenêtres picker)
     // Close all application windows that are at level 1000 (our picker windows)
     unsafe {
@@ -1445,6 +1457,10 @@ pub fn run(fg: bool) -> ColorPickerResult {
             }
         }
     }
+
+    // Restaure la policy normale (Fixes #25)
+    // Restore the regular policy (Fixes #25)
+    app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
 
     // Récupère les couleurs sélectionnées
     // Get the selected colors
