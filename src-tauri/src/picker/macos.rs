@@ -1206,10 +1206,10 @@ pub fn run(fg: bool) -> ColorPickerResult {
 
     // Pendant l'activation du picker, on bascule en Accessory : permet d'activer l'app
     // sans sortir du Space d'une autre app en plein écran. La policy est
-    // restaurée à Regular en fin de fonction. (Fixes #25)
+    // restaurée à Regular en fin de fonction. (Fixes #26)
     // During the picker activation, switch to Accessory: lets us activate the app
     // without leaving the Space of another app's full-screen. The policy is
-    // restored to Regular at the end of this function. (Fixes #25)
+    // restored to Regular at the end of this function. (Fixes #26)
     app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
 
     // Crée des fenêtres overlay pour chaque écran
@@ -1263,9 +1263,9 @@ pub fn run(fg: bool) -> ColorPickerResult {
 
             // Permet à la fenêtre d'apparaître dans tous les Spaces (y compris
             // ceux des apps en plein écran). 1 = CanJoinAllSpaces, 16 = Stationary,
-            // 256 = FullScreenAuxiliary. (Fixes #25)
+            // 256 = FullScreenAuxiliary. (Fixes #26)
             // Lets the window show on every Space (including full-screen apps').
-            // 1 = CanJoinAllSpaces, 16 = Stationary, 256 = FullScreenAuxiliary. (Fixes #25)
+            // 1 = CanJoinAllSpaces, 16 = Stationary, 256 = FullScreenAuxiliary. (Fixes #26)
             window_as_nswindow.setCollectionBehavior(NSWindowCollectionBehavior(1 | 16 | 256));
 
             let clear_color = NSColor::clearColor();                  // Transparent color
@@ -1458,8 +1458,8 @@ pub fn run(fg: bool) -> ColorPickerResult {
         }
     }
 
-    // Restaure la policy normale (Fixes #25)
-    // Restore the regular policy (Fixes #25)
+    // Restaure la policy normale (Fixes #26)
+    // Restore the regular policy (Fixes #26)
     app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
 
     // Récupère les couleurs sélectionnées
