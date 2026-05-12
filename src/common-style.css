@@ -126,6 +126,7 @@ strong {
     li {
       align-items: center;
       padding: 0 1rem;
+      list-style: none;
       .icon {
         display: flex;
         align-items: center;
