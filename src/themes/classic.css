@@ -32,7 +32,7 @@
   --text-color-light: var(--color-gray-300);
   --text-color-strong: var(--color-gray-50);
   --text-color-inverted: var(--color-gray-700);
-  --text-color-disabled: var(--color-gray-500);
+  --text-color-disabled: var(--color-gray-400);
   --text-color-pass: var(--color-lime-300);
   --text-color-fail: var(--color-red-300);
   --background-color: var(--color-gray-700);
@@ -77,7 +77,7 @@ body {
   }
 
   &:disabled {
-    background: var(--background-color-disabled);
+    background-color: var(--background-color-disabled);
     border-color: var(--border-color-disabled);
     color: var(--text-color-disabled);
   }
