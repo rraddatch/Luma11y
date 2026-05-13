@@ -7,6 +7,13 @@ use crate::store::ResultStore;
 use crate::picker::common::ColorPickerResult;
 use crate::config;
 
+/// Considère une couleur comme sombre si son contraste avec le noir est < 4.5
+/// A color is considered dark when its contrast against black is < 4.5
+pub fn is_dark(color: &BigColor) -> bool {
+    let black = BigColor::from_rgb(0, 0, 0, 1.0);
+    color.get_contrast_ratio(&black) < 4.5
+}
+
 /// Met à jour les résultats du store à partir du résultat du picker
 /// Updates the store results from picker result
 ///
@@ -20,7 +27,7 @@ pub fn update_results_from_picker(store: &mut ResultStore, result: &ColorPickerR
         store.foreground_rgb = (r, g, b);
         store.foreground_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
         store.foreground = BigColor::from_rgb(r, g, b, 1.0);
-        store.foreground_is_dark = store.foreground.is_dark();
+        store.foreground_is_dark = is_dark(&store.foreground);
     }
 
     // Met à jour background si sélectionné
@@ -29,7 +36,7 @@ pub fn update_results_from_picker(store: &mut ResultStore, result: &ColorPickerR
         store.background_rgb = (r, g, b);
         store.background_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
         store.background = BigColor::from_rgb(r, g, b, 1.0);
-        store.background_is_dark = store.background.is_dark();
+        store.background_is_dark = is_dark(&store.background);
     }
 
     // Calcule le ratio de contraste
