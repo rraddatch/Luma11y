@@ -291,8 +291,26 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
 
     // === MENU ÉDITION ===
     // === EDIT MENU ===
+    // Items natifs requis sur macOS pour que ⌘C/⌘V/⌘X/⌘A soient routés vers la
+    // webview (sans eux, l'OS n'associe pas la combinaison à une action).
+    // Native items required on macOS so ⌘C/⌘V/⌘X/⌘A are forwarded to the
+    // webview (without them, the OS doesn't associate the combo to an action).
+    let edit_undo = PredefinedMenuItem::undo(app, None)?;
+    let edit_redo = PredefinedMenuItem::redo(app, None)?;
+    let edit_sep = PredefinedMenuItem::separator(app)?;
+    let edit_cut = PredefinedMenuItem::cut(app, None)?;
+    let edit_copy = PredefinedMenuItem::copy(app, None)?;
+    let edit_paste = PredefinedMenuItem::paste(app, None)?;
+    let edit_select_all = PredefinedMenuItem::select_all(app, None)?;
 
-    let mut edit_builder = SubmenuBuilder::new(app, i18n::menu_t(locale, "edit"));
+    let mut edit_builder = SubmenuBuilder::new(app, i18n::menu_t(locale, "edit"))
+        .item(&edit_undo)
+        .item(&edit_redo)
+        .item(&edit_sep)
+        .item(&edit_cut)
+        .item(&edit_copy)
+        .item(&edit_paste)
+        .item(&edit_select_all);
 
     // Ajoute les modèles de copie avec leurs raccourcis
     // Add copy templates with their shortcuts
@@ -300,6 +318,9 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
     let templates = state.templates.lock().unwrap().clone();
 
     if !templates.is_empty() {
+        let tpl_sep = PredefinedMenuItem::separator(app)?;
+        edit_builder = edit_builder.item(&tpl_sep);
+
         let mut tpl_submenu_builder = SubmenuBuilder::new(app, i18n::menu_t(locale, "copy_templates"));
 
         for (i, tpl) in templates.iter().enumerate() {
