@@ -101,6 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
   observer.observe(container);
 });
 
+// Bloque le menu contextuel natif de la webview
+// Block the webview's native context menu
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
 // =============================================================================
 // RACCOURCI CLAVIER POUR COPIER LES RÉSULTATS
 // KEYBOARD SHORTCUT TO COPY RESULTS

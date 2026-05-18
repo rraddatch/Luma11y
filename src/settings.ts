@@ -225,6 +225,10 @@ onLocaleChange((locale) => {
   store.locale = locale;
 });
 
+// Bloque le menu contextuel natif de la webview
+// Block the webview's native context menu
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
 // =============================================================================
 // INITIALISATION
 // INITIALIZATION

@@ -39,6 +39,10 @@ Alpine.store('chooser', {
 // INITIALISATION
 // =============================================================================
 
+// Bloque le menu contextuel natif de la webview
+// Block the webview's native context menu
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
 Alpine.start();
 initTheme();
 
