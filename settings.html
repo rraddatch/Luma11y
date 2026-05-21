@@ -158,22 +158,25 @@
                 <legend class="template" :id="'template-' + index + '-new'" x-show="editing" x-text="$store.settings.t('settings.new_template')">New template</legend>
                 <button class="btn-remove" @click="$store.settings.removeTemplate(index)" :aria-label="$store.settings.t('settings.remove_template')" :aria-describedby="'template-' + index">&times;</button>
               </div>
-              <label :for="'template-name' + index" x-text="$store.settings.t('settings.template_content')">Content</label>
-              <input type="text" class="template-name" x-show="editing"
-                :id="'template-name' + index"
-                x-init="if (editing) $nextTick(() => $el.focus())"
-                @input="$store.settings.templates[index].name = $event.target.value"
-                :placeholder="$store.settings.t('settings.template_name')"
-                @keydown.enter="if ($event.target.value) editing = false"
-                @blur="if ($store.settings.templates[index].name) editing = false"
-                :aria-describedby="'template-' + index"
-              />
-
-              <label :for="'template-content' + index" x-text="$store.settings.t('settings.template_content')">Content</label>
-              <textarea :id="'template-content' + index" rows="2" :value="tpl.template"
-                @input="$store.settings.templates[index].template = $event.target.value"
-                :aria-describedby="'template-' + index"
-              ></textarea>
+              <div class="template-name" x-show="editing">
+                <label :for="'template-name' + index" x-text="$store.settings.t('settings.template_name')">Name</label>
+                <input type="text" class="template-name"
+                  :id="'template-name' + index"
+                  x-init="if (editing) $nextTick(() => $el.focus())"
+                  @input="$store.settings.templates[index].name = $event.target.value"
+                  :placeholder="$store.settings.t('settings.template_name')"
+                  @keydown.enter="if ($event.target.value) editing = false"
+                  @blur="if ($store.settings.templates[index].name) editing = false"
+                  :aria-describedby="'template-' + index"
+                />
+              </div>
+              <div class="template-content">
+                <label :for="'template-content' + index" x-text="$store.settings.t('settings.template_content')">Content</label>
+                <textarea :id="'template-content' + index" rows="2" :value="tpl.template"
+                  @input="$store.settings.templates[index].template = $event.target.value"
+                  :aria-describedby="'template-' + index"
+                ></textarea>
+              </div>
               <div class="template-shortcut">
                 <div x-text="$store.settings.t('settings.copy_shortcut')" aria-hidden="true">Shortcut</div>
                 <div class="shortcut-input"
