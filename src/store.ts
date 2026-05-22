@@ -41,6 +41,7 @@ export interface BackendStore {
   /// If the colour is dark
   background_is_dark: boolean;
 
+  // Contrast Ratio (Arrondi)
   // Contrast Ratio (Rounded)
   contrast_ratio_rounded: number;
 
@@ -359,7 +360,8 @@ export const UIStore = {
     this.contrastRatio = `${store.contrast_ratio_rounded}`;
     this.backgroundContrastWithWhite = store.background_contrast_with_white;
 
-    // Update WCAG Level rules, based on contrast ratio
+    // Niveaux WCAG depuis la valeur de ratio RAW
+    // WCAG levels from the raw ratio value
     this.level143Regular = true;
     this.level143Large = true;
     this.level146Regular = true;

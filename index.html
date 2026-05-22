@@ -121,10 +121,12 @@
       </div>
       <!-- Contrast Ratio -->
       <section class="results" x-data="{ compact: true }" @toggle-labels="$store.uiStore.toggleProgressLabels()">
-        <p class="contrast-ratio" :class="{ 'with-top-border': $store.uiStore.backgroundContrastWithWhite < 1.5 || showBgControls }">
-          <span class="text" x-text="$store.uiStore.t('results.contrast_ratio')">Contrast Ratio</span>
-          <span><strong class="ratio" x-text="$store.uiStore.contrastRatio"></strong>:1</span>
-        </p>
+        <div class="contrast-ratio" aria-live="polite" aria-atomic="true">
+          <p :class="{ 'with-top-border': $store.uiStore.backgroundContrastWithWhite < 1.5 || showBgControls }">
+            <span class="text" x-text="$store.uiStore.t('results.contrast_ratio')">Contrast Ratio</span>
+            <span><strong class="ratio" x-text="$store.uiStore.contrastRatio"></strong>:1</span>
+          </p>
+        </div>
         <div class="buttons">
           <button
             class="btn small"

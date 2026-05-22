@@ -9,7 +9,6 @@ use crate::config;
 use crate::picker;
 use crate::color;
 use crate::color_names;
-use bigcolor::BigColor;
 
 // =============================================================================
 // STORE - État global partagé
@@ -23,16 +22,6 @@ pub struct ResultStore {
     /// Plateforme actuelle (macos, windows, linux)
     /// Current platform (macos, windows, linux)
     pub platform: &'static str,
-
-    /// Couleur de premier plan (BigColor) - ignorée par la sérialisation
-    /// Foreground color (BigColor) - ignored by serialization
-    #[serde(skip)]
-    pub foreground: BigColor,
-
-    /// Couleur d'arrière-plan (BigColor) - ignorée par la sérialisation
-    /// Background color (BigColor) - ignored by serialization
-    #[serde(skip)]
-    pub background: BigColor,
 
     /// Couleur de premier plan au format RGB (r, g, b)
     /// Foreground color in RGB format (r, g, b)
@@ -65,28 +54,25 @@ pub struct ResultStore {
     // Contast Ratio value, not rounded
     // Valeur du Ratio de Contraste, non arrondi
     #[serde(skip)]
-    pub contrast_ratio_raw: f32,
+    pub contrast_ratio_raw: f64,
 
     // Contast Ratio value, rounded
     // Valeur du Ratio de Contraste, arrondi
-    pub contrast_ratio_rounded: f32,
+    pub contrast_ratio_rounded: f64,
 
     /// Ratio de contraste entre l'arrière-plan et le blanc
     /// Contrast ratio between background and white
     /// (Fixes #9)
-    pub background_contrast_with_white: f32,
+    pub background_contrast_with_white: f64,
 }
 
 impl Default for ResultStore {
     fn default() -> Self {
         let (fr, fg, fb) = config::DEFAULT_FOREGROUND_RGB;
         let (br, bg, bb) = config::DEFAULT_BACKGROUND_RGB;
-        let fc = BigColor::from_rgb(fr, fg, fb, 1.0);
-        let bc = BigColor::from_rgb(br, bg, bb, 1.0);
-        let white = BigColor::from_rgb(255, 255, 255, 1.0);
-        let contrast_ratio = fc.get_contrast_ratio(&bc);
-        let contrast_ratio_rounded = (contrast_ratio * config::ROUNDING_FACTOR).round() / config::ROUNDING_FACTOR;
-        let background_contrast_with_white = bc.get_contrast_ratio(&white);
+        let contrast_ratio_raw = color::contrast_ratio((fr, fg, fb), (br, bg, bb));
+        let contrast_ratio_rounded = color::floor_ratio(contrast_ratio_raw);
+        let background_contrast_with_white = color::contrast_ratio((br, bg, bb), (255, 255, 255));
         Self {
             // Plateforme détectée à la compilation
             // Platform detected at compile time
@@ -98,18 +84,16 @@ impl Default for ResultStore {
             platform: "linux",
             #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
             platform: "unknown",
-            foreground: fc,
-            background: bc,
             foreground_rgb: config::DEFAULT_FOREGROUND_RGB,
             foreground_hex: format!("#{:02X}{:02X}{:02X}", fr, fg, fb),
-            foreground_is_dark: true,
+            foreground_is_dark: color::is_dark((fr, fg, fb)),
             background_rgb: config::DEFAULT_BACKGROUND_RGB,
             background_hex: format!("#{:02X}{:02X}{:02X}", br, bg, bb),
-            background_is_dark: false,
+            background_is_dark: color::is_dark((br, bg, bb)),
             continue_mode: false,
-            contrast_ratio_raw: contrast_ratio,
-            contrast_ratio_rounded: contrast_ratio_rounded,
-            background_contrast_with_white: background_contrast_with_white,
+            contrast_ratio_raw,
+            contrast_ratio_rounded,
+            background_contrast_with_white,
         }
     }
 }
@@ -191,27 +175,24 @@ pub fn update_store(app: AppHandle, state: tauri::State<AppState>, key: String, 
             "foreground" => {
                 store.foreground_rgb = (r, g, b);
                 store.foreground_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
-                store.foreground = BigColor::from_rgb(r, g, b, 1.0);
-                store.foreground_is_dark = crate::color::is_dark(&store.foreground);
+                store.foreground_is_dark = color::is_dark((r, g, b));
             }
             "background" => {
                 store.background_rgb = (r, g, b);
                 store.background_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
-                store.background = BigColor::from_rgb(r, g, b, 1.0);
-                store.background_is_dark = crate::color::is_dark(&store.background);
+                store.background_is_dark = color::is_dark((r, g, b));
             }
             _ => return, // Clé inconnue / Unknown key
         }
 
-        // Recalcule le ratio de contraste
-        // Recalculate contrast ratio
-        store.contrast_ratio_raw = store.foreground.get_contrast_ratio(&store.background);
-        store.contrast_ratio_rounded = (store.contrast_ratio_raw * config::ROUNDING_FACTOR).round() / config::ROUNDING_FACTOR;
+        // Recalcule le ratio de contraste (brut + arrondi vers le bas)
+        // Recalculate the contrast ratio (raw + floor-rounded)
+        store.contrast_ratio_raw = color::contrast_ratio(store.foreground_rgb, store.background_rgb);
+        store.contrast_ratio_rounded = color::floor_ratio(store.contrast_ratio_raw);
 
         // Recalcule le contraste arrière-plan vs blanc
         // Recalculate background-vs-white contrast
-        let white = BigColor::from_rgb(255, 255, 255, 1.0);
-        store.background_contrast_with_white = store.background.get_contrast_ratio(&white);
+        store.background_contrast_with_white = color::contrast_ratio(store.background_rgb, (255, 255, 255));
 
         // Émet l'événement
         // Emit the event

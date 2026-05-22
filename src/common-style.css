@@ -112,13 +112,17 @@ strong {
 
 .results {
   .contrast-ratio {
-    text-align: center;
-    border-top: 1px solid transparent;
-    border-bottom: 1px solid var(--border-color);
-    margin: 0 2rem;
-    padding: 1rem;
-    &.with-top-border {
-      border-top-color: var(--border-color);
+    position: relative;
+    p {
+      text-align: center;
+      border-top: 1px solid transparent;
+      border-bottom: 1px solid var(--border-color);
+      margin: 0 2rem;
+      padding: 1rem;
+
+      &.with-top-border {
+        border-top-color: var(--border-color);
+      }
     }
   }
 

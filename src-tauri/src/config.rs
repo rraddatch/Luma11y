@@ -48,5 +48,5 @@ pub const DEFAULT_FOREGROUND_RGB: (u8, u8, u8) = (0, 0, 0);
 pub const DEFAULT_BACKGROUND_RGB: (u8, u8, u8) = (255, 255, 255);
 
 /// Value for rounding
-pub const ROUNDING_FACTOR: f32 = 10.0; // 1 decimals;
+pub const ROUNDING_FACTOR: f32 = 100.0; // 2 decimals;
 
