@@ -57,7 +57,8 @@ pub fn update_results_from_picker(store: &mut ResultStore, result: &ColorPickerR
     store.contrast_ratio_raw = contrast_ratio(store.foreground_rgb, store.background_rgb);
     store.contrast_ratio_rounded = floor_ratio(store.contrast_ratio_raw);
 
-    // Ratio de contraste entre l'arrière-plan et le blanc
-    // Contrast ratio between background and white
+    // Ratio de contraste entre l'arrière-plan et le blanc / noir
+    // Contrast ratio between background and white / black
     store.background_contrast_with_white = contrast_ratio(store.background_rgb, (255, 255, 255));
+    store.background_contrast_with_black = contrast_ratio(store.background_rgb, (0, 0, 0));
 }

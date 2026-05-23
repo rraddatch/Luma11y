@@ -60,10 +60,11 @@ pub struct ResultStore {
     // Valeur du Ratio de Contraste, arrondi
     pub contrast_ratio_rounded: f64,
 
-    /// Ratio de contraste entre l'arrière-plan et le blanc
-    /// Contrast ratio between background and white
+    /// Ratio de contraste entre l'arrière-plan et le blanc / noir.
+    /// Contrast ratio between background and white / black.
     /// (Fixes #9)
     pub background_contrast_with_white: f64,
+    pub background_contrast_with_black: f64,
 }
 
 impl Default for ResultStore {
@@ -73,6 +74,7 @@ impl Default for ResultStore {
         let contrast_ratio_raw = color::contrast_ratio((fr, fg, fb), (br, bg, bb));
         let contrast_ratio_rounded = color::floor_ratio(contrast_ratio_raw);
         let background_contrast_with_white = color::contrast_ratio((br, bg, bb), (255, 255, 255));
+        let background_contrast_with_black = color::contrast_ratio((br, bg, bb), (0, 0, 0));
         Self {
             // Plateforme détectée à la compilation
             // Platform detected at compile time
@@ -94,6 +96,7 @@ impl Default for ResultStore {
             contrast_ratio_raw,
             contrast_ratio_rounded,
             background_contrast_with_white,
+            background_contrast_with_black,
         }
     }
 }
@@ -190,9 +193,10 @@ pub fn update_store(app: AppHandle, state: tauri::State<AppState>, key: String, 
         store.contrast_ratio_raw = color::contrast_ratio(store.foreground_rgb, store.background_rgb);
         store.contrast_ratio_rounded = color::floor_ratio(store.contrast_ratio_raw);
 
-        // Recalcule le contraste arrière-plan vs blanc
-        // Recalculate background-vs-white contrast
+        // Recalcule les contrastes arrière-plan vs blanc / noir
+        // Recalculate background-vs-white / black contrasts
         store.background_contrast_with_white = color::contrast_ratio(store.background_rgb, (255, 255, 255));
+        store.background_contrast_with_black = color::contrast_ratio(store.background_rgb, (0, 0, 0));
 
         // Émet l'événement
         // Emit the event

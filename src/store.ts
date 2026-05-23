@@ -45,9 +45,10 @@ export interface BackendStore {
   // Contrast Ratio (Rounded)
   contrast_ratio_rounded: number;
 
-  // Ratio de contraste entre l'arrière-plan et le blanc
-  // Contrast ratio between background and white
+  // Ratio de contraste entre l'arrière-plan et le blanc / noir
+  // Contrast ratio between background and white / black
   background_contrast_with_white: number;
+  background_contrast_with_black: number;
 
   // Indique si le mode continu est activé
   // Indicates if continue mode is enabled
@@ -108,9 +109,20 @@ export interface UIStore {
   // Contrast Ratio Rounded
   contrastRatio: string;
 
-  // Ratio de contraste entre la couleur d'arrière-plan et blanc
-  // Contrast ratio between background color and white
+  // Ratios de contraste arrière-plan vs blanc et vs noir
+  // Background contrast ratios vs white and vs black
   backgroundContrastWithWhite: number;
+  backgroundContrastWithBlack: number;
+
+  // Thème courant ('light' | 'dark'), mis à jour par theme.ts
+  // Current theme, kept in sync from theme.ts
+  currentTheme: 'light' | 'dark';
+
+  // Contraste arrière-plan vs la couleur de fond entourante de l'app
+  // (white en theme clair, black en theme sombre)
+  // Background contrast vs the app's surrounding background color
+  // (white in light theme, black in dark theme)
+  backgroundContrastWithSurrounding: number;
 
   // Profil ICC actuellement sélectionné
   // Currently selected ICC profile
@@ -216,16 +228,28 @@ export const UIStore = {
   // Initial state: Contrast ratio
   contrastRatio: '0',
 
-  // Ratio de contraste entre l'arrière-plan et le blanc
-  // Contrast ratio between background and white
+  // Ratios de contraste arrière-plan vs blanc / vs noir
+  // Background contrast ratios vs white / vs black
   // (Fixes #9)
   backgroundContrastWithWhite: 1,
+  backgroundContrastWithBlack: 1,
 
+  // Thème courant (mis à jour par main.ts via onThemeChange)
+  // Current theme (updated from main.ts via onThemeChange)
+  currentTheme: 'light' as 'light' | 'dark',
+
+  // Contraste contre le fond ambiant de l'app, suivant le thème
+  // Background contrast against the app surrounding bg, depending on theme
+  get backgroundContrastWithSurrounding(): number {
+    const self = this as unknown as UIStore;
+    return self.currentTheme === 'dark'
+      ? self.backgroundContrastWithBlack
+      : self.backgroundContrastWithWhite;
+  },
 
   // État initial : profil ICC par défaut (Auto)
   // Initial state: default ICC profile (Auto)
   currentICCProfile: 'Auto',
-
 
   // Mode d'affichage des barres de progression
   // Progress bar display mode
@@ -359,6 +383,7 @@ export const UIStore = {
 
     this.contrastRatio = `${store.contrast_ratio_rounded}`;
     this.backgroundContrastWithWhite = store.background_contrast_with_white;
+    this.backgroundContrastWithBlack = store.background_contrast_with_black;
 
     // Niveaux WCAG depuis la valeur de ratio RAW
     // WCAG levels from the raw ratio value

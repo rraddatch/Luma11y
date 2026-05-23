@@ -36,7 +36,7 @@ import { initLocale, onLocaleChange, setLocale, t as i18nT } from './i18n';
 import { locale as getSystemLocale } from '@tauri-apps/plugin-os';
 
 // Import du module thème / Import theme module
-import { initTheme, applyTheme, getThemePreference, setThemePreference } from './theme';
+import { initTheme, applyTheme, getThemePreference, setThemePreference, getCurrentTheme, onThemeChange } from './theme';
 
 // Import du module thème de style / Import style theme module
 import { initStyleTheme, applyStyleTheme, getStyleTheme, setStyleTheme } from './styleTheme';
@@ -277,6 +277,15 @@ onLocaleChange((locale) => {
 Alpine.start();
 initTheme();
 initStyleTheme();
+
+// Synchronise le thème courant dans le store Alpine pour les getters réactifs
+// (ex. backgroundContrastWithSurrounding).
+// Keep the current theme reactive in the Alpine store for reactive getters
+// (e.g. backgroundContrastWithSurrounding).
+(Alpine.store('uiStore') as UIStore).currentTheme = getCurrentTheme();
+onThemeChange((theme) => {
+  (Alpine.store('uiStore') as UIStore).currentTheme = theme;
+});
 
 // Fonction immédiatement invoquée asynchrone (IIFE) pour la synchronisation avec Tauri
 // Immediately Invoked Async Function Expression (IIFE) for Tauri synchronization

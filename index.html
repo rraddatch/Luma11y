@@ -14,7 +14,7 @@
       <h1 class="sr-only" x-text="$store.uiStore.t('app.title')">Luma11y</h1>
       <div class="colors" x-data="{ rotated: false }">
         <!-- Foreground Color -->
-        <div class="wrapper" x-bind:style="`background-color: ${showFgControls ? '#ffffff' : $store.uiStore.backgroundHex}`">
+        <div class="wrapper" x-bind:style="`background-color: ${showFgControls ? 'transparent' : $store.uiStore.backgroundHex}`">
           <section id="foreground"
             x-bind:style="`background-color: ${$store.uiStore.foregroundHex}`"
           >
@@ -72,7 +72,7 @@
         ></color-controls>
         <!-- Background Color -->
          <div class="wrapper"
-            x-bind:style="`background-color: ${showFgControls ? '#ffffff' : $store.uiStore.foregroundHex}`">
+            x-bind:style="`background-color: ${showFgControls ? 'transparent' : $store.uiStore.foregroundHex}`">
             <section id="background"
               x-bind:style="`background-color: ${$store.uiStore.backgroundHex}`">
               <div
@@ -122,7 +122,7 @@
       <!-- Contrast Ratio -->
       <section class="results" x-data="{ compact: true }" @toggle-labels="$store.uiStore.toggleProgressLabels()">
         <div class="contrast-ratio" aria-live="polite" aria-atomic="true">
-          <p :class="{ 'with-top-border': $store.uiStore.backgroundContrastWithWhite < 1.5 || showBgControls }">
+          <p :class="{ 'with-top-border': $store.uiStore.backgroundContrastWithSurrounding < 1.5 || showBgControls }">
             <span class="text" x-text="$store.uiStore.t('results.contrast_ratio')">Contrast Ratio</span>
             <span><strong class="ratio" x-text="$store.uiStore.contrastRatio"></strong>:1</span>
           </p>
