@@ -16,7 +16,8 @@
     "slider_mode": "Mode d'affichage des curseurs",
     "slider_standard": "Standard",
     "slider_colored": "Coloré",
-    "slider_dynamic": "Dynamique"
+    "slider_dynamic": "Dynamique",
+    "invalid_value": "Valeur invalide"
   },
   "results": {
     "contrast_ratio": "Taux de contraste",

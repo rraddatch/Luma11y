@@ -16,7 +16,8 @@
     "slider_mode": "Slider display mode",
     "slider_standard": "Standard",
     "slider_colored": "Coloured",
-    "slider_dynamic": "Dynamic"
+    "slider_dynamic": "Dynamic",
+    "invalid_value": "Invalid value"
   },
   "results": {
     "contrast_ratio": "Contrast Ratio",

@@ -124,6 +124,11 @@ export interface UIStore {
   // (white in light theme, black in dark theme)
   backgroundContrastWithSurrounding: number;
 
+  // Message d'erreur affiché si la saisie hex est invalide (vide sinon)
+  // Error message shown when the typed hex is invalid (empty otherwise)
+  foregroundHexError: string;
+  backgroundHexError: string;
+
   // Profil ICC actuellement sélectionné
   // Currently selected ICC profile
   currentICCProfile: string;
@@ -154,6 +159,10 @@ export interface UIStore {
   // Méthode pour mettre à jour une composante RGB d'une couleur
   // Method to update an RGB component of a color
   updateColor(key: string, component: 'r' | 'g' | 'b', value: number): Promise<void>;
+
+  // Méthode pour mettre à jour une couleur depuis une chaîne hexadécimale.
+  // Update a color from a hex string.
+  updateHex(key: 'foreground' | 'background', hex: string): Promise<void>;
 
   // Méthode pour mettre à jour le store Alpine depuis le store Tauri
   // Method to update Alpine store from Tauri store
@@ -247,6 +256,11 @@ export const UIStore = {
       : self.backgroundContrastWithWhite;
   },
 
+  // Messages d'erreur de saisie hex (vides quand la valeur est valide)
+  // Hex input error messages (empty when the value is valid)
+  foregroundHexError: '',
+  backgroundHexError: '',
+
   // État initial : profil ICC par défaut (Auto)
   // Initial state: default ICC profile (Auto)
   currentICCProfile: 'Auto',
@@ -331,6 +345,45 @@ export const UIStore = {
       await invoke('update_store', { key, r: updated.r, g: updated.g, b: updated.b });
     } catch (error) {
       console.error('Error updating color:', error);
+    }
+  },
+
+  // Met à jour une couleur depuis une chaîne hexadécimale libre.
+  // Teste si la valeur est un hex valide (#abc / #aabbcc).
+  // Renseigne le champ d'erreur correspondant si la saisie est invalide, le vide sinon.
+  // Une saisie vide n'est pas considérée comme une erreur.
+  // Update a color from a free-typed hex string.
+  // Test if the value is a valid hex (#abc / #aabbcc).
+  // Sets the matching error field when the input is invalid, clears it otherwise.
+  // An empty input is not treated as an error.
+  async updateHex(this: UIStore, key: 'foreground' | 'background', hex: string) {
+    const errorKey = key === 'foreground' ? 'foregroundHexError' : 'backgroundHexError';
+    const cleaned = hex.replace(/^#/, '').trim();
+
+    if (cleaned === '') {
+      this[errorKey] = '';
+      return;
+    }
+
+    let r: number, g: number, b: number;
+    if (/^[0-9a-fA-F]{3}$/.test(cleaned)) {
+      r = parseInt(cleaned[0] + cleaned[0], 16);
+      g = parseInt(cleaned[1] + cleaned[1], 16);
+      b = parseInt(cleaned[2] + cleaned[2], 16);
+    } else if (/^[0-9a-fA-F]{6}$/.test(cleaned)) {
+      r = parseInt(cleaned.slice(0, 2), 16);
+      g = parseInt(cleaned.slice(2, 4), 16);
+      b = parseInt(cleaned.slice(4, 6), 16);
+    } else {
+      this[errorKey] = this.t('color.invalid_value');
+      return;
+    }
+
+    this[errorKey] = '';
+    try {
+      await invoke('update_store', { key, r, g, b });
+    } catch (error) {
+      console.error('Error updating color from hex:', error);
     }
   },
 

@@ -97,15 +97,7 @@ body {
   /* Visual color preview */
   section {
     position: relative;
-    .color-preview {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-      p {
-        padding: 1rem;
-      }
-    }
+
     &#foreground {
       border-bottom-left-radius: 2rem;
       .color-preview {

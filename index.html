@@ -23,10 +23,33 @@
               x-bind:class="$store.uiStore.foregroundIsDark ? 'isDark' : 'isLight'"
             >
               <h2 id="foreground-title" x-text="$store.uiStore.t('color.foreground')">Foreground</h2>
-              <p class="color-value">
-                <span class="color-name" x-show="$store.uiStore.foregroundName" x-text="$store.uiStore.foregroundName"></span>
-                <span class="hex-value" :class="{ 'hex-secondary': $store.uiStore.foregroundName }" x-text="$store.uiStore.foregroundHex"></span>
-              </p>
+              <div class="color-input">
+                <div class="color-value">
+                  <p class="color-name" x-show="$store.uiStore.foregroundName" x-text="$store.uiStore.foregroundName"></p>
+                  <input
+                    x-data="{ snapshot: '' }"
+                    type="text"
+                    class="hex-value"
+                    :class="{ 'hex-secondary': $store.uiStore.foregroundName }"
+                    :value="$store.uiStore.foregroundHex"
+                    @focus="snapshot = $event.target.value"
+                    @input="$store.uiStore.updateHex('foreground', $event.target.value)"
+                    @keydown.escape="$event.target.value = snapshot; $store.uiStore.updateHex('foreground', snapshot)"
+                    @blur="if ($store.uiStore.foregroundHexError || !$event.target.value.trim()) { $event.target.value = snapshot; $store.uiStore.updateHex('foreground', snapshot) }"
+                    aria-labelledby="foreground-title"
+                    :aria-describedby="$store.uiStore.foregroundHexError ? 'foreground-error-message' : null"
+                    :aria-invalid="$store.uiStore.foregroundHexError ? 'true' : null"
+                    spellcheck="false"
+                    autocomplete="off"
+                  />
+                </div>
+                <div role="alert">
+                  <p id="foreground-error-message" class="error-message" x-show="$store.uiStore.foregroundHexError">
+                    <svg-icon name="warning" size="1em"></svg-icon>
+                    <span x-text="$store.uiStore.foregroundHexError"></span>
+                  </p>
+              </div>
+              </div>
             </div>
             <div class="buttons">
               <button
@@ -80,10 +103,34 @@
                 x-bind:class="$store.uiStore.backgroundIsDark ? 'isDark' : 'isLight'"
               >
                 <h2 id="background-title" x-text="$store.uiStore.t('color.background')">Background</h2>
-                <p class="color-value">
-                  <span class="color-name" x-show="$store.uiStore.backgroundName" x-text="$store.uiStore.backgroundName"></span>
-                  <span class="hex-value" :class="{ 'hex-secondary': $store.uiStore.backgroundName }" x-text="$store.uiStore.backgroundHex"></span>
-                </p>
+                <div class="color-input">
+                  <div class="color-value">
+                    <p class="color-name" x-show="$store.uiStore.backgroundName" x-text="$store.uiStore.backgroundName"></p>
+                    <input
+                      x-data="{ snapshot: '' }"
+                      type="text"
+                      class="hex-value"
+                      :class="{ 'hex-secondary': $store.uiStore.backgroundName }"
+                      :value="$store.uiStore.backgroundHex"
+                      @focus="snapshot = $event.target.value"
+                      @input="$store.uiStore.updateHex('background', $event.target.value)"
+                      @keydown.escape="$event.target.value = snapshot; $store.uiStore.updateHex('background', snapshot)"
+                      @blur="if ($store.uiStore.backgroundHexError || !$event.target.value.trim()) { $event.target.value = snapshot; $store.uiStore.updateHex('background', snapshot) }"
+                      aria-labelledby="background-title"
+                      :aria-describedby="$store.uiStore.backgroundHexError ? 'background-error-message' : null"
+                      :aria-invalid="$store.uiStore.backgroundHexError ? 'true' : null"
+                      spellcheck="false"
+                      autocomplete="off"
+                      maxlength="7"
+                    />
+                  </div>
+                  <div role="alert">
+                    <p id="background-error-message" role="alert" class="error-message" x-show="$store.uiStore.backgroundHexError">
+                      <svg-icon name="warning" size="1em"></svg-icon>
+                      <span x-text="$store.uiStore.backgroundHexError"></span>
+                    </p>
+                  </div>
+                </div>
               </div>
               <div class="buttons">
                 <div class="group">

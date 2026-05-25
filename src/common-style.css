@@ -70,42 +70,70 @@ strong {
     forced-color-adjust: none;
     .color-preview {
       color: #000000;
+      border-color: #000000;
       &.isDark {
         color: #ffffff;
+        border-color: #ffffff;
       }
-      p {
+
+      .color-input {
+        height: 5.5rem; /* Fixes #7 */
+        padding: 1rem;
         display: flex;
         justify-content: center;
-        width: 100%;
+        flex-direction: column;
+
+        /* Conteneur nom + hex / Color name + hex container */
+        .color-value {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 0.4rem;
+        }
+
+        /* Nom CSS de la couleur / CSS color name */
+        .color-name {
+          font-weight: 600;
+          font-size: 1.1em;
+          text-transform: capitalize;
+        }
+
+        /* Saisie / affichage de la valeur hexadécimale */
+        /* Hexadecimal value input / display */
+        .hex-value {
+          font-family: 'Monaco', 'Menlo', monospace;
+          letter-spacing: 2px;
+          background: transparent;
+          border-width: 1px;
+          border-style: dashed;
+          border-radius: 0.4rem;
+          border-color: transparent;
+          color: inherit;
+          font-size: inherit;
+          font-weight: inherit;
+          padding: 0;
+          width: 7rem;
+          text-align: center;
+          text-transform: uppercase;
+          &:hover {
+            border-color: inherit;
+          }
+        }
+
+        .hex-value:focus-visible {
+          outline: 1px solid currentColor;
+          outline-offset: 2px;
+        }
       }
-    }
 
-    /* Conteneur nom + hex / Color name + hex container */
-    .color-value {
-      display: flex;
-      align-items: baseline;
-      gap: 0.4rem;
-      height: 3.5rem; /* Fixes #7 */
-    }
-
-    /* Nom CSS de la couleur / CSS color name */
-    .color-name {
-      font-weight: 600;
-      font-size: 1.1em;
-      text-transform: capitalize;
-    }
-
-    /* Affichage de la valeur hexadécimale */
-    /* Hexadecimal value display */
-    .hex-value {
-      font-family: 'Monaco', 'Menlo', monospace;
-      letter-spacing: 2px;
-    }
-
-    /* Hex secondaire quand un nom est affiché / Secondary hex when name is shown */
-    .hex-value.hex-secondary {
-      font-size: 0.75em;
-      opacity: 0.7;
+      /* Message d'erreur sous l'input hex / Hex input error message */
+      .error-message {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        font-size: 0.85em;
+      }
     }
   }
 }
