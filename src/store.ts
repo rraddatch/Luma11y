@@ -286,6 +286,10 @@ export const UIStore = {
   // Méthode asynchrone pour lancer le sélecteur de couleur
   // Asynchronous method to launch the color picker
   async pickColor(this: UIStore, fg: boolean = true) {
+    // Empêche l'ouverture de multiples eyedropper (via raccourcis) si l'un est déjà actif (Fixes #39)
+    // Prevent opening a second eyedropper (via shortcuts) when one is already active (Fixes #39)
+    if (this.isPicking) return;
+
     // Active l'indicateur de sélection en cours (désactive le bouton)
     // Enable picking indicator (disables button)
     this.isPicking = true;
