@@ -238,6 +238,13 @@ Alpine.start();
 initTheme();
 initStyleTheme();
 
+// Place le focus clavier sur la première tab, dès l'ouverture
+// Give keyboard focus to the first tab on opening
+requestAnimationFrame(() => {
+  const firstTab = document.querySelector<HTMLElement>('[role=tab][data-tab=general]');
+  firstTab?.focus({ preventScroll: true });
+});
+
 (async () => {
   // Détecte la locale système / Detect system locale
   try {

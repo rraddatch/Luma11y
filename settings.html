@@ -11,7 +11,8 @@
   <body x-data x-effect="
     document.title = $store.settings.t('settings.title');
     document.documentElement.lang = $store.settings.locale;
-  ">
+  "
+  @keydown.escape.window="$store.settings.cancel()">
     <main x-data="{
       activeTab: 'general',
       tabs: ['general', 'shortcuts', 'templates'],
@@ -114,7 +115,14 @@
 
         <fieldset class="section">
           <legend :id="sc.id" class="section-label" x-text="$store.settings.t('settings.shortcuts')">Keyboard shortcuts</legend>
-
+          <!--
+            Capture de raccourci : clic/Entrée/Espace pour entrer en mode "recording",
+            puis la prochaine touche non-modificatrice est enregistrée comme raccourci.
+            Échap annule l'enregistrement sans fermer la fenêtre.
+            Shortcut capture: click/Enter/Space to enter "recording" mode, then the next
+            non-modifier key is saved as the shortcut. Escape cancels recording without
+            closing the window.
+          -->
           <template x-for="(sc, index) in $store.settings.shortcuts" :key="sc.id">
             <div class="shortcut-row" x-data="{ recording: false }">
               <div x-text="$store.settings.t('settings.shortcut_' + sc.id)" aria-hidden="true"></div>
@@ -124,7 +132,7 @@
                 :class="{ recording }"
                 x-text="recording ? $store.settings.t('settings.press_keys') : sc.key || $store.settings.t('settings.no_shortcut')"
                 @click="recording = true; $el.focus()"
-                @keydown="if (!recording) { if ($event.key === 'Enter' || $event.key === ' ') { $event.preventDefault(); recording = true; } return; } $event.preventDefault(); if (['Control', 'Alt', 'Shift', 'Meta'].includes($event.key)) return; $store.settings.updateShortcut(index, $event); recording = false"
+                @keydown="if (!recording) { if ($event.key === 'Enter' || $event.key === ' ') { $event.preventDefault(); recording = true; } return; } $event.preventDefault(); if ($event.key === 'Escape') { $event.stopPropagation(); recording = false; return; } if (['Control', 'Alt', 'Shift', 'Meta'].includes($event.key)) return; $store.settings.updateShortcut(index, $event); recording = false"
                 @blur="recording = false"
                 :aria-label="$store.settings.t('settings.shortcut_' + sc.id) + ' ' + sc.key || $store.settings.t('settings.no_shortcut')"
                 :aria-describedby="sc.id"
@@ -177,6 +185,12 @@
                   :aria-describedby="'template-' + index"
                 ></textarea>
               </div>
+              <!--
+                Même logique que la capture de raccourci global ci-dessus, mais pour le
+                raccourci de copie d'un modèle.
+                Same logic as the global shortcut capture above, but for a template's copy
+                shortcut.
+              -->
               <div class="template-shortcut">
                 <div x-text="$store.settings.t('settings.copy_shortcut')" aria-hidden="true">Shortcut</div>
                 <div class="shortcut-input"
@@ -185,7 +199,7 @@
                   :class="{ recording }"
                   x-text="recording ? $store.settings.t('settings.press_keys') : tpl.shortcut || $store.settings.t('settings.no_shortcut')"
                   @click="recording = true; $el.focus()"
-                  @keydown="if (!recording) { if ($event.key === 'Enter' || $event.key === ' ') { $event.preventDefault(); recording = true; } return; } $event.preventDefault(); if (['Control', 'Alt', 'Shift', 'Meta'].includes($event.key)) return; $store.settings.updateTemplateShortcut(index, $event); recording = false"
+                  @keydown="if (!recording) { if ($event.key === 'Enter' || $event.key === ' ') { $event.preventDefault(); recording = true; } return; } $event.preventDefault(); if ($event.key === 'Escape') { $event.stopPropagation(); recording = false; return; } if (['Control', 'Alt', 'Shift', 'Meta'].includes($event.key)) return; $store.settings.updateTemplateShortcut(index, $event); recording = false"
                   @blur="recording = false"
                   :aria-label="$store.settings.t('settings.copy_shortcut') + ' ' + tpl.shortcut || $store.settings.t('settings.no_shortcut')"
                   :aria-describedby="'template-' + index"
