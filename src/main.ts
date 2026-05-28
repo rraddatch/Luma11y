@@ -55,6 +55,7 @@ import {
 import './components/ColorControls';
 import './components/ProgressBar';
 import './components/SvgIcon';
+import './components/AppTitleBar';
 
 // =============================================================================
 // REDIMENSIONNEMENT AUTOMATIQUE DE LA FENÊTRE
