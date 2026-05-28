@@ -15,10 +15,6 @@ import { listen } from "@tauri-apps/api/event";
 // Import current window for resizing
 import { getCurrentWindow, PhysicalSize } from "@tauri-apps/api/window";
 
-// Import de la détection du type d'OS pour le padding titlebar macOS
-// Import OS type detection for macOS titlebar padding
-import { type as osType } from '@tauri-apps/plugin-os';
-
 // Import d'Alpine.js pour la réactivité de l'interface utilisateur
 // Import Alpine.js for user interface reactivity
 import Alpine from 'alpinejs';
@@ -44,6 +40,9 @@ import { initStyleTheme, applyStyleTheme, getStyleTheme, setStyleTheme } from '.
 // Import pour la création de fenêtre / Import for window creation
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
+// Import du helper de plateforme / Platform helper import
+import { IS_MAC } from './lib/platform';
+
 // Import pour les raccourcis globaux (système-wide) / Global (system-wide) shortcuts
 import {
   register as registerGlobalShortcut,
@@ -56,6 +55,7 @@ import './components/ColorControls';
 import './components/ProgressBar';
 import './components/SvgIcon';
 import './components/AppTitleBar';
+import './components/WindowResizeGrips';
 
 // =============================================================================
 // REDIMENSIONNEMENT AUTOMATIQUE DE LA FENÊTRE
@@ -67,20 +67,17 @@ import './components/AppTitleBar';
 // Adjusts Tauri window size to match content using PhysicalSize
 let lastSetHeight = 0;
 
-async function resizeWindow(container: HTMLElement) {
+async function resizeWindow() {
   const currentWindow = getCurrentWindow();
-  const rect = container.getBoundingClientRect();
   const factor = window.devicePixelRatio;
   const currentSize = await currentWindow.innerSize();
   const width = currentSize.width;
-  const height = Math.ceil(rect.height * factor);
 
-  // Ajoute le padding de la titlebar macOS si la fenêtre est décorée
-  // Add macOS titlebar padding if window is decorated
-  const isDecorated = await currentWindow.isDecorated();
-  const topPadding = isDecorated && osType() === 'macos' ? 40 : 10; /* Add some space to the bottom of the app. (Fixes #11) */
-
-  const newHeight = height + topPadding;
+  // On observe body pour inclure header (titlebar) + main dans le calcul.
+  // Observe body so header (titlebar) + main are both included.
+  const bodyHeight = document.body.getBoundingClientRect().height;
+  const bufferCssPx = 10; /* Add some space to the bottom of the app. (Fixes #11) */
+  const newHeight = Math.ceil((bodyHeight + bufferCssPx) * factor);
 
   // Évite les boucles de redimensionnement sur Windows
   // Avoid resize loops on Windows
@@ -90,16 +87,13 @@ async function resizeWindow(container: HTMLElement) {
   await currentWindow.setSize(new PhysicalSize(width, newHeight));
 }
 
-// Initialise le ResizeObserver sur <main> après le chargement du DOM
-// Initialize ResizeObserver on <main> after DOM is loaded
+// Initialise le ResizeObserver sur <body> après le chargement du DOM
+// Initialize ResizeObserver on <body> after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  const container = document.querySelector('main');
-  if (!container) return;
-
   const observer = new ResizeObserver(() => {
-    resizeWindow(container);
+    resizeWindow();
   });
-  observer.observe(container);
+  observer.observe(document.body);
 });
 
 // Bloque le menu contextuel natif de la webview
@@ -340,7 +334,11 @@ onThemeChange((theme) => {
       width: 620,
       height: 400,
       resizable: false,
+      maximizable: false,
       center: true,
+      ...(IS_MAC
+        ? { titleBarStyle: 'Overlay', hiddenTitle: true }
+        : { decorations: false, transparent: true }),
     });
 
     // Attend que l'utilisateur choisisse un style avant de continuer

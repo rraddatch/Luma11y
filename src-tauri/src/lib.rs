@@ -499,6 +499,17 @@ pub fn run() {
             // Build initial menu with default locale
             rebuild_menu(handle, "en")?;
 
+            // Workaround Linux : GNOME/Mutter ignore parfois decorations:false
+            // donné dans tauri.linux.conf.json. On re-force après création.
+            // Linux workaround: GNOME/Mutter sometimes ignores decorations:false
+            // from tauri.linux.conf.json. Re-force it after window creation.
+            #[cfg(target_os = "linux")]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.set_decorations(false);
+                }
+            }
+
             // Retourne Ok pour indiquer le succès
             // Return Ok to indicate success
             Ok(())
@@ -533,7 +544,7 @@ pub fn run() {
                             let locale = state.locale.lock().unwrap();
                             i18n::menu_t(&locale, "settings_title")
                         };
-                        let _ = WebviewWindowBuilder::new(
+                        let mut builder = WebviewWindowBuilder::new(
                             app,
                             "settings",
                             WebviewUrl::App("settings.html".into()),
@@ -541,9 +552,23 @@ pub fn run() {
                         .title(settings_title)
                         .inner_size(500.0, 450.0)
                         .resizable(true)
+                        .maximizable(false)
                         .min_inner_size(400.0, 700.0)
-                        .center()
-                        .build();
+                        .center();
+
+                        #[cfg(target_os = "macos")]
+                        {
+                            builder = builder
+                                .title_bar_style(tauri::TitleBarStyle::Overlay)
+                                .hidden_title(true);
+                        }
+
+                        #[cfg(not(target_os = "macos"))]
+                        {
+                            builder = builder.decorations(false).transparent(true);
+                        }
+
+                        let _ = builder.build();
                     }
                     return;
                 }

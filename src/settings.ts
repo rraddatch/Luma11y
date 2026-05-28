@@ -34,6 +34,8 @@ import {
   setStyleTheme,
   type StyleTheme,
 } from './styleTheme';
+import './components/AppTitleBar';
+import './components/WindowResizeGrips';
 
 // =============================================================================
 // DÉTECTION LOCALE SYSTÈME

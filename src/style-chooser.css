@@ -10,14 +10,18 @@ body {
   font-size: 14px;
   margin: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   height: 100vh;
   background: var(--color-slate-100);
   color: var(--color-slate-700);
 }
 
 main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 0.5rem;
 }

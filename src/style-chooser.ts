@@ -12,6 +12,7 @@ import Alpine from 'alpinejs';
 import { locale as getSystemLocale } from '@tauri-apps/plugin-os';
 import { initLocale, t as i18nT } from './i18n';
 import { initTheme } from './theme';
+import './components/AppTitleBar';
 
 // =============================================================================
 // STORE ALPINE

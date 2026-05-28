@@ -13,6 +13,10 @@
     document.documentElement.lang = $store.settings.locale;
   "
   @keydown.escape.window="$store.settings.cancel()">
+    <window-resize-grips></window-resize-grips>
+    <header>
+      <app-titlebar x-bind:app-title="$store.settings.t('settings.title')"></app-titlebar>
+    </header>
     <main x-data="{
       activeTab: 'general',
       tabs: ['general', 'shortcuts', 'templates'],

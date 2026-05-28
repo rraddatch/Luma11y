@@ -48,11 +48,12 @@ export class AppTitleBar extends LitElement {
     .title {
       font-size: 0.78rem;
       font-weight: 500;
-      opacity: 0.65;
+      color: var(--text-color-light, #6b7280);
       pointer-events: none;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin: 0;
     }
 
     .controls {
@@ -65,8 +66,7 @@ export class AppTitleBar extends LitElement {
         height: 100%;
         border: 0;
         background: transparent;
-        color: #000000;
-        opacity: 0.75;
+        color: var(--text-color-strong, #111);
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -76,18 +76,16 @@ export class AppTitleBar extends LitElement {
       }
 
       button:hover {
-        opacity: 1;
-        background: color-mix(in srgb, #000000 10%, transparent);
+        background: color-mix(in srgb, var(--text-color-strong, #111) 10%, transparent);
       }
 
       button.close:hover {
         background: #e81123;
         color: white;
-        opacity: 1;
       }
 
       button:focus-visible {
-        outline: 2px solid currentColor;
+        outline: 2px solid var(--text-color-strong, currentColor);
         outline-offset: -3px;
       }
 
