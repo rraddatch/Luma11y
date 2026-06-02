@@ -53,31 +53,18 @@ Ou, si vous préférez, offrez-moi un café pour m'aider à améliorer cet outil
 
 ## Fonctionnalités
 
-### Bêta 1
+### Pour la Bêta 2
 
 | Fonctionnalité | Statut |
 |---|:---:|
 | Accessibilité | En cours |
-| Pipette de couleur native (Rust) | Fait |
-| Mode pipette continu | Fait |
-| Internationalisation (i18n) | Fait |
-| Mode clair/sombre | Fait |
-| Raccourcis pipette configurables | Fait |
-| Curseurs RGB | Fait |
-| Modèles de copier/coller | Fait |
-| Nom de la couleur | Fait |
-
-### Bêta 2
-
-| Fonctionnalité | Statut |
-|---|:---:|
 | Composante alpha | Prévu |
 | Valeurs de couleur HCL | Prévu |
 | Valeurs de couleur HSV | Prévu |
 | Valeurs de couleur LAB | Prévu |
 | Valeurs de couleur LCHab | Prévu |
 | Valeurs de couleur CMJN | Prévu |
-| Saisie libre | Prévu |
+| Saisie libre | Fait |
 | Installeur Windows/macOS | Prévu |
 | Mise à jour automatique | Prévu |
 | Certificats signés | Prévu |

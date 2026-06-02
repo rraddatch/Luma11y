@@ -52,31 +52,18 @@ Or, if you prefer, buy me some coffe for further improve this tool even more.
 
 ## Features
 
-### Beta 1
+### For Beta 2
 
 | Feature | Status |
 |---|:---:|
 | Accessibility | In progress |
-| Native colour picker (Rust) | Done |
-| Picker continue mode | Done |
-| Internationalisation (i18n) | Done |
-| Light/Dark mode | Done |
-| Configurable picker shortcuts | Done |
-| RGB Sliders | Done |
-| Copy/Paste format templates | Done |
-| Colour name | Done |
-
-### Beta 2
-
-| Feature | Status |
-|---|:---:|
 | Alpha colour component | Planned |
 | HCL colour values | Planned |
 | HSV colour values | Planned |
 | LAB colour values | Planned |
 | LCHab colour values | Planned |
 | CMYK colour values | Planned |
-| Free text entry | Planned |
+| Free text entry | Done |
 | Windows/macOS installer | Planned |
 | Auto-update | Planned |
 | Signed certificates | Planned |
