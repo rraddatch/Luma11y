@@ -77,5 +77,13 @@
     "title": "Choisir un style",
     "heading": "Choisissez votre style",
     "description": "Vous pourrez modifier ce choix dans les Préférences."
+  },
+  "menu": {
+    "menu": "Menu",
+    "about": "À propos de Luma11y",
+    "quit": "Quitter",
+    "always_on_top": "Toujours au premier plan",
+    "appearance": "Apparence",
+    "appearance_auto": "Auto"
   }
 }

@@ -2,6 +2,7 @@ import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { IS_MAC } from '../lib/platform';
+import appIconUrl from '../../app-icon.png';
 
 const NO_DRAG_SELECTOR = 'button, a, input, select, textarea, [data-no-drag]';
 
@@ -25,6 +26,7 @@ export class AppTitleBar extends LitElement {
       width: 100%;
       height: 100%;
       box-sizing: border-box;
+      padding-left: 0.5rem;
     }
 
     .bar.is-mac {
@@ -43,6 +45,18 @@ export class AppTitleBar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: left;
+      gap: 0.375rem;
+    }
+
+    /* Ajoute l'icone de l'app dans la barre
+      Add the app icon into the bar
+    */
+    .app-icon {
+      height: 1rem;
+      width: 1rem;
+      flex-shrink: 0;
+      pointer-events: none;
+      -webkit-user-drag: none;
     }
 
     .title {
@@ -90,15 +104,18 @@ export class AppTitleBar extends LitElement {
       }
 
       svg {
-        width: 10px;
-        height: 10px;
+        width: 1rem;
+        height: 1rem;
       }
     }
   `;
 
   private isInteractive(e: MouseEvent): boolean {
-    const target = e.composedPath()[0] as HTMLElement | undefined;
-    return !!target && !!target.closest && !!target.closest(NO_DRAG_SELECTOR);
+    // Utilise composedPath() pour traverser le Shadow DOM
+    // Use composedPath() to crosses Shadow DOM
+    return e.composedPath().some(
+      (el) => el instanceof Element && el.matches(NO_DRAG_SELECTOR)
+    );
   }
 
   private async handleDragStart(e: MouseEvent) {
@@ -123,6 +140,7 @@ export class AppTitleBar extends LitElement {
         @mousedown=${this.handleDragStart}
       >
         <div class="spacer">
+          <img class="app-icon" src=${appIconUrl} alt="" />
           ${this.appTitle
             ? html`<h1 class="title">${this.appTitle}</h1>`
             : nothing}

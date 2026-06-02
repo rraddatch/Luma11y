@@ -56,6 +56,7 @@ import './components/ProgressBar';
 import './components/SvgIcon';
 import './components/AppTitleBar';
 import './components/WindowResizeGrips';
+import './components/AppMenubar';
 
 // =============================================================================
 // REDIMENSIONNEMENT AUTOMATIQUE DE LA FENÊTRE
@@ -337,7 +338,7 @@ onThemeChange((theme) => {
       maximizable: false,
       center: true,
       ...(IS_MAC
-        ? { titleBarStyle: 'Overlay', hiddenTitle: true }
+        ? { titleBarStyle: 'overlay' as const, hiddenTitle: true }
         : { decorations: false, transparent: true }),
     });
 

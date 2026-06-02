@@ -14,7 +14,9 @@
     <header>
       <a href="#main" class="skip-link" x-text="$store.uiStore.t('app.skip_navigation')">Skip navigation</a>
       <app-titlebar
-      x-bind:app-title="$store.uiStore.t('app.title')"></app-titlebar>
+      x-bind:app-title="$store.uiStore.t('app.title')">
+        <app-menubar slot="menu"></app-menubar>
+      </app-titlebar>
     </header>
     <main id="main" tabindex="-1">
       <div class="colors" x-data="{ rotated: false }">

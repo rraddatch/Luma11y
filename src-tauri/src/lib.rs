@@ -387,18 +387,15 @@ fn rebuild_menu(app: &tauri::AppHandle, locale: &str) -> Result<(), tauri::Error
         app.set_menu(root_menu)?;
     }
 
+    // Sur Windows/Linux, pas de menu natif
+    // On Windows/Linux, no native menu
     #[cfg(any(target_os = "windows", target_os = "linux"))]
     {
-        // Crée le menu de l'application
-        // Get the application menu
-        let root_menu = Menu::with_items(app, &[
-            &app_menu,
-            &edit_submenu,
-            &window_submenu,
-        ])?;
-        // Applique le menu à l'application
-        // Apply menu to the application
-        app.set_menu(root_menu)?;
+        // silence le warning à propos des vars non utilisées
+        // silence the unused warnings
+        let _ = app_menu;
+        let _ = edit_submenu;
+        let _ = window_submenu;
     }
 
     Ok(())
@@ -414,6 +411,98 @@ fn set_copy_templates(app: tauri::AppHandle, state: tauri::State<store::AppState
     }
     let locale = state.locale.lock().unwrap().clone();
     let _ = rebuild_menu(&app, &locale);
+}
+
+/// Ouvre ou focus la fenêtre Settings, avec config plateforme-spécifique.
+/// Opens or focuses the Settings window with platform-specific config.
+fn open_settings_window_impl(app: &tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window("settings") {
+        let _ = window.set_focus();
+        return;
+    }
+
+    let settings_title = {
+        let state = app.state::<store::AppState>();
+        let locale = state.locale.lock().unwrap();
+        i18n::menu_t(&locale, "settings_title").to_string()
+    };
+
+    let mut builder = WebviewWindowBuilder::new(
+        app,
+        "settings",
+        WebviewUrl::App("settings.html".into()),
+    )
+    .title(settings_title)
+    .inner_size(500.0, 700.0)
+    .resizable(true)
+    .maximizable(false)
+    .min_inner_size(400.0, 700.0)
+    .center();
+
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder
+            .title_bar_style(tauri::TitleBarStyle::Overlay)
+            .hidden_title(true);
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        // visible(false) : on masque la fenêtre pendant son init pour éviter
+        // le flash de re-layout
+        // visible(false): hide the window during init to avoid flash of
+        // re-layout
+        builder = builder
+            .decorations(false)
+            .transparent(true)
+            .visible(false);
+    }
+
+    if let Ok(window) = builder.build() {
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = window.set_decorations(false);
+        }
+        let _ = window;
+    }
+}
+
+/// Commande Tauri pour ouvrir la fenêtre Settings depuis le frontend (menu toolbar).
+/// Tauri command to open the Settings window from the frontend (toolbar menu).
+#[tauri::command]
+async fn open_settings_window(app: tauri::AppHandle) {
+    let inner = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        open_settings_window_impl(&inner);
+    });
+}
+
+/// Applique l'état always-on-top.
+/// Applies always-on-top state
+fn apply_always_on_top(app: &tauri::AppHandle, value: bool) {
+    let locale = {
+        let state = app.state::<store::AppState>();
+        {
+            let mut current = state.always_on_top.lock().unwrap();
+            *current = value;
+        }
+        let locale = state.locale.lock().unwrap().clone();
+        locale
+    };
+
+    for (_, window) in app.webview_windows() {
+        let _ = window.set_always_on_top(value);
+    }
+
+    let _ = rebuild_menu(app, &locale);
+    let _ = app.emit("always-on-top-changed", value);
+}
+
+/// Commande Tauri pour basculer always-on-top depuis le frontend
+/// Tauri command to toggle always-on-top from frontend
+#[tauri::command]
+fn set_always_on_top(app: tauri::AppHandle, value: bool) {
+    apply_always_on_top(&app, value);
 }
 
 /// Commande Tauri pour synchroniser le mode d'apparence depuis le frontend
@@ -499,17 +588,6 @@ pub fn run() {
             // Build initial menu with default locale
             rebuild_menu(handle, "en")?;
 
-            // Workaround Linux : GNOME/Mutter ignore parfois decorations:false
-            // donné dans tauri.linux.conf.json. On re-force après création.
-            // Linux workaround: GNOME/Mutter sometimes ignores decorations:false
-            // from tauri.linux.conf.json. Re-force it after window creation.
-            #[cfg(target_os = "linux")]
-            {
-                if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.set_decorations(false);
-                }
-            }
-
             // Retourne Ok pour indiquer le succès
             // Return Ok to indicate success
             Ok(())
@@ -534,42 +612,7 @@ pub fn run() {
 
             match menu_id {
                 "settings" => {
-                    // Ouvre ou focus la fenêtre Settings
-                    // Open or focus the Settings window
-                    if let Some(window) = app.get_webview_window("settings") {
-                        let _ = window.set_focus();
-                    } else {
-                        let settings_title = {
-                            let state = app.state::<store::AppState>();
-                            let locale = state.locale.lock().unwrap();
-                            i18n::menu_t(&locale, "settings_title")
-                        };
-                        let mut builder = WebviewWindowBuilder::new(
-                            app,
-                            "settings",
-                            WebviewUrl::App("settings.html".into()),
-                        )
-                        .title(settings_title)
-                        .inner_size(500.0, 450.0)
-                        .resizable(true)
-                        .maximizable(false)
-                        .min_inner_size(400.0, 700.0)
-                        .center();
-
-                        #[cfg(target_os = "macos")]
-                        {
-                            builder = builder
-                                .title_bar_style(tauri::TitleBarStyle::Overlay)
-                                .hidden_title(true);
-                        }
-
-                        #[cfg(not(target_os = "macos"))]
-                        {
-                            builder = builder.decorations(false).transparent(true);
-                        }
-
-                        let _ = builder.build();
-                    }
+                    open_settings_window_impl(app);
                     return;
                 }
                 "appearance_auto" | "appearance_light" | "appearance_dark" => {
@@ -609,20 +652,14 @@ pub fn run() {
                     return;
                 }
                 "always_on_top" => {
-                    // Bascule l'état always-on-top et l'applique à toutes les fenêtres
-                    // Toggle always-on-top state and apply it to all windows
-                    let state = app.state::<store::AppState>();
-                    let (new_value, locale) = {
-                        let mut current = state.always_on_top.lock().unwrap();
-                        *current = !*current;
-                        (*current, state.locale.lock().unwrap().clone())
+                    // Bascule via le helper partagé
+                    // Toggle via shared helper
+                    let current = {
+                        let state = app.state::<store::AppState>();
+                        let v = *state.always_on_top.lock().unwrap();
+                        v
                     };
-
-                    for (_, window) in app.webview_windows() {
-                        let _ = window.set_always_on_top(new_value);
-                    }
-
-                    let _ = rebuild_menu(app, &locale);
+                    apply_always_on_top(app, !current);
                     return;
                 }
                 _ => {}
@@ -717,6 +754,8 @@ pub fn run() {
             set_appearance,
             set_style_theme,
             set_copy_templates,
+            set_always_on_top,
+            open_settings_window,
         ])
         // Lance l'application Tauri
         // Run the Tauri application
