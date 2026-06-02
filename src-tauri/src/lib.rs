@@ -427,6 +427,16 @@ fn open_settings_window_impl(app: &tauri::AppHandle) {
         i18n::menu_t(&locale, "settings_title").to_string()
     };
 
+    // Hérite l'état always-on-top de l'app : si la main est pinned,
+    // Settings doit l'être aussi sinon elle s'ouvre derrière la principale
+    // Inherit the always-on-top state: if the main window is pinned,
+    // Settings must also be pinned, otherwise it opens behind main
+    let always_on_top = {
+        let state = app.state::<store::AppState>();
+        let v = *state.always_on_top.lock().unwrap();
+        v
+    };
+
     let mut builder = WebviewWindowBuilder::new(
         app,
         "settings",
@@ -437,6 +447,7 @@ fn open_settings_window_impl(app: &tauri::AppHandle) {
     .resizable(true)
     .maximizable(false)
     .min_inner_size(400.0, 700.0)
+    .always_on_top(always_on_top)
     .center();
 
     #[cfg(target_os = "macos")]
