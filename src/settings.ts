@@ -245,6 +245,7 @@ initStyleTheme();
 requestAnimationFrame(() => {
   const firstTab = document.querySelector<HTMLElement>('[role=tab][data-tab=general]');
   firstTab?.focus({ preventScroll: true });
+  getCurrentWindow().show();
 });
 
 (async () => {
