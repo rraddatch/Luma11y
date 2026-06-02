@@ -371,7 +371,7 @@ export class AppMenubar extends LitElement {
     }
 
     button.active {
-      color: var(--color-blue-500, #4f7cff);
+      color: var(--button-active-color, #4f7cff);
     }
 
     svg-icon {

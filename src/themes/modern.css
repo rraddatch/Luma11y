@@ -21,6 +21,8 @@
   --border-color: var(--color-zinc-400);
   --border-color-strong: var(--color-zinc-700);
   --border-color-disabled: var(--color-zinc-200);
+  /* Accent color for active states (toggle buttons, ...) */
+  --button-active-color: var(--color-blue-600);
   /* colors for progress bars */
   --progress-background: var(--color-zinc-500);
   --progress-aa: var(--color-neutral-500);
@@ -46,6 +48,8 @@
   --border-color: var(--color-zinc-400);
   --border-color-strong: var(--color-zinc-50);
   --border-color-disabled: var(--color-zinc-200);
+  /* Accent color for active states (toggle buttons, ...) */
+  --button-active-color: var(--color-blue-300);
   /* colors for progress bars */
   --progress-background: var(--color-zinc-500);
   --progress-aa: var(--color-neutral-400);
