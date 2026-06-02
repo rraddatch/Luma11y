@@ -34,6 +34,29 @@ strong {
   color: var(--text-color-strong);
 }
 
+/* Skip link */
+.skip-link {
+  clip-path: inset(50%);
+  position: fixed;
+  left: 6rem;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 10000;
+  background: var(--background-color);
+  color: var(--text-color);
+  padding: 0.2rem;
+  margin-top: 0.4rem;
+}
+.skip-link:focus {
+  clip-path: none;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  outline: 0.125rem solid currentColor;
+}
+
 /* -----------------------------------------------------------------------------
    Button styles
    ----------------------------------------------------------------------------- */

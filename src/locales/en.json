@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "Luma11y"
+    "title": "Luma11y",
+    "skip_navigation": "Skip navigation"
   },
   "color": {
     "foreground": "Foreground",
