@@ -1,8 +1,10 @@
 ## [0.1.9] - 2026-06-02
 
 ### Features
+
 - Added menubar (Fixes #24)
 - Added skip link
+- Added free-input value (hex only for now) (Fixes #19)
 
 ### Fixes
 
@@ -16,7 +18,6 @@
 - Fixes template double label (Fixes #38)
 - Switch from BigColor to Palette + fix contrast ratio rounding (Fixes #37)
 - Various design fixes (re Fixes #9)
-- Added free-input value (hex only for now) (Fixes #19)
 - Use ESC to dismiss the settings window (Closes #41)
 - Prevent multiple eyedropper opening (Fixes #39)
 
