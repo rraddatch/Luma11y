@@ -18,7 +18,9 @@
     "slider_standard": "Standard",
     "slider_colored": "Coloured",
     "slider_dynamic": "Dynamic",
-    "invalid_value": "Invalid value"
+    "invalid_value": "Invalid value",
+    "hex": "Hex",
+    "rgb": "RGB"
   },
   "results": {
     "contrast_ratio": "Contrast Ratio",

@@ -11,6 +11,10 @@ import { invoke } from "@tauri-apps/api/core";
 // Import i18n module
 import { t as i18nT, setLocale } from './i18n';
 
+// Import des formats de couleur (parsing / sérialisation)
+// Import color formats (parsing / serialization)
+import { hexFormat } from './colors';
+
 // Interface pour le store Tauri (état global côté backend)
 // Interface for Tauri store (global state on backend side)
 export interface BackendStore {
@@ -362,30 +366,25 @@ export const UIStore = {
   // An empty input is not treated as an error.
   async updateHex(this: UIStore, key: 'foreground' | 'background', hex: string) {
     const errorKey = key === 'foreground' ? 'foregroundHexError' : 'backgroundHexError';
-    const cleaned = hex.replace(/^#/, '').trim();
 
-    if (cleaned === '') {
+    // On efface le message si la saisie est vide
+    // We clear the message if the input is empty
+    if (hex.replace(/^#/, '').trim() === '') {
       this[errorKey] = '';
       return;
     }
 
-    let r: number, g: number, b: number;
-    if (/^[0-9a-fA-F]{3}$/.test(cleaned)) {
-      r = parseInt(cleaned[0] + cleaned[0], 16);
-      g = parseInt(cleaned[1] + cleaned[1], 16);
-      b = parseInt(cleaned[2] + cleaned[2], 16);
-    } else if (/^[0-9a-fA-F]{6}$/.test(cleaned)) {
-      r = parseInt(cleaned.slice(0, 2), 16);
-      g = parseInt(cleaned.slice(2, 4), 16);
-      b = parseInt(cleaned.slice(4, 6), 16);
-    } else {
+    // Délègue le parsing au format hex dédié (cf. src/colors/hex.ts).
+    // Delegates parsing to the dedicated hex format (see src/colors/hex.ts).
+    const rgb = hexFormat.parse(hex);
+    if (!rgb) {
       this[errorKey] = this.t('color.invalid_value');
       return;
     }
 
     this[errorKey] = '';
     try {
-      await invoke('update_store', { key, r, g, b });
+      await invoke('update_store', { key, r: rgb.r, g: rgb.g, b: rgb.b });
     } catch (error) {
       console.error('Error updating color from hex:', error);
     }
