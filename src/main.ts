@@ -97,9 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
   observer.observe(document.body);
 });
 
-// Bloque le menu contextuel natif de la webview
-// Block the webview's native context menu
-document.addEventListener('contextmenu', (e) => e.preventDefault());
+// Bloque le menu contextuel natif de la webview en build de production.
+// En dev (vite dev), on le laisse pour pouvoir ouvrir l'inspecteur via clic droit.
+// Block the webview's native context menu in production builds.
+// In dev (vite dev), we keep it so the inspector stays reachable via right-click.
+if (!import.meta.env.DEV) {
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+}
 
 // =============================================================================
 // RACCOURCI CLAVIER POUR COPIER LES RÉSULTATS
