@@ -11,9 +11,9 @@ import { invoke } from "@tauri-apps/api/core";
 // Import i18n module
 import { t as i18nT, setLocale } from './i18n';
 
-// Import des formats de couleur (parsing / sérialisation)
-// Import color formats (parsing / serialization)
-import { hexFormat } from './colors';
+// Import du parseur de couleur pour l'entrée libre
+// Import the color parser for the free input
+import { parseColor } from './colors';
 
 // Interface pour le store Tauri (état global côté backend)
 // Interface for Tauri store (global state on backend side)
@@ -164,9 +164,9 @@ export interface UIStore {
   // Method to update an RGB component of a color
   updateColor(key: string, component: 'r' | 'g' | 'b', value: number): Promise<void>;
 
-  // Méthode pour mettre à jour une couleur depuis une chaîne hexadécimale.
-  // Update a color from a hex string.
-  updateHex(key: 'foreground' | 'background', hex: string): Promise<void>;
+  // Méthode pour mettre à jour une couleur depuis une saisie texte libre
+  // Update a color from a free-typed text input
+  updateColorFromText(key: 'foreground' | 'background', text: string, live?: boolean): Promise<void>;
 
   // Méthode pour mettre à jour le store Alpine depuis le store Tauri
   // Method to update Alpine store from Tauri store
@@ -356,29 +356,31 @@ export const UIStore = {
     }
   },
 
-  // Met à jour une couleur depuis une chaîne hexadécimale libre.
-  // Teste si la valeur est un hex valide (#abc / #aabbcc).
-  // Renseigne le champ d'erreur correspondant si la saisie est invalide, le vide sinon.
-  // Une saisie vide n'est pas considérée comme une erreur.
-  // Update a color from a free-typed hex string.
-  // Test if the value is a valid hex (#abc / #aabbcc).
-  // Sets the matching error field when the input is invalid, clears it otherwise.
-  // An empty input is not treated as an error.
-  async updateHex(this: UIStore, key: 'foreground' | 'background', hex: string) {
+  // Met à jour une couleur depuis une saisie texte libre.
+  // Essaie chaque format enregistré (hex, rgb, ...) via parseColor.
+  // Renseigne le champ d'erreur correspondant si aucun format valide n'est trouvé.
+  // Update a color from a free-typed text input.
+  // Tries each registered format (hex, rgb, ...) via parseColor.
+  // Sets the matching error field when no format recognizes the format.
+  async updateColorFromText(this: UIStore, key: 'foreground' | 'background', text: string, live = false) {
     const errorKey = key === 'foreground' ? 'foregroundHexError' : 'backgroundHexError';
 
-    // On efface le message si la saisie est vide
-    // We clear the message if the input is empty
-    if (hex.replace(/^#/, '').trim() === '') {
-      this[errorKey] = '';
+    // Saisie vide : pas une erreur.
+    // Empty input: not an error.
+    if (text.trim() === '') {
+      if (!live) this[errorKey] = '';
       return;
     }
 
-    // Délègue le parsing au format hex dédié (cf. src/colors/hex.ts).
-    // Delegates parsing to the dedicated hex format (see src/colors/hex.ts).
-    const rgb = hexFormat.parse(hex);
+    // Délègue le parsing au registre des formats (cf. src/colors/index.ts).
+    // Delegates parsing to the format registry (see src/colors/index.ts).
+    const rgb = parseColor(text);
     if (!rgb) {
-      this[errorKey] = this.t('color.invalid_value');
+      // On ignore les états intermédiaires invalides (ex. "255,"
+      // pendant la saisie d'un rgb) ; l'erreur n'apparaît qu'à la validation.
+      // We ignore invalid intermediate states (e.g. "255," while
+      // typing an rgb); the error only shows on commit.
+      if (!live) this[errorKey] = this.t('color.invalid_value');
       return;
     }
 
@@ -386,7 +388,7 @@ export const UIStore = {
     try {
       await invoke('update_store', { key, r: rgb.r, g: rgb.g, b: rgb.b });
     } catch (error) {
-      console.error('Error updating color from hex:', error);
+      console.error('Error updating color from text:', error);
     }
   },
 
