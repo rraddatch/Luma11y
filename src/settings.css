@@ -11,8 +11,8 @@
 }
 
 [data-theme="dark"] {
-  --text-color-recording: var(--color-sky-800);
-  --background-color-recording: var(--color-gray-600);
+  --text-color-recording: var(--color-sky-100);
+  --background-color-recording: var(--color-gray-800);
 }
 
 body {
@@ -194,6 +194,12 @@ input[type="number"] {
   padding: 0.25rem 0.5rem;
   text-align: center;
   min-width: 7rem;
+
+  &.recording {
+    border-color: var(--text-color-recording);
+    background:  var(--background-color-recording);
+    color:  var(--text-color-recording);
+  }
 }
 
 .shortcut-row {
@@ -206,12 +212,6 @@ input[type="number"] {
 
 .shortcut-row + .shortcut-row {
   border-top: 1px solid var(--border-color-light);
-}
-
-.shortcut-input.recording {
-  border-color: var(--text-color-recording);
-  background:  var(--background-color-recording);
-  color:  var(--text-color-recording);
 }
 
 .btn-remove {
