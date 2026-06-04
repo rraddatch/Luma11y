@@ -24,10 +24,10 @@
         <div class="wrapper" x-bind:style="`background-color: ${showFgControls ? 'transparent' : $store.uiStore.backgroundHex}`">
           <section id="foreground"
             x-bind:style="`background-color: ${$store.uiStore.foregroundHex}`"
+            x-bind:class="$store.uiStore.foregroundIsDark ? 'isDark' : 'isLight'"
           >
             <div
               class="color-preview"
-              x-bind:class="$store.uiStore.foregroundIsDark ? 'isDark' : 'isLight'"
             >
               <h2 id="foreground-title" x-text="$store.uiStore.t('color.foreground')">Foreground</h2>
               <div class="color-input">

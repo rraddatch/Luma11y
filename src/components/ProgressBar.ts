@@ -78,6 +78,13 @@ export class ProgressBar extends LitElement {
       color: var(--text-color);
       letter-spacing: 0.5px;
       white-space: nowrap;
+      &:focus-visible {
+        outline-width: 3px;
+        outline-offset: 4px;
+        outline-style: solid;
+        outline-color: var(--text-color);
+        border-radius: 5px;
+      }
       &.border {
         border: 1px solid var(--border-color-light);
         border-radius: 3px;

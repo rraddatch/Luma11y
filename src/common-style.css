@@ -61,6 +61,15 @@ strong {
    Button styles
    ----------------------------------------------------------------------------- */
 
+button {
+  &:focus-visible {
+    outline-width: 3px;
+    outline-offset: 4px;
+    outline-style: solid;
+    outline-color: var(--text-color);
+  }
+}
+
 .btn {
   border: none;
   font-size: 1rem;
@@ -68,7 +77,6 @@ strong {
   display: flex;
   justify-content: center;
   align-items: center;
-
   /* Button hover state*/
   &:hover {
     background-color: var(--background-color);
@@ -91,14 +99,20 @@ strong {
   /* Visual color preview */
   section {
     forced-color-adjust: none;
-    .color-preview {
-      color: #000000;
-      border-color: #000000;
-      &.isDark {
-        color: #ffffff;
-        border-color: #ffffff;
+    color: #000000;
+    border-color: #000000;
+    *:focus-visible {
+      outline-color: #000000;
+    }
+    &.isDark {
+      color: #ffffff;
+      border-color: #ffffff;
+      *:focus-visible {
+        outline-color: #ffffff;
       }
+    }
 
+    .color-preview {
       .color-input {
         height: 5.5rem; /* Fixes #7 */
         padding: 1rem;
