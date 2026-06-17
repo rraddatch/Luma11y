@@ -11,9 +11,28 @@ import { invoke } from "@tauri-apps/api/core";
 // Import i18n module
 import { t as i18nT, setLocale } from './i18n';
 
-// Import du parseur de couleur pour l'entrée libre
-// Import the color parser for the free input
-import { parseColor } from './colors';
+// Import du parseur de couleur et du registre des formats
+// Import the color parser and the format registry
+import { parseColor, colorFormats } from './colors';
+
+// Format de couleur et sa valeur
+// Color format and its value
+export interface ColorFormatValue {
+  // Identifiant du format (hex, rgb, hsl, ...), sert de valeur au radio
+  // Format identifier (hex, rgb, hsl, ...), used as the radio value
+  id: string;
+
+  label: string;
+  value: string;
+}
+
+// Construit la map id -> valeur affichée. `rgb` arrive sous forme "r, g, b"
+// (représentation interne) et est présenté en "rgb(r, g, b)" pour l'affichage.
+// Builds the id -> displayed value map. `rgb` comes in as "r, g, b" (internal
+// representation) and is presented as "rgb(r, g, b)" for display.
+function colorValues(hex: string, rgb: string, hsl: string): Record<string, string> {
+  return { hex, rgb: `rgb(${rgb})`, hsl };
+}
 
 // Interface pour le store Tauri (état global côté backend)
 // Interface for Tauri store (global state on backend side)
@@ -143,6 +162,25 @@ export interface UIStore {
   // Background contrast vs the app's surrounding background color
   // (white in light theme, black in dark theme)
   backgroundContrastWithSurrounding: number;
+
+  // Liste des formats disponibles et leurs valeurs, pour chaque couleur
+  // List of available formats and their values, for each color
+  foregroundFormats: ColorFormatValue[];
+  backgroundFormats: ColorFormatValue[];
+
+  // Format sélectionné (id) pour l'affichage dans le color preview de chaque couleur
+  // Selected format (id) for display in each color's preview
+  foregroundFormat: string;
+  backgroundFormat: string;
+
+  // Valeur à afficher dans le color preview, selon le format sélectionné
+  // Value to show in the color preview, depending on the selected format
+  foregroundDisplayValue: string;
+  backgroundDisplayValue: string;
+
+  // Change le format affiché pour une couleur ('foreground' | 'background')
+  // Changes the displayed format for a color ('foreground' | 'background')
+  setColorFormat(key: 'foreground' | 'background', format: string): void;
 
   // Message d'erreur affiché si la saisie hex est invalide (vide sinon)
   // Error message shown when the typed hex is invalid (empty otherwise)
@@ -282,6 +320,48 @@ export const UIStore = {
     return self.currentTheme === 'dark'
       ? self.backgroundContrastWithBlack
       : self.backgroundContrastWithWhite;
+  },
+
+  // Liste {label, valeur} des formats disponibles pour chaque couleur, dérivée
+  // du registre colorFormats
+  // List of {label, value} for the available formats of each color, derived from
+  // the colorFormats registry
+  get foregroundFormats(): ColorFormatValue[] {
+    const self = this as unknown as UIStore;
+    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl);
+    return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
+  },
+
+  get backgroundFormats(): ColorFormatValue[] {
+    const self = this as unknown as UIStore;
+    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl);
+    return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
+  },
+
+  // Valeur affichée dans le color preview, selon le format radio sélectionné.
+  // Value shown in the color preview, depending on the selected format radio.
+  get foregroundDisplayValue(): string {
+    const self = this as unknown as UIStore;
+    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl);
+    return values[self.foregroundFormat] ?? self.foregroundHex;
+  },
+
+  get backgroundDisplayValue(): string {
+    const self = this as unknown as UIStore;
+    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl);
+    return values[self.backgroundFormat] ?? self.backgroundHex;
+  },
+
+  // État initial : format affiché par défaut (hexadécimal)
+  // Initial state: default displayed format (hexadecimal)
+  foregroundFormat: 'hex',
+  backgroundFormat: 'hex',
+
+  // Change le format affiché pour une couleur
+  // Changes the displayed format for a color
+  setColorFormat(this: UIStore, key: 'foreground' | 'background', format: string) {
+    if (key === 'foreground') this.foregroundFormat = format;
+    else this.backgroundFormat = format;
   },
 
   // Messages d'erreur de saisie hex (vides quand la valeur est valide)

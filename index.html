@@ -38,7 +38,7 @@
                     type="text"
                     class="hex-value"
                     :class="{ 'hex-secondary': $store.uiStore.foregroundName }"
-                    x-effect="if (!focused) $el.value = $store.uiStore.foregroundHex"
+                    x-effect="if (!focused) $el.value = $store.uiStore.foregroundDisplayValue"
                     @focus="focused = true; snapshot = $event.target.value"
                     @input="$store.uiStore.updateColorFromText('foreground', $event.target.value, true)"
                     @keydown.enter="$store.uiStore.updateColorFromText('foreground', $event.target.value)"
@@ -97,9 +97,12 @@
         <color-controls
           x-show="showFgControls" x-transition
           x-bind:rgb="$store.uiStore.foregroundRgb"
+          x-bind:formats="JSON.stringify($store.uiStore.foregroundFormats)"
+          x-bind:selected-format="$store.uiStore.foregroundFormat"
           x-bind:locale="$store.uiStore.locale"
           x-bind:label="$store.uiStore.t('color.foreground')"
           @color-change="$store.uiStore.updateColor('foreground', $event.detail.component, $event.detail.value)"
+          @format-change="$store.uiStore.setColorFormat('foreground', $event.detail.format)"
         ></color-controls>
         <!-- Background Color -->
          <div class="wrapper"
@@ -119,7 +122,7 @@
                       type="text"
                       class="hex-value"
                       :class="{ 'hex-secondary': $store.uiStore.backgroundName }"
-                      x-effect="if (!focused) $el.value = $store.uiStore.backgroundHex"
+                      x-effect="if (!focused) $el.value = $store.uiStore.backgroundDisplayValue"
                       @focus="focused = true; snapshot = $event.target.value"
                       @input="$store.uiStore.updateColorFromText('background', $event.target.value, true)"
                       @keydown.enter="$store.uiStore.updateColorFromText('background', $event.target.value)"
@@ -130,7 +133,6 @@
                       :aria-invalid="$store.uiStore.backgroundHexError ? 'true' : null"
                       spellcheck="false"
                       autocomplete="off"
-                      maxlength="7"
                     />
                   </div>
                   <div role="alert">
@@ -170,9 +172,12 @@
         <color-controls
           x-show="showBgControls" x-transition
           x-bind:rgb="$store.uiStore.backgroundRgb"
+          x-bind:formats="JSON.stringify($store.uiStore.backgroundFormats)"
+          x-bind:selected-format="$store.uiStore.backgroundFormat"
           x-bind:locale="$store.uiStore.locale"
           x-bind:label="$store.uiStore.t('color.background')"
           @color-change="$store.uiStore.updateColor('background', $event.detail.component, $event.detail.value)"
+          @format-change="$store.uiStore.setColorFormat('background', $event.detail.format)"
         ></color-controls>
       </div>
       <!-- Contrast Ratio -->

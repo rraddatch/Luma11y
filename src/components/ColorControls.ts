@@ -36,6 +36,14 @@ export class ColorControls extends LitElement {
   // Section name displayed as sr-only for a11y context
   @property({ type: String }) label = '';
 
+  // Formats de couleur disponibles (id + label + valeur)
+  // Available color formats (id + label + value)
+  @property({ type: Array }) formats: { id: string; label: string; value: string }[] = [];
+
+  // Format sélectionné (id) : pilote la valeur affichée dans le color preview.
+  // Selected format (id): drives the value shown in the color preview.
+  @property({ type: String, attribute: 'selected-format' }) selectedFormat = 'hex';
+
   // Mode d'affichage des sliders / Slider display mode
   @state() private sliderMode: 'standard' | 'static' | 'dynamic' = 'standard';
 
@@ -51,6 +59,16 @@ export class ColorControls extends LitElement {
   private emitChange(component: 'r' | 'g' | 'b', value: number) {
     this.dispatchEvent(new CustomEvent('color-change', {
       detail: { component, value },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+  // Émet un événement format-change quand un radio de format est sélectionné
+  // Emits a format-change event when a format radio is selected
+  private onFormatChange(format: string) {
+    this.dispatchEvent(new CustomEvent('format-change', {
+      detail: { format },
       bubbles: true,
       composed: true,
     }));
@@ -88,6 +106,41 @@ export class ColorControls extends LitElement {
     :host {
       display: block;
       padding: 0.5rem 1rem;
+    }
+
+    /* Sélecteur de format (radios) + valeurs */
+    /* Format selector (radios) + values */
+    fieldset.formats {
+      margin: 0 0 0.5rem;
+      padding: 0;
+      border: none;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.1rem 0.5rem;
+      font-size: 0.8rem;
+
+      /* Label radio (radio + nom du format) en 1re colonne */
+      /* Radio label (radio + format name) in the 1st column */
+      .format {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+      }
+
+      .format input[type="radio"] {
+        margin: 0;
+        accent-color: var(--text-color);
+      }
+
+      .format-name {
+        font-weight: 600;
+      }
+
+      .format-value {
+        padding: 0;
+        margin: 0;
+      }
     }
 
     /* Sélecteur du mode slider, aligné à droite */
@@ -245,6 +298,25 @@ export class ColorControls extends LitElement {
 
     return html`
       <span id="section-label" class="sr-only">${this.label}</span>
+      ${this.formats.length ? html`
+        <fieldset class="formats">
+          <legend class="sr-only">${t('color.display_format')}</legend>
+          ${this.formats.map((f) => html`
+            <label class="format">
+              <input
+                type="radio"
+                name="format"
+                value="${f.id}"
+                .checked="${f.id === this.selectedFormat}"
+                @change="${() => this.onFormatChange(f.id)}"
+                aria-describedby="${f.id}-help"
+              />
+              <span class="format-name">${f.label}</span>
+            </label>
+            <p id="${f.id}-help" class="format-value">${f.value}</p>
+          `)}
+        </fieldset>
+      ` : ''}
       <select
         aria-label="${t('color.slider_mode')}"
         .value="${this.sliderMode}"

@@ -21,7 +21,8 @@
     "invalid_value": "Invalid value",
     "hex": "Hex",
     "rgb": "RGB",
-    "hsl": "HSL"
+    "hsl": "HSL",
+    "display_format": "Displayed format"
   },
   "results": {
     "contrast_ratio": "Contrast Ratio",
