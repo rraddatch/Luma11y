@@ -20,7 +20,8 @@
     "slider_dynamic": "Dynamique",
     "invalid_value": "Valeur invalide",
     "hex": "Hex",
-    "rgb": "RGB"
+    "rgb": "RGB",
+    "hsl": "HSL"
   },
   "results": {
     "contrast_ratio": "Taux de contraste",
@@ -69,6 +70,8 @@
     "tag_help_title": "Balises disponibles",
     "tag_f_hex": "Couleur de premier plan (hex)",
     "tag_b_hex": "Couleur d'arrière-plan (hex)",
+    "tag_f_hsl": "Couleur de premier plan (HSL)",
+    "tag_b_hsl": "Couleur d'arrière-plan (HSL)",
     "tag_cr": "Ratio de contraste (brut)",
     "tag_crr": "Ratio de contraste (arrondi)",
     "tag_1_4_3": "Résultat 1.4.3 Contraste (Minimum)",

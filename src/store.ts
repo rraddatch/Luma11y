@@ -29,6 +29,10 @@ export interface BackendStore {
   // Foreground color in Hexa format
   foreground_hex: string;
 
+  // Couleur de premier plan au format HSL "hsl(h, s%, l%)"
+  // Foreground color in HSL format "hsl(h, s%, l%)"
+  foreground_hsl: string;
+
   /// Si la couleur est sombre
   /// If the colour is dark
   foreground_is_dark: boolean;
@@ -40,6 +44,10 @@ export interface BackendStore {
   // Couleur d'arrière-plan au format Hexa
   // Background color in Hexa format
   background_hex: string;
+
+  // Couleur d'arrière-plan au format HSL "hsl(h, s%, l%)"
+  // Background color in HSL format "hsl(h, s%, l%)"
+  background_hsl: string;
 
   /// Si la couleur est sombre
   /// If the colour is dark
@@ -86,6 +94,10 @@ export interface UIStore {
   // Foreground color in hexadecimal format
   foregroundHex: string;
 
+  // Couleur de premier plan au format HSL "hsl(h, s%, l%)"
+  // Foreground color in HSL format "hsl(h, s%, l%)"
+  foregroundHsl: string;
+
   // Nom CSS de la couleur de premier plan (vide si pas de correspondance exacte)
   // CSS name of foreground color (empty if no exact match)
   foregroundName: string;
@@ -101,6 +113,10 @@ export interface UIStore {
   // Couleur d'arrière-plan au format hexadécimal
   // Background color in hexadecimal format
   backgroundHex: string;
+
+  // Couleur d'arrière-plan au format HSL "hsl(h, s%, l%)"
+  // Background color in HSL format "hsl(h, s%, l%)"
+  backgroundHsl: string;
 
   // Nom CSS de la couleur d'arrière-plan (vide si pas de correspondance exacte)
   // CSS name of background color (empty if no exact match)
@@ -214,6 +230,10 @@ export const UIStore = {
   // Initial state: no foreground color
   foregroundHex: '',
 
+  // État initial : HSL de premier plan vide
+  // Initial state: empty foreground HSL
+  foregroundHsl: '',
+
   // Nom CSS de la couleur de premier plan
   // CSS name of foreground color
   foregroundName: '',
@@ -229,6 +249,10 @@ export const UIStore = {
   // État initial : aucune couleur d'arrière-plan
   // Initial state: no background color
   backgroundHex: '',
+
+  // État initial : HSL d'arrière-plan vide
+  // Initial state: empty background HSL
+  backgroundHsl: '',
 
   // Nom CSS de la couleur d'arrière-plan
   // CSS name of background color
@@ -333,11 +357,11 @@ export const UIStore = {
     try {
       // Met à jour le foreground avec les anciennes valeurs du background
       // Update foreground with old background values
-      await invoke('update_store', { key: 'foreground', r: br, g: bg, b: bb });
+      await invoke('update_store_rgb', { key: 'foreground', r: br, g: bg, b: bb });
 
       // Met à jour le background avec les anciennes valeurs du foreground
       // Update background with old foreground values
-      await invoke('update_store', { key: 'background', r: fr, g: fg, b: fb });
+      await invoke('update_store_rgb', { key: 'background', r: fr, g: fg, b: fb });
     } catch (error) {
       console.error('Error switching colors:', error);
     }
@@ -350,7 +374,7 @@ export const UIStore = {
     const [r, g, b] = rgb.split(',').map(v => parseInt(v.trim()));
     const updated = { r, g, b, [component]: value };
     try {
-      await invoke('update_store', { key, r: updated.r, g: updated.g, b: updated.b });
+      await invoke('update_store_rgb', { key, r: updated.r, g: updated.g, b: updated.b });
     } catch (error) {
       console.error('Error updating color:', error);
     }
@@ -373,9 +397,11 @@ export const UIStore = {
     }
 
     // Délègue le parsing au registre des formats (cf. src/colors/index.ts).
+    // Le format renvoie le chemin backend à invoquer pour l'application et la conversion.
     // Delegates parsing to the format registry (see src/colors/index.ts).
-    const rgb = parseColor(text);
-    if (!rgb) {
+    // The format returns the backend path to invoke for commit and conversion.
+    const commit = parseColor(text);
+    if (!commit) {
       // On ignore les états intermédiaires invalides (ex. "255,"
       // pendant la saisie d'un rgb) ; l'erreur n'apparaît qu'à la validation.
       // We ignore invalid intermediate states (e.g. "255," while
@@ -386,7 +412,7 @@ export const UIStore = {
 
     this[errorKey] = '';
     try {
-      await invoke('update_store', { key, r: rgb.r, g: rgb.g, b: rgb.b });
+      await invoke(commit.command, { key, ...commit.args });
     } catch (error) {
       console.error('Error updating color from text:', error);
     }
@@ -409,6 +435,10 @@ export const UIStore = {
     // Update foreground color (hex format)
     this.foregroundHex = store.foreground_hex;
 
+    // Met à jour la couleur de premier plan (format HSL)
+    // Update foreground color (HSL format)
+    this.foregroundHsl = store.foreground_hsl;
+
     // Recherche le nom CSS exact / Look up exact CSS name
     invoke<string>('get_color_name', { r: fr, g: fg, b: fb }).then((name) => {
       this.foregroundName = name;
@@ -429,6 +459,10 @@ export const UIStore = {
     // Met à jour la couleur d'arrière-plan (format hex)
     // Update background color (hex format)
     this.backgroundHex = store.background_hex;
+
+    // Met à jour la couleur d'arrière-plan (format HSL)
+    // Update background color (HSL format)
+    this.backgroundHsl = store.background_hsl;
 
     // Recherche le nom CSS exact / Look up exact CSS name
     invoke<string>('get_color_name', { r: br, g: bg, b: bb }).then((name) => {

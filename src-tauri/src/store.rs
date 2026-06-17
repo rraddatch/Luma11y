@@ -31,6 +31,10 @@ pub struct ResultStore {
     /// Foreground color in hexadecimal format
     pub foreground_hex: String,
 
+    /// Couleur de premier plan au format HSL "hsl(h, s%, l%)"
+    /// Foreground color in HSL format "hsl(h, s%, l%)"
+    pub foreground_hsl: String,
+
     /// Si la couleur est sombre
     /// If the colour is dark
     pub foreground_is_dark: bool,
@@ -42,6 +46,10 @@ pub struct ResultStore {
     /// Couleur d'arrière-plan au format hexadécimal
     /// Background color in hexadecimal format
     pub background_hex: String,
+
+    /// Couleur d'arrière-plan au format HSL "hsl(h, s%, l%)"
+    /// Background color in HSL format "hsl(h, s%, l%)"
+    pub background_hsl: String,
 
     /// Si la couleur est sombre
     /// If the colour is dark
@@ -88,9 +96,11 @@ impl Default for ResultStore {
             platform: "unknown",
             foreground_rgb: config::DEFAULT_FOREGROUND_RGB,
             foreground_hex: format!("#{:02X}{:02X}{:02X}", fr, fg, fb),
+            foreground_hsl: color::rgb_to_hsl_string((fr, fg, fb)),
             foreground_is_dark: color::is_dark((fr, fg, fb)),
             background_rgb: config::DEFAULT_BACKGROUND_RGB,
             background_hex: format!("#{:02X}{:02X}{:02X}", br, bg, bb),
+            background_hsl: color::rgb_to_hsl_string((br, bg, bb)),
             background_is_dark: color::is_dark((br, bg, bb)),
             continue_mode: false,
             contrast_ratio_raw,
@@ -165,41 +175,70 @@ pub fn pick_color(app: AppHandle, state: tauri::State<AppState>, fg: bool) {
     }
 }
 
-/// Met à jour une valeur du store manuellement
-/// Manually updates a store value
-#[tauri::command]
-pub fn update_store(app: AppHandle, state: tauri::State<AppState>, key: String, r: u8, g: u8, b: u8) {
-    {
-        let mut store = state.store.lock().unwrap();
-
-        // Met à jour la clé correspondante
-        // Update the corresponding key
-        match key.as_str() {
-            "foreground" => {
-                store.foreground_rgb = (r, g, b);
-                store.foreground_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
-                store.foreground_is_dark = color::is_dark((r, g, b));
-            }
-            "background" => {
-                store.background_rgb = (r, g, b);
-                store.background_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
-                store.background_is_dark = color::is_dark((r, g, b));
-            }
-            _ => return, // Clé inconnue / Unknown key
+/// Applique une couleur RGB à la clé donnée puis recalcule les dérivés
+/// (hex, hsl, sombre, ratios de contraste). Retourne false si la clé est inconnue.
+///
+/// Applies an RGB color to the given key then recomputes the derived values
+/// (hex, hsl, dark, contrast ratios). Returns false on an unknown key.
+fn apply_color(store: &mut ResultStore, key: &str, rgb: (u8, u8, u8)) -> bool {
+    let (r, g, b) = rgb;
+    match key {
+        "foreground" => {
+            store.foreground_rgb = rgb;
+            store.foreground_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
+            store.foreground_hsl = color::rgb_to_hsl_string(rgb);
+            store.foreground_is_dark = color::is_dark(rgb);
         }
+        "background" => {
+            store.background_rgb = rgb;
+            store.background_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
+            store.background_hsl = color::rgb_to_hsl_string(rgb);
+            store.background_is_dark = color::is_dark(rgb);
+        }
+        _ => return false, // Clé inconnue / Unknown key
+    }
 
-        // Recalcule le ratio de contraste (brut + arrondi vers le bas)
-        // Recalculate the contrast ratio (raw + floor-rounded)
-        store.contrast_ratio_raw = color::contrast_ratio(store.foreground_rgb, store.background_rgb);
-        store.contrast_ratio_rounded = color::floor_ratio(store.contrast_ratio_raw);
+    // Recalcule le ratio de contraste (brut + arrondi vers le bas)
+    // Recalculate the contrast ratio (raw + floor-rounded)
+    store.contrast_ratio_raw = color::contrast_ratio(store.foreground_rgb, store.background_rgb);
+    store.contrast_ratio_rounded = color::floor_ratio(store.contrast_ratio_raw);
 
-        // Recalcule les contrastes arrière-plan vs blanc / noir
-        // Recalculate background-vs-white / black contrasts
-        store.background_contrast_with_white = color::contrast_ratio(store.background_rgb, (255, 255, 255));
-        store.background_contrast_with_black = color::contrast_ratio(store.background_rgb, (0, 0, 0));
+    // Recalcule les contrastes arrière-plan vs blanc / noir
+    // Recalculate background-vs-white / black contrasts
+    store.background_contrast_with_white = color::contrast_ratio(store.background_rgb, (255, 255, 255));
+    store.background_contrast_with_black = color::contrast_ratio(store.background_rgb, (0, 0, 0));
 
-        // Émet l'événement
-        // Emit the event
+    true
+}
+
+/// Met à jour une couleur depuis des composantes RGB (chemin RGB et inversion).
+/// Updates a color from RGB components (RGB path and swap).
+#[tauri::command]
+pub fn update_store_rgb(app: AppHandle, state: tauri::State<AppState>, key: String, r: u8, g: u8, b: u8) {
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, (r, g, b)) {
+        let _ = app.emit("store-updated", store.clone());
+    }
+}
+
+/// Met à jour une couleur depuis des composantes HSL ; conversion via `palette`.
+/// Updates a color from HSL components; conversion delegated to `palette`.
+#[tauri::command]
+pub fn update_store_hsl(app: AppHandle, state: tauri::State<AppState>, key: String, h: u16, s: u8, l: u8) {
+    let rgb = color::hsl_to_rgb(h, s, l);
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, rgb) {
+        let _ = app.emit("store-updated", store.clone());
+    }
+}
+
+/// Met à jour une couleur depuis une saisie hexadécimale ; conversion côté Rust.
+/// Updates a color from a hexadecimal input; conversion done on the Rust side.
+#[tauri::command]
+pub fn update_store_hex(app: AppHandle, state: tauri::State<AppState>, key: String, hex: String) {
+    let Some(rgb) = color::hex_to_rgb(&hex) else { return };
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, rgb) {
         let _ = app.emit("store-updated", store.clone());
     }
 }

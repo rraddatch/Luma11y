@@ -2,7 +2,7 @@
 // color.rs - Color manipulation and store update functions
 // =============================================================================
 
-use palette::Srgb;
+use palette::{FromColor, Hsl, Srgb};
 use palette::color_difference::Wcag21RelativeContrast;
 use crate::store::ResultStore;
 use crate::picker::common::ColorPickerResult;
@@ -19,6 +19,55 @@ fn srgb_from_u8(rgb: (u8, u8, u8)) -> Srgb<f64> {
 /// WCAG contrast ratio between two sRGB colors.
 pub fn contrast_ratio(fg: (u8, u8, u8), bg: (u8, u8, u8)) -> f64 {
     srgb_from_u8(fg).relative_contrast(srgb_from_u8(bg))
+}
+
+/// Sérialise une couleur RGB en chaîne HSL CSS "hsl(h, s%, l%)".
+///
+/// Serializes an RGB color into a CSS HSL string "hsl(h, s%, l%)".
+pub fn rgb_to_hsl_string(rgb: (u8, u8, u8)) -> String {
+    let hsl = Hsl::from_color(srgb_from_u8(rgb));
+    // Teinte ramenée dans [0, 360), saturation et luminosité en pourcentage.
+    // Hue brought back into [0, 360), saturation and lightness as percentages.
+    let h = (hsl.hue.into_positive_degrees().round() as u16) % 360;
+    let s = (hsl.saturation * 100.0).round() as u8;
+    let l = (hsl.lightness * 100.0).round() as u8;
+    format!("hsl({}, {}%, {}%)", h, s, l)
+}
+
+/// Convertit une couleur HSL (h: 0-360, s/l: 0-100) en composantes RGB.
+///
+/// Converts an HSL color (h: 0-360, s/l: 0-100) into RGB components.
+pub fn hsl_to_rgb(h: u16, s: u8, l: u8) -> (u8, u8, u8) {
+    let hsl = Hsl::new(h as f64, s as f64 / 100.0, l as f64 / 100.0);
+    let rgb = Srgb::from_color(hsl).into_format::<u8>();
+    (rgb.red, rgb.green, rgb.blue)
+}
+
+/// Convertit une saisie hexadécimale (#abc / #aabbcc, le # est optionnel) en RGB.
+/// Retourne None si la chaîne n'est pas une notation hex valide.
+///
+/// Converts a hexadecimal input (#abc / #aabbcc, the # is optional) into RGB.
+/// Returns None when the string is not a valid hex notation.
+pub fn hex_to_rgb(hex: &str) -> Option<(u8, u8, u8)> {
+    let cleaned = hex.trim().trim_start_matches('#');
+    let byte = |s: &str| u8::from_str_radix(s, 16).ok();
+
+    match cleaned.len() {
+        // Notation courte : chaque chiffre est doublé (#abc -> #aabbcc).
+        // Short notation: each digit is doubled (#abc -> #aabbcc).
+        3 => {
+            let c: Vec<char> = cleaned.chars().collect();
+            Some((
+                byte(&format!("{0}{0}", c[0]))?,
+                byte(&format!("{0}{0}", c[1]))?,
+                byte(&format!("{0}{0}", c[2]))?,
+            ))
+        }
+        // Notation longue : deux chiffres par composante.
+        // Long notation: two digits per component.
+        6 => Some((byte(&cleaned[0..2])?, byte(&cleaned[2..4])?, byte(&cleaned[4..6])?)),
+        _ => None,
+    }
 }
 
 /// Considère une couleur comme sombre si son contraste avec le noir est < 4.5
@@ -43,12 +92,14 @@ pub fn update_results_from_picker(store: &mut ResultStore, result: &ColorPickerR
     if let Some((r, g, b)) = result.foreground {
         store.foreground_rgb = (r, g, b);
         store.foreground_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
+        store.foreground_hsl = rgb_to_hsl_string((r, g, b));
         store.foreground_is_dark = is_dark((r, g, b));
     }
 
     if let Some((r, g, b)) = result.background {
         store.background_rgb = (r, g, b);
         store.background_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
+        store.background_hsl = rgb_to_hsl_string((r, g, b));
         store.background_is_dark = is_dark((r, g, b));
     }
 

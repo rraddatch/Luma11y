@@ -120,6 +120,8 @@ function formatTemplate(template: string, store: UIStore): string {
   return template
     .replace(/%f\.hex%/g, store.foregroundHex)
     .replace(/%b\.hex%/g, store.backgroundHex)
+    .replace(/%f\.hsl%/g, store.foregroundHsl)
+    .replace(/%b\.hsl%/g, store.backgroundHsl)
     .replace(/%cr%/g, store.contrastRatio)
     .replace(/%crr%/g, store.contrastRatio)
     .replace(/%1\.4\.3%/g, store.level143Regular ? 'Pass' : 'Fail')
