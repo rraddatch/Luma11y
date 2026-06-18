@@ -101,7 +101,7 @@
           x-bind:selected-format="$store.uiStore.foregroundFormat"
           x-bind:locale="$store.uiStore.locale"
           x-bind:label="$store.uiStore.t('color.foreground')"
-          @color-change="$store.uiStore.updateColor('foreground', $event.detail.component, $event.detail.value)"
+          @color-change="$store.uiStore.applyColorChange('foreground', $event.detail)"
           @format-change="$store.uiStore.setColorFormat('foreground', $event.detail.format)"
         ></color-controls>
         <!-- Background Color -->
@@ -176,7 +176,7 @@
           x-bind:selected-format="$store.uiStore.backgroundFormat"
           x-bind:locale="$store.uiStore.locale"
           x-bind:label="$store.uiStore.t('color.background')"
-          @color-change="$store.uiStore.updateColor('background', $event.detail.component, $event.detail.value)"
+          @color-change="$store.uiStore.applyColorChange('background', $event.detail)"
           @format-change="$store.uiStore.setColorFormat('background', $event.detail.format)"
         ></color-controls>
       </div>

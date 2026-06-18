@@ -1,27 +1,101 @@
 // =============================================================================
-// ColorControls.ts - Composant de contrôle des couleurs RGB
-// ColorControls.ts - RGB color control component
+// ColorControls.ts - Composant de contrôle des couleurs
+// ColorControls.ts - Color control component
 //
-// Affiche trois canaux (R, G, B) avec un champ numérique et un slider chacun.
-// Displays three channels (R, G, B) with a number input and a slider each.
+// Affiche trois canaux avec un champ numérique et un slider chacun.
+// Displays three channels with a number input and a slider each.
 //
-// Propriétés :
-//   - rgb    : valeurs RGB sous forme de chaîne "r, g, b"
-//   - locale : locale courante, pour la réactivité des traductions
-//   - label  : nom de la section ("Foreground" / "Background"), utilisé par
-//              aria-describedby pour le contexte des lecteurs d'écran
+// Les canaux affichés s'adaptent au format sélectionné (RGB, HSL, HSV…) ;
+// `hex` réutilise les canaux RGB.
 //
 // Événements :
-//   - color-change : émis à chaque modification, avec detail { component, value }
+//   - color-change  : detail { command, args } — commande backend de conversion
+//                     et composantes du format affiché
+//   - format-change : detail { format } — id du format radio sélectionné
 //
 // Le mode d'affichage des sliders (standard / statique / dynamique) est géré
-// en interne via un <select>.
+// en interne via un <select>, proposé pour les formats ayant une représentation
+// CSS (RGB, HSL)
 // =============================================================================
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { t } from '../i18n';
 import { srOnly } from './shared-styles';
+
+// Définition des canaux par format de couleur (ordre = ordre d'affichage).
+//   - command / argKeys : commande backend qui convertit + met à jour le store
+//   - max               : borne du slider et du champ numérique
+//   - toCss             : couleur CSS à partir des composantes [c0, c1, c2].
+//                         Présent = modes coloré/dynamique disponibles ; absent
+//                         (ex. hsv, sans fonction CSS) = sliders standards seulement.
+//   - staticBase        : active le mode « coloré » (statique). Valeurs des autres
+//                         canaux, indépendantes de la couleur courante. N'a de sens
+//                         que pour des canaux indépendants (RGB) ; absent pour HSL
+//                         (S/L n'ont pas de teinte fixe parlante) → pas de « coloré ».
+// Le format `hex` réutilise les canaux RGB (cf. channelFormat).
+//
+// Channel definitions per color format (order = display order).
+//   - command / argKeys : backend command that converts + updates the store
+//   - max               : slider and number-input bound
+//   - toCss             : CSS color from the components [c0, c1, c2]. Present =
+//                         dynamic mode available; absent (e.g. hsv, no CSS
+//                         function) = standard sliders only.
+//   - staticBase        : enables the "colored" (static) mode. Other channels'
+//                         values, independent of the current color. Only meaningful
+//                         for independent channels (RGB); absent for HSL (S/L have
+//                         no meaningful fixed hue) → no "colored" mode.
+// The `hex` format reuses the RGB channels (see channelFormat).
+interface ChannelDef { letter: string; labelKey: string; max: number; }
+interface FormatChannels {
+  command: string;
+  argKeys: string[];
+  channels: ChannelDef[];
+  toCss?: (v: number[]) => string;
+  staticBase?: number[];
+}
+
+const FORMAT_CHANNELS: Record<string, FormatChannels> = {
+  rgb: {
+    command: 'update_store_rgb',
+    argKeys: ['r', 'g', 'b'],
+    toCss: (v) => `rgb(${v[0]}, ${v[1]}, ${v[2]})`,
+    staticBase: [0, 0, 0],
+    channels: [
+      { letter: 'R', labelKey: 'color.red', max: 255 },
+      { letter: 'G', labelKey: 'color.green', max: 255 },
+      { letter: 'B', labelKey: 'color.blue', max: 255 },
+    ],
+  },
+  hsl: {
+    command: 'update_store_hsl',
+    argKeys: ['h', 's', 'l'],
+    toCss: (v) => `hsl(${v[0]}, ${v[1]}%, ${v[2]}%)`,
+    channels: [
+      { letter: 'H', labelKey: 'color.hue', max: 360 },
+      { letter: 'S', labelKey: 'color.saturation', max: 100 },
+      { letter: 'L', labelKey: 'color.lightness', max: 100 },
+    ],
+  },
+  hsv: {
+    command: 'update_store_hsv',
+    argKeys: ['h', 's', 'v'],
+    channels: [
+      { letter: 'H', labelKey: 'color.hue', max: 360 },
+      { letter: 'S', labelKey: 'color.saturation', max: 100 },
+      { letter: 'V', labelKey: 'color.value_component', max: 100 },
+    ],
+  },
+};
+
+// Modes d'affichage des sliders et leur clé i18n.
+// Slider display modes and their i18n key.
+type SliderMode = 'standard' | 'static' | 'dynamic';
+const SLIDER_MODE_LABELS: Record<SliderMode, string> = {
+  standard: 'color.slider_standard',
+  static: 'color.slider_colored',
+  dynamic: 'color.slider_dynamic',
+};
 
 @customElement('color-controls')
 export class ColorControls extends LitElement {
@@ -45,7 +119,16 @@ export class ColorControls extends LitElement {
   @property({ type: String, attribute: 'selected-format' }) selectedFormat = 'hex';
 
   // Mode d'affichage des sliders / Slider display mode
-  @state() private sliderMode: 'standard' | 'static' | 'dynamic' = 'standard';
+  @state() private sliderMode: SliderMode = 'standard';
+
+  // Pendant le drag d'un slider, on fige les valeurs des canaux localement : les
+  // sliders suivent cet état au lieu de la réponse du backend pour éviter le "drift" des autres canaux.
+  // À la fin du drag, on resynchronise sur les valeurs canoniques (cf. channelValues).
+  //
+  // While dragging a slider, the channel values are frozen locally: the sliders
+  // follow this state instead of the backend value to prevent the dirft on the other channels.
+  // When the drag ends, we resync on the canonical values (see channelValues).
+  @state() private dragValues: number[] | null = null;
 
   // Parse la chaîne RGB en tableau de trois valeurs numériques
   // Parses the RGB string into an array of three numeric values
@@ -54,11 +137,108 @@ export class ColorControls extends LitElement {
     return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
   }
 
-  // Émet un événement color-change vers le parent (bubbles à travers le Shadow DOM)
-  // Emits a color-change event to the parent (bubbles through Shadow DOM)
-  private emitChange(component: 'r' | 'g' | 'b', value: number) {
+  // Format des canaux affichés : `hex` réutilise les canaux RGB.
+  // Channel format displayed: `hex` reuses the RGB channels.
+  private get channelFormat(): string {
+    return this.selectedFormat === 'hex' ? 'rgb' : this.selectedFormat;
+  }
+
+  private get channelConfig(): FormatChannels {
+    return FORMAT_CHANNELS[this.channelFormat] ?? FORMAT_CHANNELS.rgb;
+  }
+
+  // Modes d'affichage des sliders disponibles pour le format courant :
+  //   - standard : toujours
+  //   - dynamic  : si le format a une représentation CSS (toCss)
+  //   - static   : seulement si staticBase est défini (canaux indépendants, RGB)
+  //
+  // Slider display modes available for the current format:
+  //   - standard : always
+  //   - dynamic  : if the format has a CSS representation (toCss)
+  //   - static   : only if staticBase is defined (independent channels, RGB)
+  private get availableModes(): SliderMode[] {
+    const cfg = this.channelConfig;
+    if (!cfg.toCss) return ['standard'];
+    return cfg.staticBase ? ['standard', 'static', 'dynamic'] : ['standard', 'dynamic'];
+  }
+
+  // Mode effectif : le mode choisi s'il est disponible pour ce format, sinon standard
+  // Effective mode: the chosen mode if available for this format, otherwise standard
+  private get effectiveMode(): SliderMode {
+    return this.availableModes.includes(this.sliderMode) ? this.sliderMode : 'standard';
+  }
+
+  // Construit un dégradé CSS pour le slider `index`
+  // Builds a CSS gradient for channel `index`
+  private gradient(index: number, others: number[]): string {
+    const cfg = this.channelConfig;
+    // toCss est garanti présent : gradient() n'est appelé qu'en mode coloré/dynamique,
+    // disponibles uniquement si le format définit toCss (cf. availableModes).
+    // toCss is guaranteed: gradient() is only called in colored/dynamic mode, which
+    // are available only when the format defines toCss (see availableModes).
+    const toCss = cfg.toCss!;
+
+    // Valeur maximale du canal qu'on balaie (255 pour RGB, 360 pour H, 100 pour S/L…).
+    // Max value of the swept channel (255 for RGB, 360 for H, 100 for S/L…).
+    const max = cfg.channels[index].max;
+
+    // 7 arrêts répartis sur [0, max]. Plusieurs arrêts sont nécessaires pour les
+    // canaux non monotones (teinte : 0 et 360 = rouge → un dégradé 2 points serait
+    // plat ; luminosité : noir → couleur → blanc).
+    // 7 stops spread over [0, max]. Multiple stops are required for non-monotonic
+    // channels (hue: 0 and 360 = red → a 2-stop gradient would be flat; lightness:
+    // black → color → white).
+    const STOPS = 7;
+    const stops: string[] = [];
+    for (let i = 0; i < STOPS; i++) {
+      // On copie les autres composantes et on ne fait varier que le canal `index`.
+      // Copy the other components and vary only channel `index`.
+      const vals = [...others];
+      vals[index] = Math.round((max * i) / (STOPS - 1));
+      stops.push(toCss(vals));
+    }
+
+    // Dégradé horizontal : du minimum (gauche) au maximum (droite) du slider.
+    // Horizontal gradient: from the slider's minimum (left) to maximum (right).
+    return `linear-gradient(to right, ${stops.join(', ')})`;
+  }
+
+  // Valeurs numériques courantes des trois canaux du format affiché.
+  // Current numeric values of the three channels for the displayed format.
+  private get channelValues(): [number, number, number] {
+    if (this.channelFormat === 'rgb') return this.rgbValues;
+    const entry = this.formats.find((f) => f.id === this.channelFormat);
+    const nums = (entry?.value.match(/\d+/g) ?? []).map(Number);
+    return [nums[0] ?? 0, nums[1] ?? 0, nums[2] ?? 0];
+  }
+
+  // Valeurs affichées par les sliders : l'état figé pendant un drag, sinon les
+  // valeurs canoniques issues du backend.
+  // Values displayed by the sliders: the frozen state during a drag, otherwise the
+  // canonical values from the backend.
+  private get displayValues(): number[] {
+    return this.dragValues ?? this.channelValues;
+  }
+
+  // Applique une nouvelle valeur au slider `index` et émet le changement dans le
+  // format actif. La commande backend (rgb/hsl/hsv) est portée par l'événement.
+  // Si un drag est en cours, met aussi à jour l'état figé.
+  //
+  // Applies a new value to slider `index` and emits the change in the active
+  // format. The backend command (rgb/hsl/hsv) is carried by the event.
+  // If a drag is in progress, also updates the frozen state.
+  private applyChannel(index: number, value: number) {
+    const cfg = this.channelConfig;
+    const values = [...this.displayValues];
+    values[index] = Math.min(cfg.channels[index].max, Math.max(0, Math.round(value)));
+
+    if (this.dragValues) this.dragValues = values;
+
+    const args: Record<string, number> = {};
+    cfg.argKeys.forEach((k, i) => { args[k] = values[i]; });
+
     this.dispatchEvent(new CustomEvent('color-change', {
-      detail: { component, value },
+      detail: { command: cfg.command, args },
       bubbles: true,
       composed: true,
     }));
@@ -74,28 +254,37 @@ export class ColorControls extends LitElement {
     }));
   }
 
-  // Appelé lors du glissement du slider (input continu)
-  // Called during slider drag (continuous input)
-  private onInput(component: 'r' | 'g' | 'b', value: number) {
-    this.emitChange(component, value);
+  // Déplacement du slider: fige l'état des canaux au premier
+  // mouvement pour que les autres sliders ne bougent pas pendant le drag.
+  // Slider drag: freeze the channel state on the first move so
+  // the other sliders do not move during the drag.
+  private onInput(index: number, value: number) {
+    if (!this.dragValues) this.dragValues = [...this.channelValues];
+    this.applyChannel(index, value);
   }
 
-  // Appelé à la validation du champ numérique (clamp entre 0 et 255)
-  // Called on number input commit (clamped between 0 and 255)
-  private onChange(component: 'r' | 'g' | 'b', value: number) {
-    this.emitChange(component, Math.min(255, Math.max(0, value)));
+  // Fin du drag : on relâche l'état figé pour resynchroniser sur le backend.
+  // End of drag: release the frozen state to resync on the backend.
+  private onSliderCommit() {
+    this.dragValues = null;
+  }
+
+  // Validation du champ numérique.
+  // Number input commit.
+  private onChange(index: number, value: number) {
+    this.applyChannel(index, value);
   }
 
   // Shift + flèches sur le slider : incrémente/décrémente de 10
   // Shift + arrow keys on slider: increment/decrement by 10
-  private onSliderKeydown(e: KeyboardEvent, component: 'r' | 'g' | 'b', current: number) {
+  private onSliderKeydown(e: KeyboardEvent, index: number, current: number) {
     if (!e.shiftKey) return;
     const step = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 10
                : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -10
                : 0;
     if (step === 0) return;
     e.preventDefault();
-    this.emitChange(component, Math.min(255, Math.max(0, current + step)));
+    this.applyChannel(index, current + step);
   }
 
   // ---------------------------------------------------------------------------
@@ -214,78 +403,48 @@ export class ColorControls extends LitElement {
       }
     }
 
-    /* Mode statique : dégradé fixe noir → couleur pure par canal */
-    /* Static mode: fixed gradient black → pure color per channel */
-    :host(.slider-mode-static) {
-      .slider-r { background: linear-gradient(to right, #000, #f00); }
-      .slider-g { background: linear-gradient(to right, #000, #0f0); }
-      .slider-b { background: linear-gradient(to right, #000, #00f); }
-    }
-
-    /* Mode dynamique : dégradé calculé à partir des autres composantes */
-    /* Dynamic mode: gradient computed from the other components */
-    :host(.slider-mode-dynamic) input[type="range"] {
-      background: linear-gradient(to right, var(--slider-from, #000), var(--slider-to, #fff));
-    }
   `];
 
-  // ---------------------------------------------------------------------------
-  // Lifecycle
-  // ---------------------------------------------------------------------------
+  // Rendu d'un slider.
+  // Renders a slider
+  private renderChannel(index: number) {
+    const cfg = this.channelConfig;
+    const ch = cfg.channels[index];
+    const values = this.displayValues;
+    const value = values[index];
 
-  // Synchronise la classe CSS du mode slider sur l'élément hôte
-  // Syncs the slider mode CSS class on the host element
-  private updateHostClass() {
-    this.classList.remove('slider-mode-standard', 'slider-mode-static', 'slider-mode-dynamic');
-    this.classList.add(`slider-mode-${this.sliderMode}`);
-  }
-
-  updated() {
-    this.updateHostClass();
-  }
-
-  // ---------------------------------------------------------------------------
-  // Rendu
-  // Rendering
-  // ---------------------------------------------------------------------------
-
-  // Rendu d'un canal RGB individuel (R, G ou B)
-  // Renders a single RGB channel (R, G, or B)
-  private renderChannel(label: string, legendKey: string, component: 'r' | 'g' | 'b', index: number, sliderClass: string) {
-    const [r, g, b] = this.rgbValues;
-    const value = [r, g, b][index];
-
-    // Pour le mode dynamique, calculer les couleurs from/to
-    // For dynamic mode, compute the from/to colors
-    let dynamicStyle = '';
-    if (this.sliderMode === 'dynamic') {
-      const fromParts = [r, g, b];
-      const toParts = [r, g, b];
-      fromParts[index] = 0;
-      toParts[index] = 255;
-      dynamicStyle = `--slider-from: rgb(${fromParts.join(',')}); --slider-to: rgb(${toParts.join(',')})`;
+    // Dégradé du slider selon le mode : coloré ou dynamique. En standard : pas de fond inline.
+    // Slider gradient depending on the mode: colored or dynamic. In standard: no inline background.
+    let sliderStyle = '';
+    const mode = this.effectiveMode;
+    if (mode !== 'standard') {
+      // 'static' n'est dans effectiveMode que si staticBase existe ; 'dynamic' utilise les valeurs courantes.
+      // 'static' is in effectiveMode only when staticBase exists; 'dynamic' uses the current values.
+      const others = mode === 'static' ? cfg.staticBase! : values;
+      sliderStyle = `background: ${this.gradient(index, others)}`;
     }
 
-    const channelLabel = t(legendKey);
+    const channelLabel = t(ch.labelKey);
 
     return html`
       <div class="channel" role="group" aria-label="${channelLabel}">
-        <span aria-hidden="true">${label}</span>
+        <span aria-hidden="true">${ch.letter}</span>
         <input
           aria-label="${t('color.component_value')}"
           aria-describedby="section-label"
-          type="number" min="0" max="255" class="rgb-input"
+          type="number" min="0" max="${ch.max}" class="rgb-input"
           .value="${String(value)}"
-          @change="${(e: Event) => this.onChange(component, +(e.target as HTMLInputElement).value)}"
+          @change="${(e: Event) => this.onChange(index, +(e.target as HTMLInputElement).value)}"
         />
         <input
           aria-label="${t('color.component_slider')}"
           aria-describedby="section-label"
-          type="range" min="0" max="255" class="${sliderClass}"
+          type="range" min="0" max="${ch.max}"
           .value="${String(value)}"
-          @input="${(e: Event) => this.onInput(component, +(e.target as HTMLInputElement).value)}"
-          @keydown="${(e: KeyboardEvent) => this.onSliderKeydown(e, component, value)}"
-          style="${dynamicStyle}"
+          @input="${(e: Event) => this.onInput(index, +(e.target as HTMLInputElement).value)}"
+          @change="${() => this.onSliderCommit()}"
+          @keydown="${(e: KeyboardEvent) => this.onSliderKeydown(e, index, value)}"
+          style="${sliderStyle}"
         />
       </div>
     `;
@@ -317,18 +476,20 @@ export class ColorControls extends LitElement {
           `)}
         </fieldset>
       ` : ''}
-      <select
-        aria-label="${t('color.slider_mode')}"
-        .value="${this.sliderMode}"
-        @change="${(e: Event) => this.sliderMode = (e.target as HTMLSelectElement).value as any}"
-      >
-        <option value="standard">${t('color.slider_standard')}</option>
-        <option value="static">${t('color.slider_colored')}</option>
-        <option value="dynamic">${t('color.slider_dynamic')}</option>
-      </select>
-      ${this.renderChannel('R', 'color.red', 'r', 0, 'slider-r')}
-      ${this.renderChannel('G', 'color.green', 'g', 1, 'slider-g')}
-      ${this.renderChannel('B', 'color.blue', 'b', 2, 'slider-b')}
+      ${this.availableModes.length > 1 ? html`
+        <select
+          aria-label="${t('color.slider_mode')}"
+          .value="${this.effectiveMode}"
+          @change="${(e: Event) => this.sliderMode = (e.target as HTMLSelectElement).value as SliderMode}"
+        >
+          ${this.availableModes.map((m) => html`
+            <option value="${m}">${t(SLIDER_MODE_LABELS[m])}</option>
+          `)}
+        </select>
+      ` : ''}
+      ${this.renderChannel(0)}
+      ${this.renderChannel(1)}
+      ${this.renderChannel(2)}
     `;
   }
 }

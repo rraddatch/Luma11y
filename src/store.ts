@@ -214,9 +214,9 @@ export interface UIStore {
   // Method to swap foreground and background colors
   switchColor(): Promise<void>;
 
-  // Méthode pour mettre à jour une composante RGB d'une couleur
-  // Method to update an RGB component of a color
-  updateColor(key: string, component: 'r' | 'g' | 'b', value: number): Promise<void>;
+  // Applique un changement de couleur émis par les sliders
+  // Applies a color change emitted by the sliders
+  applyColorChange(key: 'foreground' | 'background', detail: { command: string; args: Record<string, number> }): Promise<void>;
 
   // Méthode pour mettre à jour une couleur depuis une saisie texte libre
   // Update a color from a free-typed text input
@@ -447,14 +447,11 @@ export const UIStore = {
     }
   },
 
-  // Méthode pour mettre à jour une composante RGB d'une couleur
-  // Method to update an RGB component of a color
-  async updateColor(this: UIStore, key: string, component: 'r' | 'g' | 'b', value: number) {
-    const rgb = key === 'foreground' ? this.foregroundRgb : this.backgroundRgb;
-    const [r, g, b] = rgb.split(',').map(v => parseInt(v.trim()));
-    const updated = { r, g, b, [component]: value };
+  // Applique un changement émis par les sliders.
+  // Applies a change emitted by the sliders.
+  async applyColorChange(this: UIStore, key: 'foreground' | 'background', detail: { command: string; args: Record<string, number> }) {
     try {
-      await invoke('update_store_rgb', { key, r: updated.r, g: updated.g, b: updated.b });
+      await invoke(detail.command, { key, ...detail.args });
     } catch (error) {
       console.error('Error updating color:', error);
     }
