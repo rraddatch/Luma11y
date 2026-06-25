@@ -1,0 +1,53 @@
+// =============================================================================
+// colors/hsv.ts - Format HSV ("hsv(h, s%, v%)")
+// colors/hsv.ts - HSV format ("hsv(h, s%, v%)")
+// =============================================================================
+
+import type { ColorFormat, ColorCommit } from './types';
+
+// Accepte la notation "hsv(h, s%, v%)" (le signe % est optionnel).
+// Accepts the "hsv(h, s%, v%)" notation (the % sign is optional).
+const HSV_RE =
+  /^hsv\(\s*(\d{1,3})\s*[,\s]\s*(\d{1,3})%?\s*[,\s]\s*(\d{1,3})%?\s*\)$/i;
+
+// Teinte 0-360, saturation et valeur 0-100.
+// Hue 0-360, saturation and value 0-100.
+const inHue = (n: number) => n >= 0 && n <= 360;
+const inPercent = (n: number) => n >= 0 && n <= 100;
+
+// HSV [h:0-360, s:0-100, v:0-100] → chaîne CSS via hsl(), car CSS n'a pas de
+// fonction hsv(). Retourne la couleur en valeur css.
+//
+// HSV [h:0-360, s:0-100, v:0-100] → CSS string via hsl(), since CSS has no hsv()
+// function. Return color in css value
+export function hsvToCss(v: number[]): string {
+  const s = v[1] / 100;
+  const value = v[2] / 100;
+  const l = value * (1 - s / 2);
+  const sl = l === 0 || l === 1 ? 0 : (value - l) / Math.min(l, 1 - l);
+  return `hsl(${v[0]}, ${Math.round(sl * 100)}%, ${Math.round(l * 100)}%)`;
+}
+
+// Extrait et valide h, s, v ; la conversion HSV -> RGB est faite côté Rust via
+// `palette` (cf. update_store_hsv).
+//
+// Extracts and validates h, s, v; the HSV -> RGB conversion is done on the Rust
+// side through `palette` (see update_store_hsv).
+export const hsvFormat: ColorFormat = {
+  id: 'hsv',
+
+  parse(input: string): ColorCommit | null {
+    const match = input.trim().match(HSV_RE);
+    if (!match) return null;
+
+    const h = parseInt(match[1], 10);
+    const s = parseInt(match[2], 10);
+    const v = parseInt(match[3], 10);
+
+    // Rejette toute composante hors intervalle (teinte 0-360, s/v 0-100).
+    // Reject any component out of range (hue 0-360, s/v 0-100).
+    if (!inHue(h) || !inPercent(s) || !inPercent(v)) return null;
+
+    return { command: 'update_store_hsv', args: { h, s, v } };
+  },
+};

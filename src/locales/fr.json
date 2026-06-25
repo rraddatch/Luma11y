@@ -23,10 +23,11 @@
     "slider_colored": "Coloré",
     "slider_dynamic": "Dynamique",
     "invalid_value": "Valeur invalide",
+    "display_format": "Format affiché",
     "hex": "Hex",
     "rgb": "RGB",
     "hsl": "HSL",
-    "display_format": "Format affiché"
+    "hsv": "HSV"
   },
   "results": {
     "contrast_ratio": "Taux de contraste",
@@ -77,6 +78,8 @@
     "tag_b_hex": "Couleur d'arrière-plan (hex)",
     "tag_f_hsl": "Couleur de premier plan (HSL)",
     "tag_b_hsl": "Couleur d'arrière-plan (HSL)",
+    "tag_f_hsv": "Couleur de premier plan (HSV)",
+    "tag_b_hsv": "Couleur d'arrière-plan (HSV)",
     "tag_cr": "Ratio de contraste (brut)",
     "tag_crr": "Ratio de contraste (arrondi)",
     "tag_1_4_3": "Résultat 1.4.3 Contraste (Minimum)",

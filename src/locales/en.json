@@ -23,10 +23,11 @@
     "slider_colored": "Coloured",
     "slider_dynamic": "Dynamic",
     "invalid_value": "Invalid value",
+    "display_format": "Displayed format",
     "hex": "Hex",
     "rgb": "RGB",
     "hsl": "HSL",
-    "display_format": "Displayed format"
+    "hsv": "HSV"
   },
   "results": {
     "contrast_ratio": "Contrast Ratio",
@@ -77,6 +78,8 @@
     "tag_b_hex": "Background colour (hex)",
     "tag_f_hsl": "Foreground colour (HSL)",
     "tag_b_hsl": "Background colour (HSL)",
+    "tag_f_hsv": "Foreground colour (HSV)",
+    "tag_b_hsv": "Background colour (HSV)",
     "tag_cr": "Contrast ratio (raw)",
     "tag_crr": "Contrast ratio (rounded)",
     "tag_1_4_3": "1.4.3 Contrast (Minimum) result",

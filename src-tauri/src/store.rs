@@ -35,6 +35,10 @@ pub struct ResultStore {
     /// Foreground color in HSL format "hsl(h, s%, l%)"
     pub foreground_hsl: String,
 
+    /// Couleur de premier plan au format HSV "hsv(h, s%, v%)"
+    /// Foreground color in HSV format "hsv(h, s%, v%)"
+    pub foreground_hsv: String,
+
     /// Si la couleur est sombre
     /// If the colour is dark
     pub foreground_is_dark: bool,
@@ -50,6 +54,10 @@ pub struct ResultStore {
     /// Couleur d'arrière-plan au format HSL "hsl(h, s%, l%)"
     /// Background color in HSL format "hsl(h, s%, l%)"
     pub background_hsl: String,
+
+    /// Couleur d'arrière-plan au format HSV "hsv(h, s%, v%)"
+    /// Background color in HSV format "hsv(h, s%, v%)"
+    pub background_hsv: String,
 
     /// Si la couleur est sombre
     /// If the colour is dark
@@ -97,10 +105,12 @@ impl Default for ResultStore {
             foreground_rgb: config::DEFAULT_FOREGROUND_RGB,
             foreground_hex: format!("#{:02X}{:02X}{:02X}", fr, fg, fb),
             foreground_hsl: color::rgb_to_hsl_string((fr, fg, fb)),
+            foreground_hsv: color::rgb_to_hsv_string((fr, fg, fb)),
             foreground_is_dark: color::is_dark((fr, fg, fb)),
             background_rgb: config::DEFAULT_BACKGROUND_RGB,
             background_hex: format!("#{:02X}{:02X}{:02X}", br, bg, bb),
             background_hsl: color::rgb_to_hsl_string((br, bg, bb)),
+            background_hsv: color::rgb_to_hsv_string((br, bg, bb)),
             background_is_dark: color::is_dark((br, bg, bb)),
             continue_mode: false,
             contrast_ratio_raw,
@@ -187,12 +197,14 @@ fn apply_color(store: &mut ResultStore, key: &str, rgb: (u8, u8, u8)) -> bool {
             store.foreground_rgb = rgb;
             store.foreground_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
             store.foreground_hsl = color::rgb_to_hsl_string(rgb);
+            store.foreground_hsv = color::rgb_to_hsv_string(rgb);
             store.foreground_is_dark = color::is_dark(rgb);
         }
         "background" => {
             store.background_rgb = rgb;
             store.background_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
             store.background_hsl = color::rgb_to_hsl_string(rgb);
+            store.background_hsv = color::rgb_to_hsv_string(rgb);
             store.background_is_dark = color::is_dark(rgb);
         }
         _ => return false, // Clé inconnue / Unknown key
@@ -226,6 +238,17 @@ pub fn update_store_rgb(app: AppHandle, state: tauri::State<AppState>, key: Stri
 #[tauri::command]
 pub fn update_store_hsl(app: AppHandle, state: tauri::State<AppState>, key: String, h: u16, s: u8, l: u8) {
     let rgb = color::hsl_to_rgb(h, s, l);
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, rgb) {
+        let _ = app.emit("store-updated", store.clone());
+    }
+}
+
+/// Met à jour une couleur depuis des composantes HSV ; conversion via `palette`.
+/// Updates a color from HSV components; conversion delegated to `palette`.
+#[tauri::command]
+pub fn update_store_hsv(app: AppHandle, state: tauri::State<AppState>, key: String, h: u16, s: u8, v: u8) {
+    let rgb = color::hsv_to_rgb(h, s, v);
     let mut store = state.store.lock().unwrap();
     if apply_color(&mut store, &key, rgb) {
         let _ = app.emit("store-updated", store.clone());

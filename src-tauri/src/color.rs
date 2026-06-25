@@ -2,7 +2,7 @@
 // color.rs - Color manipulation and store update functions
 // =============================================================================
 
-use palette::{FromColor, Hsl, Srgb};
+use palette::{FromColor, Hsl, Hsv, Srgb};
 use palette::color_difference::Wcag21RelativeContrast;
 use crate::store::ResultStore;
 use crate::picker::common::ColorPickerResult;
@@ -40,6 +40,28 @@ pub fn rgb_to_hsl_string(rgb: (u8, u8, u8)) -> String {
 pub fn hsl_to_rgb(h: u16, s: u8, l: u8) -> (u8, u8, u8) {
     let hsl = Hsl::new(h as f64, s as f64 / 100.0, l as f64 / 100.0);
     let rgb = Srgb::from_color(hsl).into_format::<u8>();
+    (rgb.red, rgb.green, rgb.blue)
+}
+
+/// Sérialise une couleur RGB en chaîne HSV "hsv(h, s%, v%)".
+///
+/// Serializes an RGB color into an HSV string "hsv(h, s%, v%)".
+pub fn rgb_to_hsv_string(rgb: (u8, u8, u8)) -> String {
+    let hsv = Hsv::from_color(srgb_from_u8(rgb));
+    // Teinte ramenée dans [0, 360), saturation et valeur en pourcentage.
+    // Hue brought back into [0, 360), saturation and value as percentages.
+    let h = (hsv.hue.into_positive_degrees().round() as u16) % 360;
+    let s = (hsv.saturation * 100.0).round() as u8;
+    let v = (hsv.value * 100.0).round() as u8;
+    format!("hsv({}, {}%, {}%)", h, s, v)
+}
+
+/// Convertit une couleur HSV (h: 0-360, s/v: 0-100) en composantes RGB.
+///
+/// Converts an HSV color (h: 0-360, s/v: 0-100) into RGB components.
+pub fn hsv_to_rgb(h: u16, s: u8, v: u8) -> (u8, u8, u8) {
+    let hsv = Hsv::new(h as f64, s as f64 / 100.0, v as f64 / 100.0);
+    let rgb = Srgb::from_color(hsv).into_format::<u8>();
     (rgb.red, rgb.green, rgb.blue)
 }
 

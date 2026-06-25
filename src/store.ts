@@ -30,8 +30,8 @@ export interface ColorFormatValue {
 // (représentation interne) et est présenté en "rgb(r, g, b)" pour l'affichage.
 // Builds the id -> displayed value map. `rgb` comes in as "r, g, b" (internal
 // representation) and is presented as "rgb(r, g, b)" for display.
-function colorValues(hex: string, rgb: string, hsl: string): Record<string, string> {
-  return { hex, rgb: `rgb(${rgb})`, hsl };
+function colorValues(hex: string, rgb: string, hsl: string, hsv: string): Record<string, string> {
+  return { hex, rgb: `rgb(${rgb})`, hsl, hsv };
 }
 
 // Interface pour le store Tauri (état global côté backend)
@@ -52,6 +52,10 @@ export interface BackendStore {
   // Foreground color in HSL format "hsl(h, s%, l%)"
   foreground_hsl: string;
 
+  // Couleur de premier plan au format HSV "hsv(h, s%, v%)"
+  // Foreground color in HSV format "hsv(h, s%, v%)"
+  foreground_hsv: string;
+
   /// Si la couleur est sombre
   /// If the colour is dark
   foreground_is_dark: boolean;
@@ -67,6 +71,10 @@ export interface BackendStore {
   // Couleur d'arrière-plan au format HSL "hsl(h, s%, l%)"
   // Background color in HSL format "hsl(h, s%, l%)"
   background_hsl: string;
+
+  // Couleur d'arrière-plan au format HSV "hsv(h, s%, v%)"
+  // Background color in HSV format "hsv(h, s%, v%)"
+  background_hsv: string;
 
   /// Si la couleur est sombre
   /// If the colour is dark
@@ -117,6 +125,10 @@ export interface UIStore {
   // Foreground color in HSL format "hsl(h, s%, l%)"
   foregroundHsl: string;
 
+  // Couleur de premier plan au format HSV "hsv(h, s%, v%)"
+  // Foreground color in HSV format "hsv(h, s%, v%)"
+  foregroundHsv: string;
+
   // Nom CSS de la couleur de premier plan (vide si pas de correspondance exacte)
   // CSS name of foreground color (empty if no exact match)
   foregroundName: string;
@@ -136,6 +148,10 @@ export interface UIStore {
   // Couleur d'arrière-plan au format HSL "hsl(h, s%, l%)"
   // Background color in HSL format "hsl(h, s%, l%)"
   backgroundHsl: string;
+
+  // Couleur d'arrière-plan au format HSV "hsv(h, s%, v%)"
+  // Background color in HSV format "hsv(h, s%, v%)"
+  backgroundHsv: string;
 
   // Nom CSS de la couleur d'arrière-plan (vide si pas de correspondance exacte)
   // CSS name of background color (empty if no exact match)
@@ -272,6 +288,10 @@ export const UIStore = {
   // Initial state: empty foreground HSL
   foregroundHsl: '',
 
+  // État initial : HSV de premier plan vide
+  // Initial state: empty foreground HSV
+  foregroundHsv: '',
+
   // Nom CSS de la couleur de premier plan
   // CSS name of foreground color
   foregroundName: '',
@@ -291,6 +311,10 @@ export const UIStore = {
   // État initial : HSL d'arrière-plan vide
   // Initial state: empty background HSL
   backgroundHsl: '',
+
+  // État initial : HSV d'arrière-plan vide
+  // Initial state: empty background HSV
+  backgroundHsv: '',
 
   // Nom CSS de la couleur d'arrière-plan
   // CSS name of background color
@@ -328,13 +352,13 @@ export const UIStore = {
   // the colorFormats registry
   get foregroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl);
+    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv);
     return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
   },
 
   get backgroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl);
+    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv);
     return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
   },
 
@@ -342,13 +366,13 @@ export const UIStore = {
   // Value shown in the color preview, depending on the selected format radio.
   get foregroundDisplayValue(): string {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl);
+    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv);
     return values[self.foregroundFormat] ?? self.foregroundHex;
   },
 
   get backgroundDisplayValue(): string {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl);
+    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv);
     return values[self.backgroundFormat] ?? self.backgroundHex;
   },
 
@@ -516,6 +540,10 @@ export const UIStore = {
     // Update foreground color (HSL format)
     this.foregroundHsl = store.foreground_hsl;
 
+    // Met à jour la couleur de premier plan (format HSV)
+    // Update foreground color (HSV format)
+    this.foregroundHsv = store.foreground_hsv;
+
     // Recherche le nom CSS exact / Look up exact CSS name
     invoke<string>('get_color_name', { r: fr, g: fg, b: fb }).then((name) => {
       this.foregroundName = name;
@@ -540,6 +568,10 @@ export const UIStore = {
     // Met à jour la couleur d'arrière-plan (format HSL)
     // Update background color (HSL format)
     this.backgroundHsl = store.background_hsl;
+
+    // Met à jour la couleur d'arrière-plan (format HSV)
+    // Update background color (HSV format)
+    this.backgroundHsv = store.background_hsv;
 
     // Recherche le nom CSS exact / Look up exact CSS name
     invoke<string>('get_color_name', { r: br, g: bg, b: bb }).then((name) => {

@@ -122,6 +122,8 @@ function formatTemplate(template: string, store: UIStore): string {
     .replace(/%b\.hex%/g, store.backgroundHex)
     .replace(/%f\.hsl%/g, store.foregroundHsl)
     .replace(/%b\.hsl%/g, store.backgroundHsl)
+    .replace(/%f\.hsv%/g, store.foregroundHsv)
+    .replace(/%b\.hsv%/g, store.backgroundHsv)
     .replace(/%cr%/g, store.contrastRatio)
     .replace(/%crr%/g, store.contrastRatio)
     .replace(/%1\.4\.3%/g, store.level143Regular ? 'Pass' : 'Fail')

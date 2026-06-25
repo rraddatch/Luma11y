@@ -13,6 +13,12 @@ const RGB_RE = /^(?:rgb\(\s*)?(\d{1,3})\s*[,\s]\s*(\d{1,3})\s*[,\s]\s*(\d{1,3})\
 // A valid component lies within the 0-255 range.
 const inRange = (n: number) => n >= 0 && n <= 255;
 
+// RGB [r, g, b] → chaîne CSS rgb(). Retourne la couleur en valeur css
+// RGB [r, g, b] → CSS rgb() string. Return color in css value
+export function rgbToCss(v: number[]): string {
+  return `rgb(${v[0]}, ${v[1]}, ${v[2]})`;
+}
+
 // RGB: aucune conversion, on passe par le chemin RGB direct (update_store_rgb).
 //
 // RGB: no conversion, it goes through the direct RGB path (update_store_rgb).

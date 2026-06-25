@@ -22,6 +22,9 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { t } from '../i18n';
 import { srOnly } from './shared-styles';
+import { rgbToCss } from '../colors/rgb';
+import { hslToCss } from '../colors/hsl';
+import { hsvToCss } from '../colors/hsv';
 
 // Définition des canaux par format de couleur (ordre = ordre d'affichage).
 //   - command / argKeys : commande backend qui convertit + met à jour le store
@@ -59,7 +62,7 @@ const FORMAT_CHANNELS: Record<string, FormatChannels> = {
   rgb: {
     command: 'update_store_rgb',
     argKeys: ['r', 'g', 'b'],
-    toCss: (v) => `rgb(${v[0]}, ${v[1]}, ${v[2]})`,
+    toCss: rgbToCss,
     staticBase: [0, 0, 0],
     channels: [
       { letter: 'R', labelKey: 'color.red', max: 255 },
@@ -70,7 +73,7 @@ const FORMAT_CHANNELS: Record<string, FormatChannels> = {
   hsl: {
     command: 'update_store_hsl',
     argKeys: ['h', 's', 'l'],
-    toCss: (v) => `hsl(${v[0]}, ${v[1]}%, ${v[2]}%)`,
+    toCss: hslToCss,
     channels: [
       { letter: 'H', labelKey: 'color.hue', max: 360 },
       { letter: 'S', labelKey: 'color.saturation', max: 100 },
@@ -80,6 +83,7 @@ const FORMAT_CHANNELS: Record<string, FormatChannels> = {
   hsv: {
     command: 'update_store_hsv',
     argKeys: ['h', 's', 'v'],
+    toCss: hsvToCss,
     channels: [
       { letter: 'H', labelKey: 'color.hue', max: 360 },
       { letter: 'S', labelKey: 'color.saturation', max: 100 },
