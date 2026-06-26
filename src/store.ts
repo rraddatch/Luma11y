@@ -30,8 +30,8 @@ export interface ColorFormatValue {
 // (représentation interne) et est présenté en "rgb(r, g, b)" pour l'affichage.
 // Builds the id -> displayed value map. `rgb` comes in as "r, g, b" (internal
 // representation) and is presented as "rgb(r, g, b)" for display.
-function colorValues(hex: string, rgb: string, hsl: string, hsv: string): Record<string, string> {
-  return { hex, rgb: `rgb(${rgb})`, hsl, hsv };
+function colorValues(hex: string, rgb: string, hsl: string, hsv: string, lab: string): Record<string, string> {
+  return { hex, rgb: `rgb(${rgb})`, hsl, hsv, lab };
 }
 
 // Interface pour le store Tauri (état global côté backend)
@@ -56,6 +56,10 @@ export interface BackendStore {
   // Foreground color in HSV format "hsv(h, s%, v%)"
   foreground_hsv: string;
 
+  // Couleur de premier plan au format CIE L*a*b* "lab(l, a, b)"
+  // Foreground color in CIE L*a*b* format "lab(l, a, b)"
+  foreground_lab: string;
+
   /// Si la couleur est sombre
   /// If the colour is dark
   foreground_is_dark: boolean;
@@ -75,6 +79,10 @@ export interface BackendStore {
   // Couleur d'arrière-plan au format HSV "hsv(h, s%, v%)"
   // Background color in HSV format "hsv(h, s%, v%)"
   background_hsv: string;
+
+  // Couleur d'arrière-plan au format CIE L*a*b* "lab(l, a, b)"
+  // Background color in CIE L*a*b* format "lab(l, a, b)"
+  background_lab: string;
 
   /// Si la couleur est sombre
   /// If the colour is dark
@@ -129,6 +137,10 @@ export interface UIStore {
   // Foreground color in HSV format "hsv(h, s%, v%)"
   foregroundHsv: string;
 
+  // Couleur de premier plan au format CIE L*a*b* "lab(l, a, b)"
+  // Foreground color in CIE L*a*b* format "lab(l, a, b)"
+  foregroundLab: string;
+
   // Nom CSS de la couleur de premier plan (vide si pas de correspondance exacte)
   // CSS name of foreground color (empty if no exact match)
   foregroundName: string;
@@ -152,6 +164,10 @@ export interface UIStore {
   // Couleur d'arrière-plan au format HSV "hsv(h, s%, v%)"
   // Background color in HSV format "hsv(h, s%, v%)"
   backgroundHsv: string;
+
+  // Couleur d'arrière-plan au format CIE L*a*b* "lab(l, a, b)"
+  // Background color in CIE L*a*b* format "lab(l, a, b)"
+  backgroundLab: string;
 
   // Nom CSS de la couleur d'arrière-plan (vide si pas de correspondance exacte)
   // CSS name of background color (empty if no exact match)
@@ -292,6 +308,10 @@ export const UIStore = {
   // Initial state: empty foreground HSV
   foregroundHsv: '',
 
+  // État initial : Lab de premier plan vide
+  // Initial state: empty foreground Lab
+  foregroundLab: '',
+
   // Nom CSS de la couleur de premier plan
   // CSS name of foreground color
   foregroundName: '',
@@ -315,6 +335,10 @@ export const UIStore = {
   // État initial : HSV d'arrière-plan vide
   // Initial state: empty background HSV
   backgroundHsv: '',
+
+  // État initial : Lab d'arrière-plan vide
+  // Initial state: empty background Lab
+  backgroundLab: '',
 
   // Nom CSS de la couleur d'arrière-plan
   // CSS name of background color
@@ -352,13 +376,13 @@ export const UIStore = {
   // the colorFormats registry
   get foregroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv);
+    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv, self.foregroundLab);
     return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
   },
 
   get backgroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv);
+    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv, self.backgroundLab);
     return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
   },
 
@@ -366,13 +390,13 @@ export const UIStore = {
   // Value shown in the color preview, depending on the selected format radio.
   get foregroundDisplayValue(): string {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv);
+    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv, self.foregroundLab);
     return values[self.foregroundFormat] ?? self.foregroundHex;
   },
 
   get backgroundDisplayValue(): string {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv);
+    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv, self.backgroundLab);
     return values[self.backgroundFormat] ?? self.backgroundHex;
   },
 
@@ -474,6 +498,10 @@ export const UIStore = {
   // Applique un changement émis par les sliders.
   // Applies a change emitted by the sliders.
   async applyColorChange(this: UIStore, key: 'foreground' | 'background', detail: { command: string; args: Record<string, number> }) {
+    // La conversion est faite côté backend
+    // on n'envoie que la commande et ses composantes.
+    // The conversion is done on the backend side
+    // we only send the command and its components.
     try {
       await invoke(detail.command, { key, ...detail.args });
     } catch (error) {
@@ -544,6 +572,10 @@ export const UIStore = {
     // Update foreground color (HSV format)
     this.foregroundHsv = store.foreground_hsv;
 
+    // Met à jour la couleur de premier plan (format Lab)
+    // Update foreground color (Lab format)
+    this.foregroundLab = store.foreground_lab;
+
     // Recherche le nom CSS exact / Look up exact CSS name
     invoke<string>('get_color_name', { r: fr, g: fg, b: fb }).then((name) => {
       this.foregroundName = name;
@@ -572,6 +604,7 @@ export const UIStore = {
     // Met à jour la couleur d'arrière-plan (format HSV)
     // Update background color (HSV format)
     this.backgroundHsv = store.background_hsv;
+    this.backgroundLab = store.background_lab;
 
     // Recherche le nom CSS exact / Look up exact CSS name
     invoke<string>('get_color_name', { r: br, g: bg, b: bb }).then((name) => {

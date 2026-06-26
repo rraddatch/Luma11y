@@ -2,7 +2,7 @@
 // color.rs - Color manipulation and store update functions
 // =============================================================================
 
-use palette::{FromColor, Hsl, Hsv, Srgb};
+use palette::{FromColor, Hsl, Hsv, Lab, Srgb};
 use palette::color_difference::Wcag21RelativeContrast;
 use crate::store::ResultStore;
 use crate::picker::common::ColorPickerResult;
@@ -65,6 +65,30 @@ pub fn hsv_to_rgb(h: u16, s: u8, v: u8) -> (u8, u8, u8) {
     (rgb.red, rgb.green, rgb.blue)
 }
 
+/// Sérialise une couleur RGB en chaîne CIE L*a*b* "lab(l, a, b)" (composantes
+/// arrondies ; a/b peuvent être négatifs).
+///
+/// Serializes an RGB color into a CIE L*a*b* string "lab(l, a, b)" (rounded
+/// components; a/b may be negative).
+pub fn rgb_to_lab_string(rgb: (u8, u8, u8)) -> String {
+    let lab = Lab::from_color(srgb_from_u8(rgb)); // (point blanc D65)
+    let l = lab.l.round() as i16;
+    let a = lab.a.round() as i16;
+    let b = lab.b.round() as i16;
+    format!("lab({}, {}, {})", l, a, b)
+}
+
+/// Convertit une couleur CIE L*a*b* (l: 0-100, a/b ~ -128..127) en composantes RGB.
+/// La couleur résultante est ramenée dans le gamut sRGB par `palette`.
+///
+/// Converts a CIE L*a*b* color (l: 0-100, a/b ~ -128..127) into RGB components.
+/// The resulting color is clamped to the sRGB gamut by `palette`.
+pub fn lab_to_rgb(l: i16, a: i16, b: i16) -> (u8, u8, u8) {
+    let lab = Lab::new(l as f64, a as f64, b as f64);
+    let rgb = Srgb::from_color(lab).into_format::<u8>();
+    (rgb.red, rgb.green, rgb.blue)
+}
+
 /// Convertit une saisie hexadécimale (#abc / #aabbcc, le # est optionnel) en RGB.
 /// Retourne None si la chaîne n'est pas une notation hex valide.
 ///
@@ -111,27 +135,14 @@ pub fn floor_ratio(raw: f64) -> f64 {
 /// * `store` - Le store à mettre à jour / The store to update
 /// * `result` - Le résultat du color picker / The color picker result
 pub fn update_results_from_picker(store: &mut ResultStore, result: &ColorPickerResult) {
-    if let Some((r, g, b)) = result.foreground {
-        store.foreground_rgb = (r, g, b);
-        store.foreground_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
-        store.foreground_hsl = rgb_to_hsl_string((r, g, b));
-        store.foreground_is_dark = is_dark((r, g, b));
+    // Recalcule tous les formats dérivés (hex, hsl, hsv, lab)
+    // et les ratios de contraste depuis le RGB capturé.
+    // Recomputes all derived formats (hex, hsl, hsv, lab)
+    // and the contrast ratios from the captured RGB.
+    if let Some(rgb) = result.foreground {
+        crate::store::apply_color(store, "foreground", rgb, None);
     }
-
-    if let Some((r, g, b)) = result.background {
-        store.background_rgb = (r, g, b);
-        store.background_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
-        store.background_hsl = rgb_to_hsl_string((r, g, b));
-        store.background_is_dark = is_dark((r, g, b));
+    if let Some(rgb) = result.background {
+        crate::store::apply_color(store, "background", rgb, None);
     }
-
-    // Ratio de contraste (brut + arrondi vers le bas)
-    // Contrast ratio (raw + floor-rounded)
-    store.contrast_ratio_raw = contrast_ratio(store.foreground_rgb, store.background_rgb);
-    store.contrast_ratio_rounded = floor_ratio(store.contrast_ratio_raw);
-
-    // Ratio de contraste entre l'arrière-plan et le blanc / noir
-    // Contrast ratio between background and white / black
-    store.background_contrast_with_white = contrast_ratio(store.background_rgb, (255, 255, 255));
-    store.background_contrast_with_black = contrast_ratio(store.background_rgb, (0, 0, 0));
 }

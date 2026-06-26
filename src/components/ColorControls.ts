@@ -25,6 +25,7 @@ import { srOnly } from './shared-styles';
 import { rgbToCss } from '../colors/rgb';
 import { hslToCss } from '../colors/hsl';
 import { hsvToCss } from '../colors/hsv';
+import { labToCss } from '../colors/lab';
 
 // Définition des canaux par format de couleur (ordre = ordre d'affichage).
 //   - command / argKeys : commande backend qui convertit + met à jour le store
@@ -49,7 +50,7 @@ import { hsvToCss } from '../colors/hsv';
 //                         for independent channels (RGB); absent for HSL (S/L have
 //                         no meaningful fixed hue) → no "colored" mode.
 // The `hex` format reuses the RGB channels (see channelFormat).
-interface ChannelDef { letter: string; labelKey: string; max: number; }
+interface ChannelDef { letter: string; labelKey: string; max: number; min?: number; }
 interface FormatChannels {
   command: string;
   argKeys: string[];
@@ -88,6 +89,16 @@ const FORMAT_CHANNELS: Record<string, FormatChannels> = {
       { letter: 'H', labelKey: 'color.hue', max: 360 },
       { letter: 'S', labelKey: 'color.saturation', max: 100 },
       { letter: 'V', labelKey: 'color.value_component', max: 100 },
+    ],
+  },
+  lab: {
+    command: 'update_store_lab',
+    argKeys: ['l', 'a', 'b'],
+    toCss: labToCss,
+    channels: [
+      { letter: 'L', labelKey: 'color.lightness', max: 100 },
+      { letter: 'a', labelKey: 'color.lab_a', min: -128, max: 128 },
+      { letter: 'b', labelKey: 'color.lab_b', min: -128, max: 128 },
     ],
   },
 };
@@ -182,14 +193,14 @@ export class ColorControls extends LitElement {
     // are available only when the format defines toCss (see availableModes).
     const toCss = cfg.toCss!;
 
-    // Valeur maximale du canal qu'on balaie (255 pour RGB, 360 pour H, 100 pour S/L…).
-    // Max value of the swept channel (255 for RGB, 360 for H, 100 for S/L…).
-    const max = cfg.channels[index].max;
+    // Bornes du canal qu'on balaie (ex. RGB 0..255, H 0..360, a*/b* -128..128).
+    // Bounds of the swept channel (e.g. RGB 0..255, H 0..360, a*/b* -128..128).
+    const { min = 0, max } = cfg.channels[index];
 
-    // 7 arrêts répartis sur [0, max]. Plusieurs arrêts sont nécessaires pour les
+    // 7 arrêts répartis sur [min, max]. Plusieurs arrêts sont nécessaires pour les
     // canaux non monotones (teinte : 0 et 360 = rouge → un dégradé 2 points serait
     // plat ; luminosité : noir → couleur → blanc).
-    // 7 stops spread over [0, max]. Multiple stops are required for non-monotonic
+    // 7 stops spread over [min, max]. Multiple stops are required for non-monotonic
     // channels (hue: 0 and 360 = red → a 2-stop gradient would be flat; lightness:
     // black → color → white).
     const STOPS = 7;
@@ -198,7 +209,7 @@ export class ColorControls extends LitElement {
       // On copie les autres composantes et on ne fait varier que le canal `index`.
       // Copy the other components and vary only channel `index`.
       const vals = [...others];
-      vals[index] = Math.round((max * i) / (STOPS - 1));
+      vals[index] = min + Math.round(((max - min) * i) / (STOPS - 1));
       stops.push(toCss(vals));
     }
 
@@ -212,7 +223,9 @@ export class ColorControls extends LitElement {
   private get channelValues(): [number, number, number] {
     if (this.channelFormat === 'rgb') return this.rgbValues;
     const entry = this.formats.find((f) => f.id === this.channelFormat);
-    const nums = (entry?.value.match(/\d+/g) ?? []).map(Number);
+    // -?\d+ : les composantes peuvent être négatives (a*/b* en Lab).
+    // -?\d+: components may be negative (a*/b* in Lab).
+    const nums = (entry?.value.match(/-?\d+/g) ?? []).map(Number);
     return [nums[0] ?? 0, nums[1] ?? 0, nums[2] ?? 0];
   }
 
@@ -233,8 +246,9 @@ export class ColorControls extends LitElement {
   // If a drag is in progress, also updates the frozen state.
   private applyChannel(index: number, value: number) {
     const cfg = this.channelConfig;
+    const ch = cfg.channels[index];
     const values = [...this.displayValues];
-    values[index] = Math.min(cfg.channels[index].max, Math.max(0, Math.round(value)));
+    values[index] = Math.min(ch.max, Math.max(ch.min ?? 0, Math.round(value)));
 
     if (this.dragValues) this.dragValues = values;
 
@@ -436,14 +450,14 @@ export class ColorControls extends LitElement {
         <input
           aria-label="${t('color.component_value')}"
           aria-describedby="section-label"
-          type="number" min="0" max="${ch.max}" class="rgb-input"
+          type="number" min="${ch.min ?? 0}" max="${ch.max}" class="rgb-input"
           .value="${String(value)}"
           @change="${(e: Event) => this.onChange(index, +(e.target as HTMLInputElement).value)}"
         />
         <input
           aria-label="${t('color.component_slider')}"
           aria-describedby="section-label"
-          type="range" min="0" max="${ch.max}"
+          type="range" min="${ch.min ?? 0}" max="${ch.max}"
           .value="${String(value)}"
           @input="${(e: Event) => this.onInput(index, +(e.target as HTMLInputElement).value)}"
           @change="${() => this.onSliderCommit()}"

@@ -758,6 +758,7 @@ pub fn run() {
             store::update_store_rgb,
             store::update_store_hsl,
             store::update_store_hsv,
+            store::update_store_lab,
             store::update_store_hex,
             store::clear_store,
             store::get_color_name,

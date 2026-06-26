@@ -16,6 +16,8 @@
     "saturation": "Saturation",
     "lightness": "Luminosité",
     "value_component": "Valeur",
+    "lab_a": "a* (vert–rouge)",
+    "lab_b": "b* (bleu–jaune)",
     "component_value": "Valeur de la composante couleur",
     "component_slider": "Curseur de la composante couleur",
     "slider_mode": "Mode d'affichage des curseurs",
@@ -27,7 +29,8 @@
     "hex": "Hex",
     "rgb": "RGB",
     "hsl": "HSL",
-    "hsv": "HSV"
+    "hsv": "HSV",
+    "lab": "Lab"
   },
   "results": {
     "contrast_ratio": "Taux de contraste",
@@ -80,6 +83,8 @@
     "tag_b_hsl": "Couleur d'arrière-plan (HSL)",
     "tag_f_hsv": "Couleur de premier plan (HSV)",
     "tag_b_hsv": "Couleur d'arrière-plan (HSV)",
+    "tag_f_lab": "Couleur de premier plan (Lab)",
+    "tag_b_lab": "Couleur d'arrière-plan (Lab)",
     "tag_cr": "Ratio de contraste (brut)",
     "tag_crr": "Ratio de contraste (arrondi)",
     "tag_1_4_3": "Résultat 1.4.3 Contraste (Minimum)",
