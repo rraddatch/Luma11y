@@ -30,8 +30,8 @@ export interface ColorFormatValue {
 // (représentation interne) et est présenté en "rgb(r, g, b)" pour l'affichage.
 // Builds the id -> displayed value map. `rgb` comes in as "r, g, b" (internal
 // representation) and is presented as "rgb(r, g, b)" for display.
-function colorValues(hex: string, rgb: string, hsl: string, hsv: string, lab: string): Record<string, string> {
-  return { hex, rgb: `rgb(${rgb})`, hsl, hsv, lab };
+function colorValues(hex: string, rgb: string, hsl: string, hsv: string, lab: string, oklch: string): Record<string, string> {
+  return { hex, rgb: `rgb(${rgb})`, hsl, hsv, lab, oklch };
 }
 
 // Interface pour le store Tauri (état global côté backend)
@@ -60,6 +60,10 @@ export interface BackendStore {
   // Foreground color in CIE L*a*b* format "lab(l, a, b)"
   foreground_lab: string;
 
+  // Couleur de premier plan au format OKLCH "oklch(l c h)"
+  // Foreground color in OKLCH format "oklch(l c h)"
+  foreground_oklch: string;
+
   /// Si la couleur est sombre
   /// If the colour is dark
   foreground_is_dark: boolean;
@@ -83,6 +87,10 @@ export interface BackendStore {
   // Couleur d'arrière-plan au format CIE L*a*b* "lab(l, a, b)"
   // Background color in CIE L*a*b* format "lab(l, a, b)"
   background_lab: string;
+
+  // Couleur d'arrière-plan au format OKLCH "oklch(l c h)"
+  // Background color in OKLCH format "oklch(l c h)"
+  background_oklch: string;
 
   /// Si la couleur est sombre
   /// If the colour is dark
@@ -141,6 +149,10 @@ export interface UIStore {
   // Foreground color in CIE L*a*b* format "lab(l, a, b)"
   foregroundLab: string;
 
+  // Couleur de premier plan au format OKLCH "oklch(l c h)"
+  // Foreground color in OKLCH format "oklch(l c h)"
+  foregroundOklch: string;
+
   // Nom CSS de la couleur de premier plan (vide si pas de correspondance exacte)
   // CSS name of foreground color (empty if no exact match)
   foregroundName: string;
@@ -168,6 +180,10 @@ export interface UIStore {
   // Couleur d'arrière-plan au format CIE L*a*b* "lab(l, a, b)"
   // Background color in CIE L*a*b* format "lab(l, a, b)"
   backgroundLab: string;
+
+  // Couleur d'arrière-plan au format OKLCH "oklch(l c h)"
+  // Background color in OKLCH format "oklch(l c h)"
+  backgroundOklch: string;
 
   // Nom CSS de la couleur d'arrière-plan (vide si pas de correspondance exacte)
   // CSS name of background color (empty if no exact match)
@@ -312,6 +328,10 @@ export const UIStore = {
   // Initial state: empty foreground Lab
   foregroundLab: '',
 
+  // État initial : OKLCH de premier plan vide
+  // Initial state: empty foreground OKLCH
+  foregroundOklch: '',
+
   // Nom CSS de la couleur de premier plan
   // CSS name of foreground color
   foregroundName: '',
@@ -339,6 +359,10 @@ export const UIStore = {
   // État initial : Lab d'arrière-plan vide
   // Initial state: empty background Lab
   backgroundLab: '',
+
+  // État initial : OKLCH d'arrière-plan vide
+  // Initial state: empty background OKLCH
+  backgroundOklch: '',
 
   // Nom CSS de la couleur d'arrière-plan
   // CSS name of background color
@@ -376,13 +400,13 @@ export const UIStore = {
   // the colorFormats registry
   get foregroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv, self.foregroundLab);
+    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv, self.foregroundLab, self.foregroundOklch);
     return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
   },
 
   get backgroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv, self.backgroundLab);
+    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv, self.backgroundLab, self.backgroundOklch);
     return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
   },
 
@@ -390,13 +414,13 @@ export const UIStore = {
   // Value shown in the color preview, depending on the selected format radio.
   get foregroundDisplayValue(): string {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv, self.foregroundLab);
+    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv, self.foregroundLab, self.foregroundOklch);
     return values[self.foregroundFormat] ?? self.foregroundHex;
   },
 
   get backgroundDisplayValue(): string {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv, self.backgroundLab);
+    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv, self.backgroundLab, self.backgroundOklch);
     return values[self.backgroundFormat] ?? self.backgroundHex;
   },
 
@@ -576,6 +600,10 @@ export const UIStore = {
     // Update foreground color (Lab format)
     this.foregroundLab = store.foreground_lab;
 
+    // Met à jour la couleur de premier plan (format OKLCH)
+    // Update foreground color (OKLCH format)
+    this.foregroundOklch = store.foreground_oklch;
+
     // Recherche le nom CSS exact / Look up exact CSS name
     invoke<string>('get_color_name', { r: fr, g: fg, b: fb }).then((name) => {
       this.foregroundName = name;
@@ -605,6 +633,7 @@ export const UIStore = {
     // Update background color (HSV format)
     this.backgroundHsv = store.background_hsv;
     this.backgroundLab = store.background_lab;
+    this.backgroundOklch = store.background_oklch;
 
     // Recherche le nom CSS exact / Look up exact CSS name
     invoke<string>('get_color_name', { r: br, g: bg, b: bb }).then((name) => {

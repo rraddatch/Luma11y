@@ -43,6 +43,10 @@ pub struct ResultStore {
     /// Foreground color in CIE L*a*b* format "lab(l, a, b)"
     pub foreground_lab: String,
 
+    /// Couleur de premier plan au format OKLCH "oklch(l c h)"
+    /// Foreground color in OKLCH format "oklch(l c h)"
+    pub foreground_oklch: String,
+
     /// Si la couleur est sombre
     /// If the colour is dark
     pub foreground_is_dark: bool,
@@ -66,6 +70,10 @@ pub struct ResultStore {
     /// Couleur d'arrière-plan au format CIE L*a*b* "lab(l, a, b)"
     /// Background color in CIE L*a*b* format "lab(l, a, b)"
     pub background_lab: String,
+
+    /// Couleur d'arrière-plan au format OKLCH "oklch(l c h)"
+    /// Background color in OKLCH format "oklch(l c h)"
+    pub background_oklch: String,
 
     /// Si la couleur est sombre
     /// If the colour is dark
@@ -115,12 +123,14 @@ impl Default for ResultStore {
             foreground_hsl: color::rgb_to_hsl_string((fr, fg, fb)),
             foreground_hsv: color::rgb_to_hsv_string((fr, fg, fb)),
             foreground_lab: color::rgb_to_lab_string((fr, fg, fb)),
+            foreground_oklch: color::rgb_to_oklch_string((fr, fg, fb)),
             foreground_is_dark: color::is_dark((fr, fg, fb)),
             background_rgb: config::DEFAULT_BACKGROUND_RGB,
             background_hex: format!("#{:02X}{:02X}{:02X}", br, bg, bb),
             background_hsl: color::rgb_to_hsl_string((br, bg, bb)),
             background_hsv: color::rgb_to_hsv_string((br, bg, bb)),
             background_lab: color::rgb_to_lab_string((br, bg, bb)),
+            background_oklch: color::rgb_to_oklch_string((br, bg, bb)),
             background_is_dark: color::is_dark((br, bg, bb)),
             continue_mode: false,
             contrast_ratio_raw,
@@ -206,6 +216,7 @@ pub(crate) fn apply_color(store: &mut ResultStore, key: &str, rgb: (u8, u8, u8),
     let mut hsl = color::rgb_to_hsl_string(rgb);
     let mut hsv = color::rgb_to_hsv_string(rgb);
     let mut lab = color::rgb_to_lab_string(rgb);
+    let mut oklch = color::rgb_to_oklch_string(rgb);
 
     // Conserve la chaîne saisie pour le format édité (verbatim).
     // Keep the entered string for the edited format (verbatim).
@@ -214,6 +225,7 @@ pub(crate) fn apply_color(store: &mut ResultStore, key: &str, rgb: (u8, u8, u8),
             "hsl" => hsl = s,
             "hsv" => hsv = s,
             "lab" => lab = s,
+            "oklch" => oklch = s,
             _ => {}
         }
     }
@@ -227,6 +239,7 @@ pub(crate) fn apply_color(store: &mut ResultStore, key: &str, rgb: (u8, u8, u8),
             store.foreground_hsl = hsl;
             store.foreground_hsv = hsv;
             store.foreground_lab = lab;
+            store.foreground_oklch = oklch;
             store.foreground_is_dark = dark;
         }
         "background" => {
@@ -235,6 +248,7 @@ pub(crate) fn apply_color(store: &mut ResultStore, key: &str, rgb: (u8, u8, u8),
             store.background_hsl = hsl;
             store.background_hsv = hsv;
             store.background_lab = lab;
+            store.background_oklch = oklch;
             store.background_is_dark = dark;
         }
         _ => return false, // Clé inconnue / Unknown key
@@ -297,6 +311,18 @@ pub fn update_store_lab(app: AppHandle, state: tauri::State<AppState>, key: Stri
     let display = format!("lab({}, {}, {})", l, a, b);
     let mut store = state.store.lock().unwrap();
     if apply_color(&mut store, &key, rgb, Some(("lab", display))) {
+        let _ = app.emit("store-updated", store.clone());
+    }
+}
+
+/// Met à jour une couleur depuis des composantes OKLCH (l: 0-1, c, h: degrés).
+/// Updates a color from OKLCH components (l: 0-1, c, h: degrees).
+#[tauri::command]
+pub fn update_store_oklch(app: AppHandle, state: tauri::State<AppState>, key: String, l: f64, c: f64, h: f64) {
+    let rgb = color::oklch_to_rgb(l, c, h);
+    let display = format!("oklch({:.3} {:.3} {:.0})", l, c, h);
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, rgb, Some(("oklch", display))) {
         let _ = app.emit("store-updated", store.clone());
     }
 }

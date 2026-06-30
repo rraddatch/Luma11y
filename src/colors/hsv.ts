@@ -28,11 +28,9 @@ export function hsvToCss(v: number[]): string {
   return `hsl(${v[0]}, ${Math.round(sl * 100)}%, ${Math.round(l * 100)}%)`;
 }
 
-// Extrait et valide h, s, v ; la conversion HSV -> RGB est faite côté Rust via
-// `palette` (cf. update_store_hsv).
+// Extrait et valide h, s, v
 //
-// Extracts and validates h, s, v; the HSV -> RGB conversion is done on the Rust
-// side through `palette` (see update_store_hsv).
+// Extracts and validates h, s, v
 export const hsvFormat: ColorFormat = {
   id: 'hsv',
 

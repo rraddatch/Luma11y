@@ -2,7 +2,7 @@
 // color.rs - Color manipulation and store update functions
 // =============================================================================
 
-use palette::{FromColor, Hsl, Hsv, Lab, Srgb};
+use palette::{FromColor, Hsl, Hsv, Lab, Oklch, Srgb};
 use palette::color_difference::Wcag21RelativeContrast;
 use crate::store::ResultStore;
 use crate::picker::common::ColorPickerResult;
@@ -79,13 +79,38 @@ pub fn rgb_to_lab_string(rgb: (u8, u8, u8)) -> String {
 }
 
 /// Convertit une couleur CIE L*a*b* (l: 0-100, a/b ~ -128..127) en composantes RGB.
-/// La couleur résultante est ramenée dans le gamut sRGB par `palette`.
+/// La couleur résultante est ramenée dans le gamut sRGB.
 ///
 /// Converts a CIE L*a*b* color (l: 0-100, a/b ~ -128..127) into RGB components.
-/// The resulting color is clamped to the sRGB gamut by `palette`.
+/// The resulting color is clamped to the sRGB gamut.
 pub fn lab_to_rgb(l: i16, a: i16, b: i16) -> (u8, u8, u8) {
     let lab = Lab::new(l as f64, a as f64, b as f64);
     let rgb = Srgb::from_color(lab).into_format::<u8>();
+    (rgb.red, rgb.green, rgb.blue)
+}
+
+/// Sérialise une couleur RGB en chaîne CSS OKLCH "oklch(l c h)".
+/// L ∈ [0,1] (3 décimales), C chroma (3 décimales), H teinte en degrés.
+///
+/// Serializes an RGB color into a CSS OKLCH string "oklch(l c h)".
+/// L ∈ [0,1] (3 decimals), C chroma (3 decimals), H hue in degrees.
+pub fn rgb_to_oklch_string(rgb: (u8, u8, u8)) -> String {
+    let oklch = Oklch::from_color(srgb_from_u8(rgb));
+    // Teinte indéfinie pour un gris (chroma ≈ 0) : on retombe sur 0.
+    // Hue is undefined for a gray (chroma ≈ 0): fall back to 0.
+    let h = oklch.hue.into_positive_degrees();
+    let h = if h.is_finite() { h } else { 0.0 };
+    format!("oklch({:.3} {:.3} {:.0})", oklch.l, oklch.chroma, h)
+}
+
+/// Convertit une couleur OKLCH (l: 0-1, c: chroma, h: degrés) en composantes RGB.
+/// La couleur résultante est ramenée dans le gamut sRGB.
+///
+/// Converts an OKLCH color (l: 0-1, c: chroma, h: degrees) into RGB components.
+/// The resulting color is clamped to the sRGB gamut.
+pub fn oklch_to_rgb(l: f64, c: f64, h: f64) -> (u8, u8, u8) {
+    let oklch = Oklch::new(l, c, h);
+    let rgb = Srgb::from_color(oklch).into_format::<u8>();
     (rgb.red, rgb.green, rgb.blue)
 }
 

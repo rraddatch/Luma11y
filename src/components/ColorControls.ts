@@ -26,10 +26,12 @@ import { rgbToCss } from '../colors/rgb';
 import { hslToCss } from '../colors/hsl';
 import { hsvToCss } from '../colors/hsv';
 import { labToCss } from '../colors/lab';
+import { oklchToCss } from '../colors/oklch';
 
 // Définition des canaux par format de couleur (ordre = ordre d'affichage).
 //   - command / argKeys : commande backend qui convertit + met à jour le store
-//   - max               : borne du slider et du champ numérique
+//   - max / min / step  : bornes et pas du slider et du champ numérique
+//                         (step fractionnaire pour OKLCH : L/C en décimales).
 //   - toCss             : couleur CSS à partir des composantes [c0, c1, c2].
 //                         Présent = modes coloré/dynamique disponibles ; absent
 //                         (ex. hsv, sans fonction CSS) = sliders standards seulement.
@@ -50,13 +52,24 @@ import { labToCss } from '../colors/lab';
 //                         for independent channels (RGB); absent for HSL (S/L have
 //                         no meaningful fixed hue) → no "colored" mode.
 // The `hex` format reuses the RGB channels (see channelFormat).
-interface ChannelDef { letter: string; labelKey: string; max: number; min?: number; }
+// min : borne inférieure (défaut 0 ; négative pour a*/b* en Lab).
+// step : pas du slider/champ (défaut 1 ; decimal pour OKLCH).
+// min: lower bound (default 0; negative for a*/b* in Lab).
+// step: slider/input step (default 1; decimal for OKLCH).
+interface ChannelDef { letter: string; labelKey: string; max: number; min?: number; step?: number; }
 interface FormatChannels {
   command: string;
   argKeys: string[];
   channels: ChannelDef[];
   toCss?: (v: number[]) => string;
   staticBase?: number[];
+}
+
+// Arrondit `value` au multiple de `step` le plus proche (gère les pas < 1).
+// Rounds `value` to the nearest multiple of `step` (handles steps < 1).
+function roundToStep(value: number, step: number): number {
+  const inv = 1 / step;
+  return Math.round(value * inv) / inv;
 }
 
 const FORMAT_CHANNELS: Record<string, FormatChannels> = {
@@ -99,6 +112,16 @@ const FORMAT_CHANNELS: Record<string, FormatChannels> = {
       { letter: 'L', labelKey: 'color.lightness', max: 100 },
       { letter: 'a', labelKey: 'color.lab_a', min: -128, max: 128 },
       { letter: 'b', labelKey: 'color.lab_b', min: -128, max: 128 },
+    ],
+  },
+  oklch: {
+    command: 'update_store_oklch',
+    argKeys: ['l', 'c', 'h'],
+    toCss: oklchToCss,
+    channels: [
+      { letter: 'L', labelKey: 'color.lightness', max: 1, step: 0.001 },
+      { letter: 'C', labelKey: 'color.chroma', max: 0.4, step: 0.001 },
+      { letter: 'H', labelKey: 'color.hue', max: 360 },
     ],
   },
 };
@@ -195,7 +218,7 @@ export class ColorControls extends LitElement {
 
     // Bornes du canal qu'on balaie (ex. RGB 0..255, H 0..360, a*/b* -128..128).
     // Bounds of the swept channel (e.g. RGB 0..255, H 0..360, a*/b* -128..128).
-    const { min = 0, max } = cfg.channels[index];
+    const { min = 0, max, step = 1 } = cfg.channels[index];
 
     // 7 arrêts répartis sur [min, max]. Plusieurs arrêts sont nécessaires pour les
     // canaux non monotones (teinte : 0 et 360 = rouge → un dégradé 2 points serait
@@ -209,7 +232,7 @@ export class ColorControls extends LitElement {
       // On copie les autres composantes et on ne fait varier que le canal `index`.
       // Copy the other components and vary only channel `index`.
       const vals = [...others];
-      vals[index] = min + Math.round(((max - min) * i) / (STOPS - 1));
+      vals[index] = roundToStep(min + ((max - min) * i) / (STOPS - 1), step);
       stops.push(toCss(vals));
     }
 
@@ -223,9 +246,9 @@ export class ColorControls extends LitElement {
   private get channelValues(): [number, number, number] {
     if (this.channelFormat === 'rgb') return this.rgbValues;
     const entry = this.formats.find((f) => f.id === this.channelFormat);
-    // -?\d+ : les composantes peuvent être négatives (a*/b* en Lab).
-    // -?\d+: components may be negative (a*/b* in Lab).
-    const nums = (entry?.value.match(/-?\d+/g) ?? []).map(Number);
+    // -?\d*\.?\d+ : composantes éventuellement négatives (Lab) ou décimales (OKLCH).
+    // -?\d*\.?\d+: components possibly negative (Lab) or decimal (OKLCH).
+    const nums = (entry?.value.match(/-?\d*\.?\d+/g) ?? []).map(Number);
     return [nums[0] ?? 0, nums[1] ?? 0, nums[2] ?? 0];
   }
 
@@ -248,7 +271,7 @@ export class ColorControls extends LitElement {
     const cfg = this.channelConfig;
     const ch = cfg.channels[index];
     const values = [...this.displayValues];
-    values[index] = Math.min(ch.max, Math.max(ch.min ?? 0, Math.round(value)));
+    values[index] = Math.min(ch.max, Math.max(ch.min ?? 0, roundToStep(value, ch.step ?? 1)));
 
     if (this.dragValues) this.dragValues = values;
 
@@ -402,7 +425,7 @@ export class ColorControls extends LitElement {
     }
 
     .rgb-input {
-      width: 4.5ch;
+      width: 5.5ch;
       text-align: center;
       font-variant-numeric: tabular-nums;
       font-size: 0.8rem;
@@ -450,14 +473,14 @@ export class ColorControls extends LitElement {
         <input
           aria-label="${t('color.component_value')}"
           aria-describedby="section-label"
-          type="number" min="${ch.min ?? 0}" max="${ch.max}" class="rgb-input"
+          type="number" min="${ch.min ?? 0}" max="${ch.max}" step="${ch.step ?? 1}" class="rgb-input"
           .value="${String(value)}"
           @change="${(e: Event) => this.onChange(index, +(e.target as HTMLInputElement).value)}"
         />
         <input
           aria-label="${t('color.component_slider')}"
           aria-describedby="section-label"
-          type="range" min="${ch.min ?? 0}" max="${ch.max}"
+          type="range" min="${ch.min ?? 0}" max="${ch.max}" step="${ch.step ?? 1}"
           .value="${String(value)}"
           @input="${(e: Event) => this.onInput(index, +(e.target as HTMLInputElement).value)}"
           @change="${() => this.onSliderCommit()}"

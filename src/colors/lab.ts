@@ -23,11 +23,9 @@ export function labToCss(v: number[]): string {
   return `lab(${v[0]} ${v[1]} ${v[2]})`;
 }
 
-// Le frontend extrait et valide l, a, b ; la conversion Lab -> RGB est faite côté
-// Rust via `palette` (cf. update_store_lab).
+// Le frontend extrait et valide l, a, b
 //
-// The frontend extracts and validates l, a, b; the Lab -> RGB conversion is done
-// on the Rust side through `palette` (see update_store_lab).
+// The frontend extracts and validates l, a, b
 export const labFormat: ColorFormat = {
   id: 'lab',
 
