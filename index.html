@@ -34,15 +34,16 @@
                 <div class="color-value">
                   <p class="color-name" x-show="$store.uiStore.foregroundName" x-text="$store.uiStore.foregroundName"></p>
                   <input
-                    x-data="{ snapshot: '' }"
+                    x-data="{ snapshot: '', focused: false }"
                     type="text"
                     class="hex-value"
                     :class="{ 'hex-secondary': $store.uiStore.foregroundName }"
-                    :value="$store.uiStore.foregroundHex"
-                    @focus="snapshot = $event.target.value"
-                    @input="$store.uiStore.updateHex('foreground', $event.target.value)"
-                    @keydown.escape="$event.target.value = snapshot; $store.uiStore.updateHex('foreground', snapshot)"
-                    @blur="if ($store.uiStore.foregroundHexError || !$event.target.value.trim()) { $event.target.value = snapshot; $store.uiStore.updateHex('foreground', snapshot) }"
+                    x-effect="if (!focused) $el.value = $store.uiStore.foregroundDisplayValue"
+                    @focus="focused = true; snapshot = $event.target.value"
+                    @input="$store.uiStore.updateColorFromText('foreground', $event.target.value, true)"
+                    @keydown.enter="$store.uiStore.updateColorFromText('foreground', $event.target.value)"
+                    @keydown.escape="$event.target.value = snapshot; $store.uiStore.updateColorFromText('foreground', snapshot)"
+                    @blur="focused = false; $store.uiStore.updateColorFromText('foreground', $event.target.value); if ($store.uiStore.foregroundHexError || !$event.target.value.trim()) { $event.target.value = snapshot; $store.uiStore.updateColorFromText('foreground', snapshot) }"
                     aria-labelledby="foreground-title"
                     :aria-describedby="$store.uiStore.foregroundHexError ? 'foreground-error-message' : null"
                     :aria-invalid="$store.uiStore.foregroundHexError ? 'true' : null"
@@ -96,9 +97,12 @@
         <color-controls
           x-show="showFgControls" x-transition
           x-bind:rgb="$store.uiStore.foregroundRgb"
+          x-bind:formats="JSON.stringify($store.uiStore.foregroundFormats)"
+          x-bind:selected-format="$store.uiStore.foregroundFormat"
           x-bind:locale="$store.uiStore.locale"
           x-bind:label="$store.uiStore.t('color.foreground')"
-          @color-change="$store.uiStore.updateColor('foreground', $event.detail.component, $event.detail.value)"
+          @color-change="$store.uiStore.applyColorChange('foreground', $event.detail)"
+          @format-change="$store.uiStore.setColorFormat('foreground', $event.detail.format)"
         ></color-controls>
         <!-- Background Color -->
          <div class="wrapper"
@@ -114,21 +118,21 @@
                   <div class="color-value">
                     <p class="color-name" x-show="$store.uiStore.backgroundName" x-text="$store.uiStore.backgroundName"></p>
                     <input
-                      x-data="{ snapshot: '' }"
+                      x-data="{ snapshot: '', focused: false }"
                       type="text"
                       class="hex-value"
                       :class="{ 'hex-secondary': $store.uiStore.backgroundName }"
-                      :value="$store.uiStore.backgroundHex"
-                      @focus="snapshot = $event.target.value"
-                      @input="$store.uiStore.updateHex('background', $event.target.value)"
-                      @keydown.escape="$event.target.value = snapshot; $store.uiStore.updateHex('background', snapshot)"
-                      @blur="if ($store.uiStore.backgroundHexError || !$event.target.value.trim()) { $event.target.value = snapshot; $store.uiStore.updateHex('background', snapshot) }"
+                      x-effect="if (!focused) $el.value = $store.uiStore.backgroundDisplayValue"
+                      @focus="focused = true; snapshot = $event.target.value"
+                      @input="$store.uiStore.updateColorFromText('background', $event.target.value, true)"
+                      @keydown.enter="$store.uiStore.updateColorFromText('background', $event.target.value)"
+                      @keydown.escape="$event.target.value = snapshot; $store.uiStore.updateColorFromText('background', snapshot)"
+                      @blur="focused = false; $store.uiStore.updateColorFromText('background', $event.target.value); if ($store.uiStore.backgroundHexError || !$event.target.value.trim()) { $event.target.value = snapshot; $store.uiStore.updateColorFromText('background', snapshot) }"
                       aria-labelledby="background-title"
                       :aria-describedby="$store.uiStore.backgroundHexError ? 'background-error-message' : null"
                       :aria-invalid="$store.uiStore.backgroundHexError ? 'true' : null"
                       spellcheck="false"
                       autocomplete="off"
-                      maxlength="7"
                     />
                   </div>
                   <div role="alert">
@@ -168,9 +172,12 @@
         <color-controls
           x-show="showBgControls" x-transition
           x-bind:rgb="$store.uiStore.backgroundRgb"
+          x-bind:formats="JSON.stringify($store.uiStore.backgroundFormats)"
+          x-bind:selected-format="$store.uiStore.backgroundFormat"
           x-bind:locale="$store.uiStore.locale"
           x-bind:label="$store.uiStore.t('color.background')"
-          @color-change="$store.uiStore.updateColor('background', $event.detail.component, $event.detail.value)"
+          @color-change="$store.uiStore.applyColorChange('background', $event.detail)"
+          @format-change="$store.uiStore.setColorFormat('background', $event.detail.format)"
         ></color-controls>
       </div>
       <!-- Contrast Ratio -->

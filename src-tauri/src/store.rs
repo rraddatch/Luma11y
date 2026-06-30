@@ -31,6 +31,22 @@ pub struct ResultStore {
     /// Foreground color in hexadecimal format
     pub foreground_hex: String,
 
+    /// Couleur de premier plan au format HSL "hsl(h, s%, l%)"
+    /// Foreground color in HSL format "hsl(h, s%, l%)"
+    pub foreground_hsl: String,
+
+    /// Couleur de premier plan au format HSV "hsv(h, s%, v%)"
+    /// Foreground color in HSV format "hsv(h, s%, v%)"
+    pub foreground_hsv: String,
+
+    /// Couleur de premier plan au format CIE L*a*b* "lab(l, a, b)"
+    /// Foreground color in CIE L*a*b* format "lab(l, a, b)"
+    pub foreground_lab: String,
+
+    /// Couleur de premier plan au format OKLCH "oklch(l c h)"
+    /// Foreground color in OKLCH format "oklch(l c h)"
+    pub foreground_oklch: String,
+
     /// Si la couleur est sombre
     /// If the colour is dark
     pub foreground_is_dark: bool,
@@ -42,6 +58,22 @@ pub struct ResultStore {
     /// Couleur d'arrière-plan au format hexadécimal
     /// Background color in hexadecimal format
     pub background_hex: String,
+
+    /// Couleur d'arrière-plan au format HSL "hsl(h, s%, l%)"
+    /// Background color in HSL format "hsl(h, s%, l%)"
+    pub background_hsl: String,
+
+    /// Couleur d'arrière-plan au format HSV "hsv(h, s%, v%)"
+    /// Background color in HSV format "hsv(h, s%, v%)"
+    pub background_hsv: String,
+
+    /// Couleur d'arrière-plan au format CIE L*a*b* "lab(l, a, b)"
+    /// Background color in CIE L*a*b* format "lab(l, a, b)"
+    pub background_lab: String,
+
+    /// Couleur d'arrière-plan au format OKLCH "oklch(l c h)"
+    /// Background color in OKLCH format "oklch(l c h)"
+    pub background_oklch: String,
 
     /// Si la couleur est sombre
     /// If the colour is dark
@@ -88,9 +120,17 @@ impl Default for ResultStore {
             platform: "unknown",
             foreground_rgb: config::DEFAULT_FOREGROUND_RGB,
             foreground_hex: format!("#{:02X}{:02X}{:02X}", fr, fg, fb),
+            foreground_hsl: color::rgb_to_hsl_string((fr, fg, fb)),
+            foreground_hsv: color::rgb_to_hsv_string((fr, fg, fb)),
+            foreground_lab: color::rgb_to_lab_string((fr, fg, fb)),
+            foreground_oklch: color::rgb_to_oklch_string((fr, fg, fb)),
             foreground_is_dark: color::is_dark((fr, fg, fb)),
             background_rgb: config::DEFAULT_BACKGROUND_RGB,
             background_hex: format!("#{:02X}{:02X}{:02X}", br, bg, bb),
+            background_hsl: color::rgb_to_hsl_string((br, bg, bb)),
+            background_hsv: color::rgb_to_hsv_string((br, bg, bb)),
+            background_lab: color::rgb_to_lab_string((br, bg, bb)),
+            background_oklch: color::rgb_to_oklch_string((br, bg, bb)),
             background_is_dark: color::is_dark((br, bg, bb)),
             continue_mode: false,
             contrast_ratio_raw,
@@ -165,41 +205,135 @@ pub fn pick_color(app: AppHandle, state: tauri::State<AppState>, fg: bool) {
     }
 }
 
-/// Met à jour une valeur du store manuellement
-/// Manually updates a store value
-#[tauri::command]
-pub fn update_store(app: AppHandle, state: tauri::State<AppState>, key: String, r: u8, g: u8, b: u8) {
-    {
-        let mut store = state.store.lock().unwrap();
+/// Applique une couleur RGB à la clé donnée puis recalcule les dérivés
+/// (hex, hsl, sombre, ratios de contraste). Retourne false si la clé est inconnue.
+///
+/// Applies an RGB color to the given key then recomputes the derived values
+/// (hex, hsl, dark, contrast ratios). Returns false on an unknown key.
+pub(crate) fn apply_color(store: &mut ResultStore, key: &str, rgb: (u8, u8, u8), source: Option<(&str, String)>) -> bool {
+    let (r, g, b) = rgb;
+    let hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
+    let mut hsl = color::rgb_to_hsl_string(rgb);
+    let mut hsv = color::rgb_to_hsv_string(rgb);
+    let mut lab = color::rgb_to_lab_string(rgb);
+    let mut oklch = color::rgb_to_oklch_string(rgb);
 
-        // Met à jour la clé correspondante
-        // Update the corresponding key
-        match key.as_str() {
-            "foreground" => {
-                store.foreground_rgb = (r, g, b);
-                store.foreground_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
-                store.foreground_is_dark = color::is_dark((r, g, b));
-            }
-            "background" => {
-                store.background_rgb = (r, g, b);
-                store.background_hex = format!("#{:02X}{:02X}{:02X}", r, g, b);
-                store.background_is_dark = color::is_dark((r, g, b));
-            }
-            _ => return, // Clé inconnue / Unknown key
+    // Conserve la chaîne saisie pour le format édité (verbatim).
+    // Keep the entered string for the edited format (verbatim).
+    if let Some((fmt, s)) = source {
+        match fmt {
+            "hsl" => hsl = s,
+            "hsv" => hsv = s,
+            "lab" => lab = s,
+            "oklch" => oklch = s,
+            _ => {}
         }
+    }
 
-        // Recalcule le ratio de contraste (brut + arrondi vers le bas)
-        // Recalculate the contrast ratio (raw + floor-rounded)
-        store.contrast_ratio_raw = color::contrast_ratio(store.foreground_rgb, store.background_rgb);
-        store.contrast_ratio_rounded = color::floor_ratio(store.contrast_ratio_raw);
+    let dark = color::is_dark(rgb);
 
-        // Recalcule les contrastes arrière-plan vs blanc / noir
-        // Recalculate background-vs-white / black contrasts
-        store.background_contrast_with_white = color::contrast_ratio(store.background_rgb, (255, 255, 255));
-        store.background_contrast_with_black = color::contrast_ratio(store.background_rgb, (0, 0, 0));
+    match key {
+        "foreground" => {
+            store.foreground_rgb = rgb;
+            store.foreground_hex = hex;
+            store.foreground_hsl = hsl;
+            store.foreground_hsv = hsv;
+            store.foreground_lab = lab;
+            store.foreground_oklch = oklch;
+            store.foreground_is_dark = dark;
+        }
+        "background" => {
+            store.background_rgb = rgb;
+            store.background_hex = hex;
+            store.background_hsl = hsl;
+            store.background_hsv = hsv;
+            store.background_lab = lab;
+            store.background_oklch = oklch;
+            store.background_is_dark = dark;
+        }
+        _ => return false, // Clé inconnue / Unknown key
+    }
 
-        // Émet l'événement
-        // Emit the event
+    // Recalcule le ratio de contraste (brut + arrondi vers le bas)
+    // Recalculate the contrast ratio (raw + floor-rounded)
+    store.contrast_ratio_raw = color::contrast_ratio(store.foreground_rgb, store.background_rgb);
+    store.contrast_ratio_rounded = color::floor_ratio(store.contrast_ratio_raw);
+
+    // Recalcule les contrastes arrière-plan vs blanc / noir
+    // Recalculate background-vs-white / black contrasts
+    store.background_contrast_with_white = color::contrast_ratio(store.background_rgb, (255, 255, 255));
+    store.background_contrast_with_black = color::contrast_ratio(store.background_rgb, (0, 0, 0));
+
+    true
+}
+
+/// Met à jour une couleur depuis des composantes RGB (chemin RGB et inversion).
+/// Updates a color from RGB components (RGB path and swap).
+#[tauri::command]
+pub fn update_store_rgb(app: AppHandle, state: tauri::State<AppState>, key: String, r: u8, g: u8, b: u8) {
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, (r, g, b), None) {
+        let _ = app.emit("store-updated", store.clone());
+    }
+}
+
+/// Met à jour une couleur depuis des composantes HSL.
+/// Updates a color from HSL components
+#[tauri::command]
+pub fn update_store_hsl(app: AppHandle, state: tauri::State<AppState>, key: String, h: u16, s: u8, l: u8) {
+    let rgb = color::hsl_to_rgb(h, s, l);
+    let display = format!("hsl({}, {}%, {}%)", h, s, l);
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, rgb, Some(("hsl", display))) {
+        let _ = app.emit("store-updated", store.clone());
+    }
+}
+
+/// Met à jour une couleur depuis des composantes HSV.
+/// Updates a color from HSV components
+#[tauri::command]
+pub fn update_store_hsv(app: AppHandle, state: tauri::State<AppState>, key: String, h: u16, s: u8, v: u8) {
+    let rgb = color::hsv_to_rgb(h, s, v);
+    let display = format!("hsv({}, {}%, {}%)", h, s, v);
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, rgb, Some(("hsv", display))) {
+        let _ = app.emit("store-updated", store.clone());
+    }
+}
+
+/// Met à jour une couleur depuis des composantes CIE L*a*b*
+/// (a et b peuvent être négatifs.)
+/// Updates a color from CIE L*a*b* components
+/// (a and b may be negative.)
+#[tauri::command]
+pub fn update_store_lab(app: AppHandle, state: tauri::State<AppState>, key: String, l: i16, a: i16, b: i16) {
+    let rgb = color::lab_to_rgb(l, a, b);
+    let display = format!("lab({}, {}, {})", l, a, b);
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, rgb, Some(("lab", display))) {
+        let _ = app.emit("store-updated", store.clone());
+    }
+}
+
+/// Met à jour une couleur depuis des composantes OKLCH (l: 0-1, c, h: degrés).
+/// Updates a color from OKLCH components (l: 0-1, c, h: degrees).
+#[tauri::command]
+pub fn update_store_oklch(app: AppHandle, state: tauri::State<AppState>, key: String, l: f64, c: f64, h: f64) {
+    let rgb = color::oklch_to_rgb(l, c, h);
+    let display = format!("oklch({:.3} {:.3} {:.0})", l, c, h);
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, rgb, Some(("oklch", display))) {
+        let _ = app.emit("store-updated", store.clone());
+    }
+}
+
+/// Met à jour une couleur depuis une saisie hexadécimale ; conversion côté Rust.
+/// Updates a color from a hexadecimal input; conversion done on the Rust side.
+#[tauri::command]
+pub fn update_store_hex(app: AppHandle, state: tauri::State<AppState>, key: String, hex: String) {
+    let Some(rgb) = color::hex_to_rgb(&hex) else { return };
+    let mut store = state.store.lock().unwrap();
+    if apply_color(&mut store, &key, rgb, None) {
         let _ = app.emit("store-updated", store.clone());
     }
 }

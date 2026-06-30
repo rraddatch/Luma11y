@@ -124,6 +124,14 @@ function formatTemplate(template: string, store: UIStore): string {
   return template
     .replace(/%f\.hex%/g, store.foregroundHex)
     .replace(/%b\.hex%/g, store.backgroundHex)
+    .replace(/%f\.hsl%/g, store.foregroundHsl)
+    .replace(/%b\.hsl%/g, store.backgroundHsl)
+    .replace(/%f\.hsv%/g, store.foregroundHsv)
+    .replace(/%b\.hsv%/g, store.backgroundHsv)
+    .replace(/%f\.lab%/g, store.foregroundLab)
+    .replace(/%b\.lab%/g, store.backgroundLab)
+    .replace(/%f\.oklch%/g, store.foregroundOklch)
+    .replace(/%b\.oklch%/g, store.backgroundOklch)
     .replace(/%cr%/g, store.contrastRatio)
     .replace(/%crr%/g, store.contrastRatio)
     .replace(/%1\.4\.3%/g, store.level143Regular ? 'Pass' : 'Fail')
@@ -462,6 +470,9 @@ onThemeChange((theme) => {
     // Re-apply theme in case it changed in settings
     applyTheme();
     applyStyleTheme();
+    // Re-charge les formats de couleur activés
+    // Reload the enabled color formats
+    (Alpine.store('uiStore') as UIStore).refreshEnabledFormats();
   });
 
   // Étape 5b : Envoie les modèles de copie au backend pour le menu Édition

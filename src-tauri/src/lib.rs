@@ -755,7 +755,12 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             store::get_store,
             store::pick_color,
-            store::update_store,
+            store::update_store_rgb,
+            store::update_store_hsl,
+            store::update_store_hsv,
+            store::update_store_lab,
+            store::update_store_oklch,
+            store::update_store_hex,
             store::clear_store,
             store::get_color_name,
             icc::list_icc_profiles,

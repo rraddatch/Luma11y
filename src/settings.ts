@@ -34,6 +34,10 @@ import {
   setStyleTheme,
   type StyleTheme,
 } from './styleTheme';
+import {
+  selectableFormats,
+  loadEnabledFormats,
+} from './colors';
 import './components/AppTitleBar';
 import './components/WindowResizeGrips';
 
@@ -119,6 +123,20 @@ Alpine.store('settings', {
   // Durée du toast en secondes (0 = manuel) / Toast duration in seconds (0 = manual)
   toastDuration: parseInt(localStorage.getItem('luma11y-toast-duration') ?? '3', 10),
 
+  // Formats de couleur activables (hors hex) et ceux activés
+  // Toggleable color formats (excluding hex) and the enabled ones
+  selectableFormats: selectableFormats as string[],
+  enabledFormats: loadEnabledFormats() as string[],
+
+  // Active/désactive un format
+  // Toggles a format on/off
+  toggleFormat(id: string): void {
+    const list = (this as any).enabledFormats as string[];
+    const i = list.indexOf(id);
+    if (i >= 0) list.splice(i, 1);
+    else list.push(id);
+  },
+
   // Traduction réactive / Reactive translation
   t(key: string, ...args: (string | number)[]): string {
     void (this as any).locale;
@@ -175,6 +193,7 @@ Alpine.store('settings', {
     localStorage.setItem('luma11y-copy-templates', JSON.stringify((this as any).templates));
     localStorage.setItem('luma11y-shortcuts', JSON.stringify((this as any).shortcuts));
     localStorage.setItem('luma11y-toast-duration', String((this as any).toastDuration));
+    localStorage.setItem('luma11y-enabled-formats', JSON.stringify((this as any).enabledFormats));
 
     // Persiste le thème, le style et la locale
     // Persist theme, style theme and locale
