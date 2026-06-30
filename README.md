@@ -58,11 +58,7 @@ Or, if you prefer, buy me some coffe for further improve this tool even more.
 |---|:---:|
 | Accessibility | In progress |
 | Alpha colour component | Planned |
-| HCL colour values | Planned |
-| HSV colour values | Planned |
-| LAB colour values | Planned |
-| LCHab colour values | Planned |
-| CMYK colour values | Planned |
+| New colour formats | done |
 | Free text entry | Done |
 | Windows/macOS installer | Planned |
 | Auto-update | Planned |
