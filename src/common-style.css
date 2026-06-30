@@ -123,6 +123,7 @@ button {
         /* Conteneur nom + hex / Color name + hex container */
         .color-value {
           display: flex;
+          flex-direction: column;
           justify-content: center;
           align-items: center;
           gap: 0.4rem;
@@ -135,9 +136,9 @@ button {
           text-transform: capitalize;
         }
 
-        /* Saisie / affichage de la valeur hexadécimale */
-        /* Hexadecimal value input / display */
-        .hex-value {
+        /* Saisie / affichage de la valeur */
+        /* value input / display */
+        .css-value {
           font-family: 'Monaco', 'Menlo', monospace;
           letter-spacing: 2px;
           background: transparent;
@@ -149,7 +150,7 @@ button {
           font-size: inherit;
           font-weight: inherit;
           padding: 0;
-          width: 7rem;
+          width: 18rem;
           text-align: center;
           text-transform: uppercase;
           &:hover {
@@ -157,7 +158,7 @@ button {
           }
         }
 
-        .hex-value:focus-visible {
+        .css-value:focus-visible {
           outline: 1px solid currentColor;
           outline-offset: 2px;
         }

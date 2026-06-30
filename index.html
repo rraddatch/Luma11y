@@ -36,8 +36,7 @@
                   <input
                     x-data="{ snapshot: '', focused: false }"
                     type="text"
-                    class="hex-value"
-                    :class="{ 'hex-secondary': $store.uiStore.foregroundName }"
+                    class="css-value"
                     x-effect="if (!focused) $el.value = $store.uiStore.foregroundDisplayValue"
                     @focus="focused = true; snapshot = $event.target.value"
                     @input="$store.uiStore.updateColorFromText('foreground', $event.target.value, true)"
@@ -120,8 +119,7 @@
                     <input
                       x-data="{ snapshot: '', focused: false }"
                       type="text"
-                      class="hex-value"
-                      :class="{ 'hex-secondary': $store.uiStore.backgroundName }"
+                      class="css-value"
                       x-effect="if (!focused) $el.value = $store.uiStore.backgroundDisplayValue"
                       @focus="focused = true; snapshot = $event.target.value"
                       @input="$store.uiStore.updateColorFromText('background', $event.target.value, true)"
