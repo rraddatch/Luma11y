@@ -37,11 +37,49 @@ export function getColorFormat(id: string): ColorFormat | undefined {
   return colorFormats.find((format) => format.id === id);
 }
 
+// =============================================================================
+// Formats activés dans l'interface
+// Enabled formats in the interface
+//
+// `hex` est toujours actif (non listé). Les autres sont activables par
+// l'utilisateur (cf. Settings). Persisté en localStorage.
+// `hex` is always on (not listed). The others can be toggled by the user
+// (see Settings). Persisted in localStorage.
+// =============================================================================
+
+// Activés par défaut / Enabled by default
+export const DEFAULT_ENABLED_FORMATS = ['rgb', 'lab', 'oklch'];
+
+// Formats activables (tous sauf hex, toujours actif).
+// Toggleable formats (all but hex, which is always on).
+export const selectableFormats = colorFormats
+  .map((format) => format.id)
+  .filter((id) => id !== 'hex');
+
+// Lit les formats activés depuis localStorage,
+// ou la valeur par défaut si absent/invalide.
+// Reads the enabled formats from localStorage,
+// or the default value when missing/invalid.
+export function loadEnabledFormats(): string[] {
+  try {
+    const raw = localStorage.getItem('luma11y-enabled-formats');
+    if (raw) {
+      const ids = JSON.parse(raw) as string[];
+      return ids.filter((id) => selectableFormats.includes(id));
+    }
+  } catch {
+    // fall back to the default.
+  }
+  return [...DEFAULT_ENABLED_FORMATS];
+}
+
 // Tente de parser une saisie avec chaque format, dans l'ordre d'enregistrement.
 // Retourne le chemin backend du premier format reconnu, ou null si aucun ne l'est.
+// On teste avec tous les formats, pas seulement ceux selectionnés
 //
 // Tries to parse an input with each format, in registration order.
 // Returns the backend path of the first recognized format, or null if none matches.
+// We parse all available formats, not only the available ones
 export function parseColor(input: string): ColorCommit | null {
   for (const format of colorFormats) {
     const commit = format.parse(input);

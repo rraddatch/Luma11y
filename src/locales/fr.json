@@ -89,6 +89,8 @@
     "tag_b_hsv": "Couleur d'arrière-plan (HSV)",
     "tag_f_lab": "Couleur de premier plan (Lab)",
     "tag_b_lab": "Couleur d'arrière-plan (Lab)",
+    "tag_f_oklch": "Couleur de premier plan (OKLCH)",
+    "tag_b_oklch": "Couleur d'arrière-plan (OKLCH)",
     "tag_cr": "Ratio de contraste (brut)",
     "tag_crr": "Ratio de contraste (arrondi)",
     "tag_1_4_3": "Résultat 1.4.3 Contraste (Minimum)",

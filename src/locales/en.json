@@ -72,6 +72,8 @@
     "toast_duration": "Toast duration",
     "toast_manual": "Manual close",
     "toast_seconds": "Seconds",
+    "color_formats": "Colour formats",
+    "color_formats_help": "Choose which formats are available in the interface",
     "tab_shortcuts": "Shortcuts",
     "shortcuts": "Keyboard shortcuts",
     "shortcut_pick_fg": "Pick foreground colour",

@@ -13,7 +13,7 @@ import { t as i18nT, setLocale } from './i18n';
 
 // Import du parseur de couleur et du registre des formats
 // Import the color parser and the format registry
-import { parseColor, colorFormats } from './colors';
+import { parseColor, colorFormats, loadEnabledFormats } from './colors';
 
 // Format de couleur et sa valeur
 // Color format and its value
@@ -221,6 +221,14 @@ export interface UIStore {
   foregroundFormat: string;
   backgroundFormat: string;
 
+  // Formats activés dans l'interface.
+  // Enabled formats in the interface.
+  enabledFormats: string[];
+
+  // Relit les formats activés depuis localStorage
+  // Re-reads the enabled formats from localStorage
+  refreshEnabledFormats(): void;
+
   // Valeur à afficher dans le color preview, selon le format sélectionné
   // Value to show in the color preview, depending on the selected format
   foregroundDisplayValue: string;
@@ -401,13 +409,17 @@ export const UIStore = {
   get foregroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
     const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv, self.foregroundLab, self.foregroundOklch);
-    return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
+    return colorFormats
+      .filter((f) => f.id === 'hex' || self.enabledFormats.includes(f.id))
+      .map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
   },
 
   get backgroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
     const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv, self.backgroundLab, self.backgroundOklch);
-    return colorFormats.map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
+    return colorFormats
+      .filter((f) => f.id === 'hex' || self.enabledFormats.includes(f.id))
+      .map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
   },
 
   // Valeur affichée dans le color preview, selon le format radio sélectionné.
@@ -429,11 +441,26 @@ export const UIStore = {
   foregroundFormat: 'hex',
   backgroundFormat: 'hex',
 
+  // État initial : formats activés (lus depuis localStorage)
+  // Initial state: enabled formats (read from localStorage)
+  enabledFormats: loadEnabledFormats(),
+
   // Change le format affiché pour une couleur
   // Changes the displayed format for a color
   setColorFormat(this: UIStore, key: 'foreground' | 'background', format: string) {
     if (key === 'foreground') this.foregroundFormat = format;
     else this.backgroundFormat = format;
+  },
+
+  // Relit les formats activés et, si le format sélectionné n'est plus disponible,
+  // revient à hex (toujours actif).
+  // Re-reads the enabled formats and, if the selected format is no longer
+  // available, falls back to hex (always on).
+  refreshEnabledFormats(this: UIStore) {
+    this.enabledFormats = loadEnabledFormats();
+    const available = (id: string) => id === 'hex' || this.enabledFormats.includes(id);
+    if (!available(this.foregroundFormat)) this.foregroundFormat = 'hex';
+    if (!available(this.backgroundFormat)) this.backgroundFormat = 'hex';
   },
 
   // Messages d'erreur de saisie hex (vides quand la valeur est valide)

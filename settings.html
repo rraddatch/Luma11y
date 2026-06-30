@@ -112,6 +112,22 @@
           </div>
         </div>
 
+        <!-- Formats de couleur / Color formats -->
+        <fieldset class="section">
+          <legend class="section-label" id="settings-formats-label" x-text="$store.settings.t('settings.color_formats')">Color formats</legend>
+          <p class="field-suffix" x-text="$store.settings.t('settings.color_formats_help')"></p>
+          <div class="format-toggles">
+            <template x-for="fmt in $store.settings.selectableFormats" :key="fmt">
+              <label class="format-toggle">
+                <input type="checkbox"
+                  :checked="$store.settings.enabledFormats.includes(fmt)"
+                  @change="$store.settings.toggleFormat(fmt)" />
+                <span x-text="$store.settings.t('color.' + fmt)"></span>
+              </label>
+            </template>
+          </div>
+        </fieldset>
+
       </div>
 
       <!-- Tab : Raccourcis / Shortcuts -->

@@ -466,6 +466,9 @@ onThemeChange((theme) => {
     // Re-apply theme in case it changed in settings
     applyTheme();
     applyStyleTheme();
+    // Re-charge les formats de couleur activés
+    // Reload the enabled color formats
+    (Alpine.store('uiStore') as UIStore).refreshEnabledFormats();
   });
 
   // Étape 5b : Envoie les modèles de copie au backend pour le menu Édition

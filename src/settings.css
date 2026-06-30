@@ -123,6 +123,25 @@ input[type="number"] {
   color: var(--text-color-light);
 }
 
+/* Groupe de formats de couleur activés */
+/* Checkbox group of enabled color formats */
+.format-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.format-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.format-toggle input[type="checkbox"] {
+  accent-color: var(--text-color);
+}
+
 /* -----------------------------------------------------------------------------
    MODÈLES DE COPIE
    COPY TEMPLATES
