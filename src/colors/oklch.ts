@@ -4,13 +4,16 @@
 // =============================================================================
 
 import type { ColorFormat, ColorCommit } from './types';
+import { ALPHA_TAIL, alphaArgs } from './alpha';
 
-// Accepte "oklch(l c h)" (séparateurs espace ou virgule). Composantes décimales :
-// L ∈ [0,1], C chroma (~0-0.4), H teinte en degrés.
-// Accepts "oklch(l c h)" (space or comma separators). Decimal components:
-// L ∈ [0,1], C chroma (~0-0.4), H hue in degrees.
-const OKLCH_RE =
-  /^oklch\(\s*([\d.]+)\s*[,\s]\s*([\d.]+)\s*[,\s]\s*([\d.]+)\s*\)$/i;
+// Accepte "oklch(l c h)" (séparateurs espace ou virgule) avec un alpha optionnel
+// Composantes décimales, C chroma (~0-0.4), H teinte en degrés
+// Accepts "oklch(l c h)" (space or comma separators) with an optional alpha
+// Decimal components, C chroma (~0-0.4), H hue in degrees
+const OKLCH_RE = new RegExp(
+  `^oklch\\(\\s*([\\d.]+)\\s*[,\\s]\\s*([\\d.]+)\\s*[,\\s]\\s*([\\d.]+)${ALPHA_TAIL}\\s*\\)$`,
+  'i',
+);
 
 const inRange = (n: number, min: number, max: number) => n >= min && n <= max;
 
@@ -38,6 +41,11 @@ export const oklchFormat: ColorFormat = {
     // Reject any component out of range (L 0-1, C 0-0.5, H 0-360).
     if (!inRange(l, 0, 1) || !inRange(c, 0, 0.5) || !inRange(h, 0, 360)) return null;
 
-    return { command: 'update_store_oklch', args: { l, c, h } };
+    // Alpha optionnel (virgule ou slash)
+    // Optional alpha (comma or slash)
+    const alpha = alphaArgs(match[4]);
+    if (alpha === null) return null;
+
+    return { command: 'update_store_oklch', args: { l, c, h, ...alpha } };
   },
 };

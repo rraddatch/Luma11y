@@ -4,11 +4,16 @@
 // =============================================================================
 
 import type { ColorFormat, ColorCommit } from './types';
+import { ALPHA_TAIL, alphaArgs } from './alpha';
 
-// Accepte la notation "hsv(h, s%, v%)" (le signe % est optionnel).
-// Accepts the "hsv(h, s%, v%)" notation (the % sign is optional).
-const HSV_RE =
-  /^hsv\(\s*(\d{1,3})\s*[,\s]\s*(\d{1,3})%?\s*[,\s]\s*(\d{1,3})%?\s*\)$/i;
+// Accepte "hsv(h, s%, v%)" et l'alias "hsva(...)" (le signe % est optionnel),
+// avec un alpha optionnel
+// Accepts "hsv(h, s%, v%)" and the "hsva(...)" alias (the % sign is optional),
+// with an optional alpha
+const HSV_RE = new RegExp(
+  `^hsva?\\(\\s*(\\d{1,3})\\s*[,\\s]\\s*(\\d{1,3})%?\\s*[,\\s]\\s*(\\d{1,3})%?${ALPHA_TAIL}\\s*\\)$`,
+  'i',
+);
 
 // Teinte 0-360, saturation et valeur 0-100.
 // Hue 0-360, saturation and value 0-100.
@@ -46,6 +51,11 @@ export const hsvFormat: ColorFormat = {
     // Reject any component out of range (hue 0-360, s/v 0-100).
     if (!inHue(h) || !inPercent(s) || !inPercent(v)) return null;
 
-    return { command: 'update_store_hsv', args: { h, s, v } };
+    // Alpha optionnel (virgule ou slash)
+    // Optional alpha (comma or slash)
+    const alpha = alphaArgs(match[4]);
+    if (alpha === null) return null;
+
+    return { command: 'update_store_hsv', args: { h, s, v, ...alpha } };
   },
 };

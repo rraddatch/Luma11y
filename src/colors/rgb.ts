@@ -4,10 +4,14 @@
 // =============================================================================
 
 import type { ColorFormat, ColorCommit } from './types';
+import { ALPHA_TAIL, alphaArgs } from './alpha';
 
-// Accepte "r, g, b", "r g b" et "rgb(r, g, b)" (séparateurs : virgule ou espace).
-// Accepts "r, g, b", "r g b" and "rgb(r, g, b)" (separators: comma or space).
-const RGB_RE = /^(?:rgb\(\s*)?(\d{1,3})\s*[,\s]\s*(\d{1,3})\s*[,\s]\s*(\d{1,3})\s*\)?$/i;
+// Accepte "r, g, b", "r g b", "rgb(r, g, b)" et "rgba(r, g, b, a)", avec un alpha optionnel
+// Accepts "r, g, b", "r g b", "rgb(r, g, b)" and "rgba(r, g, b, a)", with an optional alpha
+const RGB_RE = new RegExp(
+  `^(?:rgba?\\(\\s*)?(\\d{1,3})\\s*[,\\s]\\s*(\\d{1,3})\\s*[,\\s]\\s*(\\d{1,3})${ALPHA_TAIL}\\s*\\)?$`,
+  'i',
+);
 
 // Une composante valide tient dans l'intervalle 0-255.
 // A valid component lies within the 0-255 range.
@@ -19,9 +23,8 @@ export function rgbToCss(v: number[]): string {
   return `rgb(${v[0]}, ${v[1]}, ${v[2]})`;
 }
 
-// RGB: aucune conversion, on passe par le chemin RGB direct (update_store_rgb).
-//
-// RGB: no conversion, it goes through the direct RGB path (update_store_rgb).
+// RGB: aucune conversion, on passe par le chemin RGB direct
+// RGB: no conversion, it goes through the direct RGB path
 export const rgbFormat: ColorFormat = {
   id: 'rgb',
 
@@ -37,6 +40,11 @@ export const rgbFormat: ColorFormat = {
     // Reject any component outside the 0-255 range.
     if (!inRange(r) || !inRange(g) || !inRange(b)) return null;
 
-    return { command: 'update_store_rgb', args: { r, g, b } };
+    // Alpha optionnel (virgule ou slash)
+    // Optional alpha (comma or slash)
+    const alpha = alphaArgs(match[4]);
+    if (alpha === null) return null;
+
+    return { command: 'update_store_rgb', args: { r, g, b, ...alpha } };
   },
 };

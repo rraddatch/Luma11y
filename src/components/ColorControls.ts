@@ -126,6 +126,10 @@ const FORMAT_CHANNELS: Record<string, FormatChannels> = {
   },
 };
 
+// Canal alpha, Saisi en pourcentage (0-100)
+// Alpha channel. Entered as a percentage (0-100)
+const ALPHA_CHANNEL: ChannelDef = { letter: 'A', labelKey: 'color.alpha', max: 100, min: 0, step: 1 };
+
 // Modes d'affichage des sliders et leur clé i18n.
 // Slider display modes and their i18n key.
 type SliderMode = 'standard' | 'static' | 'dynamic';
@@ -156,6 +160,14 @@ export class ColorControls extends LitElement {
   // Selected format (id): drives the value shown in the color preview.
   @property({ type: String, attribute: 'selected-format' }) selectedFormat = 'hex';
 
+  // Active le canal alpha (premier plan uniquement).
+  // Enables the alpha channel (foreground only).
+  @property({ type: Boolean, attribute: 'allow-alpha' }) allowAlpha = false;
+
+  // Opacité courante ∈ [0,1], pilotée par le store. Source du canal alpha (× 100).
+  // Current opacity ∈ [0,1], driven by the store. Source of the alpha channel (× 100).
+  @property({ type: Number }) alpha = 1;
+
   // Mode d'affichage des sliders / Slider display mode
   @state() private sliderMode: SliderMode = 'standard';
 
@@ -182,7 +194,15 @@ export class ColorControls extends LitElement {
   }
 
   private get channelConfig(): FormatChannels {
-    return FORMAT_CHANNELS[this.channelFormat] ?? FORMAT_CHANNELS.rgb;
+    const base = FORMAT_CHANNELS[this.channelFormat] ?? FORMAT_CHANNELS.rgb;
+    // En mode alpha, on ajoute un 4e canal `alpha` au format courant.
+    // In alpha mode, add a 4th `alpha` channel onto the format.
+    if (!this.allowAlpha) return base;
+    return {
+      ...base,
+      argKeys: [...base.argKeys, 'alpha'],
+      channels: [...base.channels, ALPHA_CHANNEL],
+    };
   }
 
   // Modes d'affichage des sliders disponibles pour le format courant :
@@ -241,15 +261,23 @@ export class ColorControls extends LitElement {
     return `linear-gradient(to right, ${stops.join(', ')})`;
   }
 
-  // Valeurs numériques courantes des trois canaux du format affiché.
-  // Current numeric values of the three channels for the displayed format.
-  private get channelValues(): [number, number, number] {
-    if (this.channelFormat === 'rgb') return this.rgbValues;
-    const entry = this.formats.find((f) => f.id === this.channelFormat);
-    // -?\d*\.?\d+ : composantes éventuellement négatives (Lab) ou décimales (OKLCH).
-    // -?\d*\.?\d+: components possibly negative (Lab) or decimal (OKLCH).
-    const nums = (entry?.value.match(/-?\d*\.?\d+/g) ?? []).map(Number);
-    return [nums[0] ?? 0, nums[1] ?? 0, nums[2] ?? 0];
+  // Valeurs numériques courantes des canaux du format affiché.
+  // Current numeric values of the displayed format's channels.
+  private get channelValues(): number[] {
+    let base: number[];
+    if (this.channelFormat === 'rgb') {
+      base = [...this.rgbValues];
+    } else {
+      const entry = this.formats.find((f) => f.id === this.channelFormat);
+      // -?\d*\.?\d+ : composantes éventuellement négatives (Lab) ou décimales (OKLCH).
+      // On ne garde que les 3 premières (un éventuel 4e nombre serait l'alpha du suffixe).
+      // -?\d*\.?\d+: components possibly negative (Lab) or decimal (OKLCH). Keep only the
+      // first 3 (a possible 4th number would be the suffix's alpha).
+      const nums = (entry?.value.match(/-?\d*\.?\d+/g) ?? []).map(Number);
+      base = [nums[0] ?? 0, nums[1] ?? 0, nums[2] ?? 0];
+    }
+    if (this.allowAlpha) base.push(Math.round(this.alpha * 100));
+    return base;
   }
 
   // Valeurs affichées par les sliders : l'état figé pendant un drag, sinon les
@@ -275,8 +303,10 @@ export class ColorControls extends LitElement {
 
     if (this.dragValues) this.dragValues = values;
 
+    // L'alpha est saisi en pourcentage (0-100) mais transmis en [0,1] au backend.
+    // Alpha is entered as a percentage (0-100) but sent to the backend as [0,1].
     const args: Record<string, number> = {};
-    cfg.argKeys.forEach((k, i) => { args[k] = values[i]; });
+    cfg.argKeys.forEach((k, i) => { args[k] = k === 'alpha' ? values[i] / 100 : values[i]; });
 
     this.dispatchEvent(new CustomEvent('color-change', {
       detail: { command: cfg.command, args },
@@ -528,9 +558,7 @@ export class ColorControls extends LitElement {
           `)}
         </select>
       ` : ''}
-      ${this.renderChannel(0)}
-      ${this.renderChannel(1)}
-      ${this.renderChannel(2)}
+      ${this.channelConfig.channels.map((_, i) => this.renderChannel(i))}
     `;
   }
 }

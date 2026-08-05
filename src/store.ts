@@ -26,12 +26,10 @@ export interface ColorFormatValue {
   value: string;
 }
 
-// Construit la map id -> valeur affichée. `rgb` arrive sous forme "r, g, b"
-// (représentation interne) et est présenté en "rgb(r, g, b)" pour l'affichage.
-// Builds the id -> displayed value map. `rgb` comes in as "r, g, b" (internal
-// representation) and is presented as "rgb(r, g, b)" for display.
+// Construit la map id -> valeur affichée.
+// Builds the id -> displayed value map.
 function colorValues(hex: string, rgb: string, hsl: string, hsv: string, lab: string, oklch: string): Record<string, string> {
-  return { hex, rgb: `rgb(${rgb})`, hsl, hsv, lab, oklch };
+  return { hex, rgb, hsl, hsv, lab, oklch };
 }
 
 // Interface pour le store Tauri (état global côté backend)
@@ -43,6 +41,10 @@ export interface BackendStore {
   // Couleur de premier plan au format RGB [r, g, b]
   // Foreground color in RGB format [r, g, b]
   foreground_rgb: [number, number, number];
+
+  // Chaîne CSS d'affichage du RGB : "rgb(r, g, b)" ou "rgb(r g b / NN%)"
+  // CSS display string for RGB: "rgb(r, g, b)" or "rgb(r g b / NN%)"
+  foreground_rgb_css: string;
 
   // Couleur de premier plan au format Hexa
   // Foreground color in Hexa format
@@ -68,9 +70,21 @@ export interface BackendStore {
   /// If the colour is dark
   foreground_is_dark: boolean;
 
+  // Opacité du premier plan
+  // Foreground opacity
+  foreground_alpha: number;
+
+  // Hex opaque du premier plan aplati sur l'arrière-plan (composition alpha)
+  // Opaque hex of the foreground flattened over the background (alpha compositing)
+  foreground_composited_hex: string;
+
   // Couleur d'arrière-plan au format RGB [r, g, b]
   // Background color in RGB format [r, g, b]
   background_rgb: [number, number, number];
+
+  // Chaîne CSS d'affichage du RGB : "rgb(r, g, b)"
+  // CSS display string for RGB: "rgb(r, g, b)"
+  background_rgb_css: string;
 
   // Couleur d'arrière-plan au format Hexa
   // Background color in Hexa format
@@ -129,9 +143,13 @@ export interface UIStore {
   // Indicates if a color selection is in progress
   isPicking: boolean;
 
-  // Couleur de premier plan au format RGB "r, g, b" pour affichage
-  // Foreground color in RGB format "r, g, b" for display
+  // Couleur de premier plan au format RGB "r, g, b" (forme brute pour les sliders)
+  // Foreground color in RGB format "r, g, b" (raw form for the sliders)
   foregroundRgb: string;
+
+  // Chaîne CSS d'affichage du RGB ("rgb(r, g, b)" / "rgb(r g b / NN%)"), du backend
+  // CSS display string for RGB ("rgb(r, g, b)" / "rgb(r g b / NN%)"), from the backend
+  foregroundRgbCss: string;
 
   // Couleur de premier plan au format hexadécimal
   // Foreground color in hexadecimal format
@@ -161,9 +179,25 @@ export interface UIStore {
   /// If the colour is dark
   foregroundIsDark: boolean;
 
-  // Couleur d'arrière-plan au format RGB "r, g, b" pour affichage
-  // Background color in RGB format "r, g, b" for display
+  // Opacité du premier plan
+  // Pilote le 4e canal alpha et le suffixe " / NN%" des formats
+  // Foreground opacity
+  // Drives the 4th alpha channel and the " / NN%" suffix of the formats
+  foregroundAlpha: number;
+
+  // Hex opaque du premier plan aplati sur l'arrière-plan (composition alpha). Affiché
+  // sous la valeur courante quand alpha < 1
+  // Opaque hex of the foreground flattened over the background (alpha compositing).
+  // Shown under the current value when alpha < 1
+  foregroundCompositedHex: string;
+
+  // Couleur d'arrière-plan au format RGB "r, g, b" (forme brute pour les sliders)
+  // Background color in RGB format "r, g, b" (raw form for the sliders)
   backgroundRgb: string;
+
+  // Chaîne CSS d'affichage du RGB ("rgb(r, g, b)"), du backend
+  // CSS display string for RGB ("rgb(r, g, b)"), from the backend
+  backgroundRgbCss: string;
 
   // Couleur d'arrière-plan au format hexadécimal
   // Background color in hexadecimal format
@@ -319,6 +353,7 @@ export const UIStore = {
   // État initial : RGB de premier plan vide
   // Initial state: empty foreground RGB
   foregroundRgb: '',
+  foregroundRgbCss: '',
 
   // État initial : aucune couleur de premier plan
   // Initial state: no foreground color
@@ -348,9 +383,18 @@ export const UIStore = {
   /// If the colour is dark
   foregroundIsDark: true,
 
+  // État initial : premier plan opaque
+  // Initial state: opaque foreground
+  foregroundAlpha: 1,
+
+  // État initial : aplati vide (rempli au premier store-updated)
+  // Initial state: empty flattened value (filled on the first store-updated)
+  foregroundCompositedHex: '',
+
   // État initial : RGB d'arrière-plan vide
   // Initial state: empty background RGB
   backgroundRgb: '',
+  backgroundRgbCss: '',
 
   // État initial : aucune couleur d'arrière-plan
   // Initial state: no background color
@@ -408,7 +452,7 @@ export const UIStore = {
   // the colorFormats registry
   get foregroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv, self.foregroundLab, self.foregroundOklch);
+    const values = colorValues(self.foregroundHex, self.foregroundRgbCss, self.foregroundHsl, self.foregroundHsv, self.foregroundLab, self.foregroundOklch);
     return colorFormats
       .filter((f) => f.id === 'hex' || self.enabledFormats.includes(f.id))
       .map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
@@ -416,7 +460,7 @@ export const UIStore = {
 
   get backgroundFormats(): ColorFormatValue[] {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv, self.backgroundLab, self.backgroundOklch);
+    const values = colorValues(self.backgroundHex, self.backgroundRgbCss, self.backgroundHsl, self.backgroundHsv, self.backgroundLab, self.backgroundOklch);
     return colorFormats
       .filter((f) => f.id === 'hex' || self.enabledFormats.includes(f.id))
       .map((f) => ({ id: f.id, label: self.t(`color.${f.id}`), value: values[f.id] ?? '' }));
@@ -426,13 +470,13 @@ export const UIStore = {
   // Value shown in the color preview, depending on the selected format radio.
   get foregroundDisplayValue(): string {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.foregroundHex, self.foregroundRgb, self.foregroundHsl, self.foregroundHsv, self.foregroundLab, self.foregroundOklch);
+    const values = colorValues(self.foregroundHex, self.foregroundRgbCss, self.foregroundHsl, self.foregroundHsv, self.foregroundLab, self.foregroundOklch);
     return values[self.foregroundFormat] ?? self.foregroundHex;
   },
 
   get backgroundDisplayValue(): string {
     const self = this as unknown as UIStore;
-    const values = colorValues(self.backgroundHex, self.backgroundRgb, self.backgroundHsl, self.backgroundHsv, self.backgroundLab, self.backgroundOklch);
+    const values = colorValues(self.backgroundHex, self.backgroundRgbCss, self.backgroundHsl, self.backgroundHsv, self.backgroundLab, self.backgroundOklch);
     return values[self.backgroundFormat] ?? self.backgroundHex;
   },
 
@@ -607,9 +651,10 @@ export const UIStore = {
     // Destructure RGB tuple of foreground color
     const [fr, fg, fb] = store.foreground_rgb;
 
-    // Stocke la version RGB pour l'affichage
-    // Store RGB version for display
+    // Stocke la version RGB brute (pour les sliders) + la chaîne CSS d'affichage
+    // Store the raw RGB version (for the sliders) + the CSS display string
     this.foregroundRgb = `${fr}, ${fg}, ${fb}`;
+    this.foregroundRgbCss = store.foreground_rgb_css;
 
     // Met à jour la couleur de premier plan (format hex)
     // Update foreground color (hex format)
@@ -640,13 +685,22 @@ export const UIStore = {
     /// If the colour is dark
     this.foregroundIsDark = store.foreground_is_dark;
 
+    // Opacité du premier plan (pilote le 4e canal alpha et le suffixe " / NN%")
+    // Foreground opacity (drives the 4th alpha channel and the " / NN%" suffix)
+    this.foregroundAlpha = store.foreground_alpha;
+
+    // Premier plan aplati sur l'arrière-plan (composition alpha)
+    // Foreground flattened over the background (alpha compositing)
+    this.foregroundCompositedHex = store.foreground_composited_hex;
+
     // Déstructure le tuple RGB de la couleur d'arrière-plan
     // Destructure RGB tuple of background color
     const [br, bg, bb] = store.background_rgb;
 
-    // Stocke la version RGB pour l'affichage
-    // Store RGB version for display
+    // Stocke la version RGB brute (pour les sliders) + la chaîne CSS d'affichage
+    // Store the raw RGB version (for the sliders) + the CSS display string
     this.backgroundRgb = `${br}, ${bg}, ${bb}`;
+    this.backgroundRgbCss = store.background_rgb_css;
 
     // Met à jour la couleur d'arrière-plan (format hex)
     // Update background color (hex format)

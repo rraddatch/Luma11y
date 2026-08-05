@@ -19,6 +19,7 @@
     "lab_a": "a* (vert–rouge)",
     "lab_b": "b* (bleu–jaune)",
     "chroma": "Chroma",
+    "alpha": "Alpha",
     "component_value": "Valeur de la composante couleur",
     "component_slider": "Curseur de la composante couleur",
     "slider_mode": "Mode d'affichage des curseurs",

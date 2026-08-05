@@ -21,7 +21,7 @@
     <main id="main" tabindex="-1">
       <div class="colors" x-data="{ rotated: false }">
         <!-- Foreground Color -->
-        <div class="wrapper" x-bind:style="`background-color: ${showFgControls ? 'transparent' : $store.uiStore.backgroundHex}`">
+        <div class="wrapper" x-bind:style="`background-color: ${$store.uiStore.backgroundHex}`">
           <section id="foreground"
             x-bind:style="`background-color: ${$store.uiStore.foregroundHex}`"
             x-bind:class="$store.uiStore.foregroundIsDark ? 'isDark' : 'isLight'"
@@ -95,6 +95,8 @@
         <!-- Foreground Color controls -->
         <color-controls
           x-show="showFgControls" x-transition
+          allow-alpha
+          x-bind:alpha="$store.uiStore.foregroundAlpha"
           x-bind:rgb="$store.uiStore.foregroundRgb"
           x-bind:formats="JSON.stringify($store.uiStore.foregroundFormats)"
           x-bind:selected-format="$store.uiStore.foregroundFormat"

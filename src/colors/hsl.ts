@@ -4,11 +4,16 @@
 // =============================================================================
 
 import type { ColorFormat, ColorCommit } from './types';
+import { ALPHA_TAIL, alphaArgs } from './alpha';
 
-// Accepte la notation "hsl(h, s%, l%)" (le signe % est optionnel).
-// Accepts the "hsl(h, s%, l%)" notation (the % sign is optional).
-const HSL_RE =
-  /^hsl\(\s*(\d{1,3})\s*[,\s]\s*(\d{1,3})%?\s*[,\s]\s*(\d{1,3})%?\s*\)$/i;
+// Accepte "hsl(h, s%, l%)" et l'alias "hsla(...)" (le signe % est optionnel),
+// avec un alpha optionnel
+// Accepts "hsl(h, s%, l%)" and the "hsla(...)" alias (the % sign is optional),
+// with an optional alpha
+const HSL_RE = new RegExp(
+  `^hsla?\\(\\s*(\\d{1,3})\\s*[,\\s]\\s*(\\d{1,3})%?\\s*[,\\s]\\s*(\\d{1,3})%?${ALPHA_TAIL}\\s*\\)$`,
+  'i',
+);
 
 // Teinte 0-360, saturation et luminosité 0-100.
 // Hue 0-360, saturation and lightness 0-100.
@@ -38,6 +43,11 @@ export const hslFormat: ColorFormat = {
     // Reject any component out of range (hue 0-360, s/l 0-100).
     if (!inHue(h) || !inPercent(s) || !inPercent(l)) return null;
 
-    return { command: 'update_store_hsl', args: { h, s, l } };
+    // Alpha optionnel (virgule ou slash)
+    // Optional alpha (comma or slash)
+    const alpha = alphaArgs(match[4]);
+    if (alpha === null) return null;
+
+    return { command: 'update_store_hsl', args: { h, s, l, ...alpha } };
   },
 };
